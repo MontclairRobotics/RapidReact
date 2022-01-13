@@ -6,7 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.commands.DriveCommand;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.subsystems.DrivetainSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -18,25 +20,35 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer 
 {
+    private final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
+
     // The robot's subsystems and commands are defined here...
     private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
+    private final DrivetainSubsystem drivetrainSubsystem = new DrivetainSubsystem();
 
     private final ExampleCommand autoCommand = new ExampleCommand(exampleSubsystem);
+    private final DriveCommand driveCommand = new DriveCommand(
+        drivetrainSubsystem,
+        // Speed supplier
+        () -> driverController.getRawAxis(XboxController.Axis.kLeftY.value),
+        // Turn speed supplier
+        () -> driverController.getRawAxis(XboxController.Axis.kLeftX.value)
+    );
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() 
     {
-        // Configure the button bindings
-        configureButtonBindings();
+
     }
 
-    /**
-     * Use this method to define your button->command mappings. Buttons can be created by
-     * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-     * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-     */
-    private void configureButtonBindings() {}
+    /** Get all of the commands which should run forever */
+    public Command[] getForeverCommands()
+    {
+        return new Command[] 
+        {
+            driveCommand
+        };
+    }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

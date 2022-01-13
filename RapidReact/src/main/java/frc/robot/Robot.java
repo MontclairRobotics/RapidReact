@@ -30,6 +30,12 @@ public class Robot extends TimedRobot
         // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         // autonomous chooser on the dashboard.
         robotContainer = new RobotContainer();
+
+        // Start all commands that are 'forever' commands
+        for(Command foreverCommand : robotContainer.getForeverCommands())
+        {
+            CommandScheduler.getInstance().schedule(foreverCommand);
+        }
     }
 
     /**
