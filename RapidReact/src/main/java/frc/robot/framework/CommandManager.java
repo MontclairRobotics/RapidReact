@@ -1,15 +1,14 @@
 package frc.robot.framework;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
 
 public final class CommandManager 
 {
     // Data structures
-    private final ArrayList<Command> activeCommands;
+    private final HashSet<Command> activeCommands;
     private final HashMap<RobotState, ArrayList<Command>> defaultCommands;
 
     private RobotState currentState;
@@ -17,12 +16,8 @@ public final class CommandManager
     // Constructor
     public CommandManager()
     {
-        activeCommands = new ArrayList<>();
+        activeCommands = new HashSet<>();
         defaultCommands = new HashMap<>();
-        for(RobotState newState : RobotState.values())
-        {
-            defaultCommands.put(newState, new ArrayList<>());
-        }
 
         currentState = RobotState.NONE;
     }
@@ -30,7 +25,17 @@ public final class CommandManager
     // Fluent interface for adding default commands
     public CommandManager addDefaultCommand(Command command, RobotState newState)
     {
-        defaultCommands.get(newState).add(command);
+        if(defaultCommands.containsKey(newState))
+        {
+            defaultCommands.get(newState).add(command);
+        }
+        else
+        {
+            var newCommands = new ArrayList<Command>();
+            newCommands.add(command);
+
+            defaultCommands.put(newState, newCommands);
+        }
         return this;
     }
 
@@ -42,13 +47,18 @@ public final class CommandManager
      */
     public void start(Command command)
     {
-        if(command.commandManager != this) return;
+        if(command.getManager() != this) return;
 
-        command.commandManager = this;
-        command.onInit();
-
-        if(!isRunning(command))
+        if(!command.isRunning())
+        {
             activeCommands.add(command);
+            command.init(this);
+        }
+        else
+        {
+            command.end(true);
+            command.init(this);
+        }
     }
 
     /**
@@ -57,9 +67,9 @@ public final class CommandManager
      */
     public void stop(Command command)
     {
-        if(activeCommands.contains(command))
+        if(command.isRunning() && command.getManager() == this)
         {
-            command.onEnd(true);
+            command.end(true);
             activeCommands.remove(command);
         }
     }
@@ -69,39 +79,48 @@ public final class CommandManager
      */
     public void execute()
     {
-        int i = 0;
-        while(i < activeCommands.size())
+        var iter = activeCommands.iterator();
+        while(iter.hasNext())
         {
-            var cmd = activeCommands.get(i);
-
-            cmd.execute();
-            if(cmd.finished())
-            {
-                cmd.onEnd(false);
-                activeCommands.remove(i);
-            }
-            else
-            {
-                i++;
-            }
+            handleCommand(iter.next());
         }
     }
 
     /**
-     * Check whether a given command is currently running
-     * @param command The command to check
-     * @return If the command is running
+     * Handle the given command
      */
-    public boolean isRunning(Command command)
+    void handleCommand(Command command)
     {
-        return activeCommands.contains(command) || Arrays.stream(command.getSubCommands()).anyMatch(sc -> activeCommands.contains(sc));
+        command.execute();
+
+        if(command.finished())
+        {
+            command.end(false);
+            activeCommands.remove(command);
+        }
+    }
+
+    /**
+     * Handle the next command from a given iterator
+     */
+    void handleNextCommand(Iterator<Command> commandIter)
+    {
+        var command = commandIter.next();
+
+        command.execute();
+
+        if(command.finished())
+        {
+            command.end(false);
+            commandIter.remove();
+        }
     }
 
     /**
      * Switch to a new state
      * @param newState The new state
      */
-    public void switchTo(RobotState newState)
+    public void changeState(RobotState newState)
     {
         if(newState.equals(currentState)) return;
 
@@ -109,6 +128,9 @@ public final class CommandManager
         currentState = newState;
 
         activeCommands.removeIf(c -> c.remainDuringStateChange(originalState, newState));
-        activeCommands.addAll(defaultCommands.get(newState));
+        if(defaultCommands.containsKey(newState))
+        {
+            activeCommands.addAll(defaultCommands.get(newState));
+        }
     }
 }

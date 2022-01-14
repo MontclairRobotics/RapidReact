@@ -17,7 +17,7 @@ public class CommandRobot extends TimedRobot
     }
 
     @Override
-    public void robotPeriodic() 
+    public void robotPeriodic()
     {
         manager.execute();
     }
@@ -25,24 +25,24 @@ public class CommandRobot extends TimedRobot
     @Override
     public void autonomousInit() 
     {
-        manager.switchTo(RobotState.AUTONOMOUS);
+        manager.changeState(RobotState.AUTONOMOUS);
     }
 
     @Override
     public void teleopInit() 
     {
-        manager.switchTo(RobotState.TELEOP);
+        manager.changeState(RobotState.TELEOP);
     }
 
     @Override
     public void testInit() 
     {
-        manager.switchTo(RobotState.TESTING);
+        manager.changeState(RobotState.TESTING);
     }
 
     @Override
     public void disabledInit() 
     {
-        manager.switchTo(RobotState.DISABLED);
+        manager.changeState(RobotState.DISABLED);
     }
 }

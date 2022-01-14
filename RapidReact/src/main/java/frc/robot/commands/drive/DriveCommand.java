@@ -3,7 +3,7 @@ package frc.robot.commands.drive;
 import java.util.function.DoubleSupplier;
 
 import frc.robot.Robot;
-import frc.robot.framework.ForeverCommand;
+import frc.robot.framework.bases.ForeverCommand;
 
 
 public class DriveCommand extends ForeverCommand

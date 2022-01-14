@@ -2,9 +2,27 @@ package frc.robot.framework;
 
 public abstract class Command 
 {
-    CommandManager commandManager;
+    private CommandManager commandManager;
+    private boolean running;
+
+    void init(CommandManager commandManager) 
+    {
+        this.commandManager = commandManager;
+        running = true;
+
+        onInit();
+    }
+
+    void end(boolean wasCancelled)
+    {
+        this.commandManager = null;
+        running = false;
+
+        onEnd(wasCancelled);
+    }
+
     /** Get the command manager this command is running on */
-    public CommandManager getCommandManager()
+    public CommandManager getManager()
     {
         return commandManager;
     }
@@ -25,9 +43,9 @@ public abstract class Command
         return false;
     }
 
-    /** Returns the subcommands managed by this command */
-    public Command[] getSubCommands()
+    /** Returns whether this command is currently running */
+    public final boolean isRunning()
     {
-        return new Command[] {};
+        return running;
     }
 }
