@@ -1,8 +1,27 @@
 package frc.robot.commands.drive;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import java.util.function.DoubleSupplier;
 
-public class SetMaxOutputCommand extends CommandBase
+import frc.robot.Robot;
+import frc.robot.framework.Command;
+import frc.robot.model.Drivetrain;
+
+public class SetMaxOutputCommand extends Command
 {
-    //TODO: IMPLEMENT
+    private DoubleSupplier maxSpeedSupplier; 
+
+    public SetMaxOutputCommand (DoubleSupplier maxSpeedSupplier) 
+    {   
+        this.maxSpeedSupplier = maxSpeedSupplier;
+    }
+
+    @Override
+    public void execute() {
+        Robot.drivetrain.setMaxOutput(maxSpeedSupplier.getAsDouble());
+    }
+
+    @Override
+    public boolean finished() {
+        return true;
+    }
 }

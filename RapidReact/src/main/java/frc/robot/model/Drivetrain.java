@@ -1,13 +1,11 @@
-package frc.robot.subsystems;
+package frc.robot.model;
 
-import edu.wpi.first.wpilibj.PWMSparkMax;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class DrivetainSubsystem extends SubsystemBase
+public class Drivetrain
 {
     private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(
         new Spark(Constants.LEFT_MOTOR_1_PORT),
@@ -24,7 +22,7 @@ public class DrivetainSubsystem extends SubsystemBase
         = new DifferentialDrive(leftMotors, rightMotors);
 
     
-    public DrivetainSubsystem() {}
+    public Drivetrain() {}
 
     /**
      * Drive this subsystem's motors
@@ -36,7 +34,30 @@ public class DrivetainSubsystem extends SubsystemBase
         differentialDrive.arcadeDrive(speed, turn);
     }
 
-    // TODO: IMPLEMENT 'setMaximumOutput'
+    /**
+     * Set the maximum output of this subsystem's motors
+     * @param maxOutput The new maximum
+     */
+    public void setMaxOutput(double maxOutput) 
+    {
+        differentialDrive.setMaxOutput(maxOutput);
+    }
 
-    // TODO: IMPLEMENT 'stop'
+    /**
+     * Stop the motors of this subsystem
+     */
+    public void stop() 
+    {
+        differentialDrive.stopMotor();
+    }
+
+    /**
+     * Drive this subsystem's motors straight
+     * @param speed The speed to drive at
+     */
+    public void driveStraight(double speed) 
+    {
+        drive(speed, 0);
+    }
+
 }
