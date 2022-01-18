@@ -25,12 +25,12 @@ public final class RapidReachManager extends CommandManager
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
+    public static final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public final Drivetrain drivetrain = new Drivetrain();
+    public static final Drivetrain drivetrain = new Drivetrain();
 
     ////////////////////////////////
     // INITIALIZATION
