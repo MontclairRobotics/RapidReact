@@ -1,7 +1,5 @@
 package frc.robot.framework.bases;
 
-import frc.robot.framework.CommandManager;
-
 public abstract class WhenCommand extends ForeverCommand
 {
     private boolean previousEval;

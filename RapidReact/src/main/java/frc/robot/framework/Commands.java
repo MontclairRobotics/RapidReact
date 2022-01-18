@@ -376,6 +376,11 @@ public final class Commands
         };
     }
 
+    public static TimedCommand wait(double time)
+    {
+        return timed(time, () -> {});
+    }
+
     public static Command debug(String msg)
     {
         return once(man -> man.getManager().debug(msg));

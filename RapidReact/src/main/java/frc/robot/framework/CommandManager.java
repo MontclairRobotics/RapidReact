@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.time.Instant;
 import java.util.ArrayList;
 
-public class CommandManager
+public abstract class CommandManager
 {
     // Data structures
     private final HashSet<Command> activeCommands;
@@ -23,7 +23,12 @@ public class CommandManager
         defaultCommands = new HashSet<>();
 
         currentState = RobotState.NONE;
+
+        init();
     }
+
+    /** Initializes this instance */
+    public abstract void init();
 
     /**
      * Get the current state of this robot manager.

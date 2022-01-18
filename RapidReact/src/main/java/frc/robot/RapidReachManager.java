@@ -8,6 +8,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.drive.DriveCommand;
+import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.Commands;
@@ -35,12 +36,11 @@ public final class RapidReachManager extends CommandManager
     ////////////////////////////////
     // INITIALIZATION
     ////////////////////////////////
-    public RapidReachManager()
+    @Override
+    public void init()
     {
-        super();
-
         // DELETE LATER
-        enableDebug(); 
+        enableDebug();
 
         // addCommand
         // (
@@ -52,7 +52,9 @@ public final class RapidReachManager extends CommandManager
         //     RobotState.TELEOP
         // );
 
+        // Drive command
         addCommand(
+            // Command
             Commands.forever(
                 () -> {
                     drivetrain.drive(
@@ -60,8 +62,21 @@ public final class RapidReachManager extends CommandManager
                         driverController.getRawAxis(XboxController.Axis.kLeftX.value)
                     );
                 }
-            ), 
+            ),
+            // State
             RobotState.TELEOP
+        );
+
+        // Basic auto command
+        addCommand(
+            // Command
+            Commands.series(
+                Commands.once(() -> drivetrain.drive(1, 0)),
+                Commands.wait(2.0),
+                Commands.once(() -> drivetrain.stop())
+            ), 
+            // State
+            RobotState.AUTONOMOUS
         );
     }
 }
