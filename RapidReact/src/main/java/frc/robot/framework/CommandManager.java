@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.time.Instant;
 import java.util.ArrayList;
 
-public abstract class CommandManager<T extends CommandManager<T>>
+public class CommandManager
 {
     // Data structures
-    private final HashSet<Command<T>> activeCommands;
-    private final HashMap<RobotState, ArrayList<Command<T>>> stateCommands;
-    private final HashSet<Command<T>> defaultCommands;
+    private final HashSet<Command> activeCommands;
+    private final HashMap<RobotState, ArrayList<Command>> stateCommands;
+    private final HashSet<Command> defaultCommands;
 
     private RobotState currentState;
 
@@ -23,18 +23,6 @@ public abstract class CommandManager<T extends CommandManager<T>>
         defaultCommands = new HashSet<>();
 
         currentState = RobotState.NONE;
-
-        init();
-    }
-
-    /** Initializes this manager. */
-    public abstract void init();
-
-    /** Returns the current manager as an instance of T. */
-    @SuppressWarnings("unchecked")
-    private T asT()
-    {
-        return (T)this;
     }
 
     /**
@@ -51,7 +39,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
      * @param command  The command to add
      * @param newState The state when the command will run
      */
-    public final void addCommand(Command<T> command, RobotState newState)
+    public final void addCommand(Command command, RobotState newState)
     {
         if(stateCommands.containsKey(newState))
         {
@@ -59,7 +47,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
         }
         else
         {
-            var newCommands = new ArrayList<Command<T>>();
+            var newCommands = new ArrayList<Command>();
             newCommands.add(command);
 
             stateCommands.put(newState, newCommands);
@@ -71,7 +59,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
      * The command added will run when any state is changed.
      * @param command  The command to add
      */
-    public final void addDefaultCommand(Command<T> command)
+    public final void addDefaultCommand(Command command)
     {
         defaultCommands.add(command);
     }
@@ -82,19 +70,19 @@ public abstract class CommandManager<T extends CommandManager<T>>
      * If the command belongs to another command manager, do nothing.
      * @param command The command to start
      */
-    public final void start(Command<T> command)
+    public final void start(Command command)
     {
         if(command.getManager() != this) return;
 
         if(!command.isRunning())
         {
             activeCommands.add(command);
-            command.init(asT());
+            command.init(this);
         }
         else
         {
             command.end(true);
-            command.init(asT());
+            command.init(this);
         }
     }
 
@@ -102,7 +90,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
      * Prematurely end the given command
      * @param command The command to end
      */
-    public void stop(Command<T> command)
+    public void stop(Command command)
     {
         if(command.isRunning() && command.getManager() == this)
         {
@@ -126,7 +114,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
     /**
      * Handle the given command
      */
-    public void handleCommand(Command<T> command)
+    public void handleCommand(Command command)
     {
         command.execute();
 
@@ -140,7 +128,7 @@ public abstract class CommandManager<T extends CommandManager<T>>
     /**
      * Handle the next command from a given iterator
      */
-    public void handleNextCommand(Iterator<Command<T>> commandIter)
+    public void handleNextCommand(Iterator<Command> commandIter)
     {
         var command = commandIter.next();
 

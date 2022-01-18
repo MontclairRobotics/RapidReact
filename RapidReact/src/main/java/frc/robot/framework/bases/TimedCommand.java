@@ -3,7 +3,7 @@ package frc.robot.framework.bases;
 import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
 
-public abstract class TimedCommand<T extends CommandManager<T>> extends Command<T>
+public abstract class TimedCommand extends Command
 {
     private double targetTimeLength;
     private long startTime;

@@ -13,13 +13,13 @@ public final class Commands
 {
     private Commands() {}
 
-    public static <T extends CommandManager<T>> Command<T> untilSome(BooleanSupplier pred, Runnable runnable)
+    public static Command untilSome(BooleanSupplier pred, Runnable runnable)
     {
         return untilSome(pred, $ -> runnable.run());
     }
-    public static <T extends CommandManager<T>> Command<T> untilSome(BooleanSupplier pred, CommandRunnable<Command<T>> runnable)
+    public static Command untilSome(BooleanSupplier pred, CommandRunnable<Command> runnable)
     {
-        return new Command<T>()
+        return new Command()
         {
             @Override
             public void execute() 
@@ -35,23 +35,23 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> Command<T> whileSome(BooleanSupplier pred, Runnable runnable)
+    public static Command whileSome(BooleanSupplier pred, Runnable runnable)
     {
         return whileSome(pred, $ -> runnable.run());
     }
-    public static <T extends CommandManager<T>> Command<T> whileSome(BooleanSupplier pred, CommandRunnable<Command<T>> runnable)
+    public static Command whileSome(BooleanSupplier pred, CommandRunnable<Command> runnable)
     {
         return untilSome(() -> !pred.getAsBoolean(), runnable);
     }
 
 
-    public static <T extends CommandManager<T>> ForeverCommand<T> forever(Runnable runnable)
+    public static ForeverCommand forever(Runnable runnable)
     {
         return forever($ -> runnable.run());
     }
-    public static <T extends CommandManager<T>> ForeverCommand<T> forever(CommandRunnable<ForeverCommand<T>> runnable)
+    public static ForeverCommand forever(CommandRunnable<ForeverCommand> runnable)
     {
-        return new ForeverCommand<T>()
+        return new ForeverCommand()
         {
             @Override
             public void execute()
@@ -62,67 +62,67 @@ public final class Commands
     }
 
 
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSome(BooleanSupplier pred, Runnable onTrue)
+    public static WhenCommand whenSome(BooleanSupplier pred, Runnable onTrue)
     {
         return whenSome(pred, $ -> onTrue.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSome(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onTrue)
+    public static WhenCommand whenSome(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, onTrue, $ -> {}, $ -> {}, $ -> {});
     }
 
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomes(BooleanSupplier pred, Runnable onBecomeTrue)
+    public static WhenCommand whenSomeBecomes(BooleanSupplier pred, Runnable onBecomeTrue)
     {
         return whenSomeBecomes(pred, $ -> onBecomeTrue.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomes(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onBecomeTrue)
+    public static WhenCommand whenSomeBecomes(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeTrue)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, $ -> {}, $ -> {}, onBecomeTrue, $ -> {});
     }
     
-    public static <T extends CommandManager<T>> WhenCommand<T> whenNotSome(BooleanSupplier pred, Runnable onFalse)
+    public static WhenCommand whenNotSome(BooleanSupplier pred, Runnable onFalse)
     {
         return whenNotSome(pred, $ -> onFalse.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenNotSome(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onFalse)
+    public static WhenCommand whenNotSome(BooleanSupplier pred, CommandRunnable<WhenCommand> onFalse)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, $ -> {}, onFalse, $ -> {}, $ -> {});
     }
 
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomesNot(BooleanSupplier pred, Runnable onBecomeFalse)
+    public static WhenCommand whenSomeBecomesNot(BooleanSupplier pred, Runnable onBecomeFalse)
     {
         return whenSomeBecomesNot(pred, $ -> onBecomeFalse.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onBecomeFalse)
+    public static WhenCommand whenSomeBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeFalse)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, $ -> {}, $ -> {}, $ -> {}, onBecomeFalse);
     }
 
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeAndNot(BooleanSupplier pred, Runnable onTrue, Runnable onFalse)
+    public static WhenCommand whenSomeAndNot(BooleanSupplier pred, Runnable onTrue, Runnable onFalse)
     {
         return whenSomeAndNot(pred, $ -> onTrue.run(), $ -> onFalse.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeAndNot(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onTrue, CommandRunnable<WhenCommand<T>> onFalse)
+    public static WhenCommand whenSomeAndNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue, CommandRunnable<WhenCommand> onFalse)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, onTrue, onFalse, $ -> {}, $ -> {});
     }
     
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomesAndBecomesNot(BooleanSupplier pred, Runnable onBecomeTrue, Runnable onBecomeFalse)
+    public static WhenCommand whenSomeBecomesAndBecomesNot(BooleanSupplier pred, Runnable onBecomeTrue, Runnable onBecomeFalse)
     {
         return whenSomeBecomesAndBecomesNot(pred, $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeBecomesAndBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onBecomeTrue, CommandRunnable<WhenCommand<T>> onBecomeFalse)
+    public static WhenCommand whenSomeBecomesAndBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeTrue, CommandRunnable<WhenCommand> onBecomeFalse)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, $ -> {}, $ -> {}, onBecomeTrue, onBecomeFalse);
     }
 
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeAndNotAndBecomesAndBecomesNot(BooleanSupplier pred, Runnable onTrue, Runnable onFalse, Runnable onBecomeTrue, Runnable onBecomeFalse)
+    public static WhenCommand whenSomeAndNotAndBecomesAndBecomesNot(BooleanSupplier pred, Runnable onTrue, Runnable onFalse, Runnable onBecomeTrue, Runnable onBecomeFalse)
     {
         return whenSomeAndNotAndBecomesAndBecomesNot(pred, $ -> onTrue.run(), $ -> onFalse.run(), $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
     }
-    public static <T extends CommandManager<T>> WhenCommand<T> whenSomeAndNotAndBecomesAndBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand<T>> onTrue, CommandRunnable<WhenCommand<T>> onFalse, CommandRunnable<WhenCommand<T>> onBecomeTrue, CommandRunnable<WhenCommand<T>> onBecomeFalse)
+    public static WhenCommand whenSomeAndNotAndBecomesAndBecomesNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue, CommandRunnable<WhenCommand> onFalse, CommandRunnable<WhenCommand> onBecomeTrue, CommandRunnable<WhenCommand> onBecomeFalse)
     {
-        return new WhenCommand<T>()
+        return new WhenCommand()
         {
             @Override
             public boolean predicate() 
@@ -156,13 +156,13 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> OnceCommand<T> once(Runnable runnable)
+    public static OnceCommand once(Runnable runnable)
     {
         return once($ -> runnable.run());
     }
-    public static <T extends CommandManager<T>> OnceCommand<T> once(CommandRunnable<OnceCommand<T>> runnable)
+    public static OnceCommand once(CommandRunnable<OnceCommand> runnable)
     {
-        return new OnceCommand<T>()
+        return new OnceCommand()
         {
             @Override
             public void execute() 
@@ -172,13 +172,13 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> TimedCommand<T> timed(double targetTimeLength, Runnable runnable)
+    public static TimedCommand timed(double targetTimeLength, Runnable runnable)
     {
         return timed(targetTimeLength, $ -> runnable.run());
     }
-    public static <T extends CommandManager<T>> TimedCommand<T> timed(double targetTimeLength, CommandRunnable<TimedCommand<T>> runnable)
+    public static TimedCommand timed(double targetTimeLength, CommandRunnable<TimedCommand> runnable)
     {
-        return new TimedCommand<T>(targetTimeLength)
+        return new TimedCommand(targetTimeLength)
         {
             @Override
             public void execute() 
@@ -188,13 +188,14 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> Command<T> start(Command<T> command)
+
+    public static Command start(Command command)
     {
         return start(() -> command);
     }
-    public static <T extends CommandManager<T>> Command<T> start(Supplier<Command<T>> commandGetter)
+    public static Command start(Supplier<Command> commandGetter)
     {
-        return new OnceCommand<T>()
+        return new OnceCommand()
         {
             @Override
             public void execute() 
@@ -204,13 +205,13 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> Command<T> stop(Command<T> command)
+    public static Command stop(Command command)
     {
         return stop(() -> command);
     }
-    public static <T extends CommandManager<T>> Command<T> stop(Supplier<Command<T>> commandGetter)
+    public static Command stop(Supplier<Command> commandGetter)
     {
-        return new OnceCommand<T>()
+        return new OnceCommand()
         {
             @Override
             public void execute() 
@@ -221,9 +222,9 @@ public final class Commands
     }
 
     @SafeVarargs
-    public static <T extends CommandManager<T>> Command<T> series(Command<T>... commands)
+    public static Command series(Command... commands)
     {
-        return new Command<T>()
+        return new Command()
         {
             private int index = 0;
 
@@ -278,9 +279,9 @@ public final class Commands
     }
 
     @SafeVarargs
-    public static <T extends CommandManager<T>> Command<T> group(Command<T>... commands)
+    public static Command group(Command... commands)
     {
-        return new Command<T>()
+        return new Command()
         {
             @Override
             public void onInit() 
@@ -327,9 +328,9 @@ public final class Commands
     }
 
     @SafeVarargs
-    public static <T extends CommandManager<T>> Command<T> race(Command<T>... commands)
+    public static Command race(Command... commands)
     {
-        return new Command<T>()
+        return new Command()
         {
             @Override
             public void onInit() 
@@ -375,11 +376,11 @@ public final class Commands
         };
     }
 
-    public static <T extends CommandManager<T>> Command<T> debug(String msg)
+    public static Command debug(String msg)
     {
         return once(man -> man.getManager().debug(msg));
     }
-    public static <T extends CommandManager<T>> Command<T> debug(Supplier<String> msgGetter)
+    public static Command debug(Supplier<String> msgGetter)
     {
         return once(man -> man.getManager().debug(msgGetter.get()));
     }

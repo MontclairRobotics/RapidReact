@@ -9,6 +9,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.drive.DriveCommand;
 import frc.robot.framework.CommandManager;
+import frc.robot.framework.CommandRobot;
 import frc.robot.framework.Commands;
 import frc.robot.framework.RobotState;
 import frc.robot.model.Drivetrain;
@@ -19,7 +20,7 @@ import frc.robot.model.Drivetrain;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class RapidReachManager extends CommandManager<RapidReachManager>
+public final class RapidReachManager extends CommandManager
 {
     ////////////////////////////////
     // CONTROLLERS
@@ -34,9 +35,10 @@ public class RapidReachManager extends CommandManager<RapidReachManager>
     ////////////////////////////////
     // INITIALIZATION
     ////////////////////////////////
-    @Override
-    public void init()
+    public RapidReachManager()
     {
+        super();
+
         // DELETE LATER
         enableDebug(); 
 
@@ -52,13 +54,10 @@ public class RapidReachManager extends CommandManager<RapidReachManager>
 
         addCommand(
             Commands.forever(
-                cmd -> {
-                    final var manager = cmd.getManager();
-                    final var drivetrain = manager.drivetrain;
-
+                () -> {
                     drivetrain.drive(
-                        manager.driverController.getRawAxis(XboxController.Axis.kLeftY.value), 
-                        manager.driverController.getRawAxis(XboxController.Axis.kLeftX.value)
+                        driverController.getRawAxis(XboxController.Axis.kLeftY.value), 
+                        driverController.getRawAxis(XboxController.Axis.kLeftX.value)
                     );
                 }
             ), 

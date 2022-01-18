@@ -6,7 +6,7 @@ import frc.robot.RapidReachManager;
 import frc.robot.framework.bases.ForeverCommand;
 
 
-public class DriveCommand extends ForeverCommand<RapidReachManager>
+public class DriveCommand extends ForeverCommand
 {
     /** Supplies the speed to drive the drivetain subsystem */
     private DoubleSupplier speedSupplier;
@@ -22,6 +22,6 @@ public class DriveCommand extends ForeverCommand<RapidReachManager>
     @Override
     public void execute() 
     {
-        getManager().drivetrain.drive(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
+        RapidReachManager.drivetrain.drive(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
     }
 }

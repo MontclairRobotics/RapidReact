@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * The generic parameter must be the same as the class which derives from this class/
  * @param T  The type of the derived class.
  */
-public final class CommandRobot<M extends CommandManager<M>> extends TimedRobot
+public final class CommandRobot<M extends CommandManager> extends TimedRobot
 {
     private M manager;
 
@@ -18,11 +18,11 @@ public final class CommandRobot<M extends CommandManager<M>> extends TimedRobot
         this.manager = manager;
     }
 
-    public static <M extends CommandManager<M>> CommandRobot<M> create(Supplier<M> managerSupplier)
+    public static <M extends CommandManager> CommandRobot<M> create(Supplier<M> managerSupplier)
     {
         return new CommandRobot<M>(managerSupplier.get());
     }
-    public static <M extends CommandManager<M>> Supplier<CommandRobot<M>> creator(Supplier<M> managerSupplier)
+    public static <M extends CommandManager> Supplier<CommandRobot<M>> creator(Supplier<M> managerSupplier)
     {
         return () -> create(managerSupplier);
     }

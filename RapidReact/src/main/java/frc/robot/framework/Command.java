@@ -1,11 +1,11 @@
 package frc.robot.framework;
 
-public abstract class Command<M extends CommandManager<M>>
+public abstract class Command
 {
-    private M manager;
+    private CommandManager manager;
     private boolean running;
 
-    void init(M manager) 
+    void init(CommandManager manager) 
     {
         this.manager = manager;
         running = true;
@@ -43,7 +43,7 @@ public abstract class Command<M extends CommandManager<M>>
         return running;
     }
     /** Get the robot this command is running on */
-    public final M getManager()
+    public final CommandManager getManager()
     {
         return manager;
     }
