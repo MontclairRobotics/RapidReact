@@ -1,6 +1,6 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.PWMSparkMax;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import frc.robot.commands.MaxSpeedCommand;
@@ -18,6 +18,16 @@ public class MotorTestManager extends CommandManager
     @Override
     public void init()
     {
+        enableDebug();
+
+        addDefaultCommand(
+            Commands.once(cmd -> {
+                System.out.println(cmd == null);
+                System.out.println(cmd.getManager() == null);
+                cmd.getManager().debug("AAAAAAAAA");
+            })
+        );
+
         addDefaultCommand(
             Commands.forever(
                 () -> sparkMax.set(controller.getRawAxis(Axis.kLeftY.value) * maxSpeed)
