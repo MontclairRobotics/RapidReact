@@ -1,15 +1,32 @@
 package frc.robot.framework.bases;
 
 import frc.robot.framework.Command;
+import frc.robot.framework.CommandManager;
 
-public abstract class TimedCommand extends Command
+public abstract class TimedCommand<T extends CommandManager<T>> extends Command<T>
 {
-    private double time;
+    private double targetTimeLength;
     private long startTime;
 
-    public TimedCommand(double time)
+    public TimedCommand(double targetTimeLength)
     {
-        this.time = time;
+        this.targetTimeLength = targetTimeLength;
+    }
+
+    /** Returns the time in seconds elapsed since the command was started */
+    public final double timeElapsed()
+    {
+        return timeElapsedMillis() / 1000.0;
+    }
+    /** Returns the time in milliseconds elapsed since the command was started */
+    public final long timeElapsedMillis()
+    {
+        return System.currentTimeMillis() - startTime;
+    }
+    /** Returns percentage of the target time elapsed since the command was started */
+    public final double percentElapsed()
+    {
+        return timeElapsed() / targetTimeLength;
     }
 
     @Override
@@ -21,6 +38,6 @@ public abstract class TimedCommand extends Command
     @Override
     public boolean finished() 
     {
-        return (System.currentTimeMillis() - startTime) >= time / 1000;
+        return percentElapsed() >= 1;
     }
 }

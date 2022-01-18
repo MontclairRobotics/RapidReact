@@ -2,14 +2,14 @@ package frc.robot.commands.drive;
 
 import java.util.function.DoubleSupplier;
 
-import frc.robot.Robot;
+import frc.robot.RapidReachManager;
 import frc.robot.framework.bases.OnceCommand;
 
-public class SetMaxOutputCommand extends OnceCommand
+public class SetMaxOutputCommand extends OnceCommand<RapidReachManager>
 {
     private DoubleSupplier maxSpeedSupplier; 
 
-    public SetMaxOutputCommand (DoubleSupplier maxSpeedSupplier) 
+    public SetMaxOutputCommand(DoubleSupplier maxSpeedSupplier) 
     {   
         this.maxSpeedSupplier = maxSpeedSupplier;
     }
@@ -17,6 +17,6 @@ public class SetMaxOutputCommand extends OnceCommand
     @Override
     public void execute() 
     {
-        Robot.drivetrain.setMaxOutput(maxSpeedSupplier.getAsDouble());
+        getManager().drivetrain.setMaxOutput(maxSpeedSupplier.getAsDouble());
     }
 }

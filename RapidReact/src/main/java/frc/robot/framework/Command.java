@@ -1,13 +1,13 @@
 package frc.robot.framework;
 
-public abstract class Command 
+public abstract class Command<M extends CommandManager<M>>
 {
-    private CommandManager commandManager;
+    private M manager;
     private boolean running;
 
-    void init(CommandManager commandManager) 
+    void init(M manager) 
     {
-        this.commandManager = commandManager;
+        this.manager = manager;
         running = true;
 
         onInit();
@@ -15,16 +15,10 @@ public abstract class Command
 
     void end(boolean wasCancelled)
     {
-        this.commandManager = null;
+        manager = null;
         running = false;
 
         onEnd(wasCancelled);
-    }
-
-    /** Get the command manager this command is running on */
-    public CommandManager getManager()
-    {
-        return commandManager;
     }
 
     /** Runs every frame */
@@ -47,5 +41,10 @@ public abstract class Command
     public final boolean isRunning()
     {
         return running;
+    }
+    /** Get the robot this command is running on */
+    public final M getManager()
+    {
+        return manager;
     }
 }

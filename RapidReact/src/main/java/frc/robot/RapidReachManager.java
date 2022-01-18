@@ -8,7 +8,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.drive.DriveCommand;
-import frc.robot.framework.CommandRobot;
+import frc.robot.framework.CommandManager;
 import frc.robot.framework.RobotState;
 import frc.robot.model.Drivetrain;
 
@@ -18,26 +18,28 @@ import frc.robot.model.Drivetrain;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends CommandRobot
+public class RapidReachManager extends CommandManager<RapidReachManager>
 {
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
+    public final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final Drivetrain drivetrain = new Drivetrain();
+    public final Drivetrain drivetrain = new Drivetrain();
 
     ////////////////////////////////
-    // CONSTRUCTOR
+    // INITIALIZATION
     ////////////////////////////////
-    public Robot()
+    @Override
+    public void init()
     {
-        super();
+        // DELETE LATER
+        enableDebug(); 
 
-        getManager().addDefaultCommand
+        addCommand
         (
             new DriveCommand
             (

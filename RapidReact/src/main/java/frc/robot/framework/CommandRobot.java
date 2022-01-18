@@ -1,19 +1,30 @@
 package frc.robot.framework;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 
-public class CommandRobot extends TimedRobot
+/**
+ * The base class for all command-based robots.
+ * The generic parameter must be the same as the class which derives from this class/
+ * @param T  The type of the derived class.
+ */
+public final class CommandRobot<M extends CommandManager<M>> extends TimedRobot
 {
-    private CommandManager manager;
+    private M manager;
 
-    public CommandRobot()
+    private CommandRobot(M manager)
     {
-        manager = new CommandManager();
+        this.manager = manager;
     }
 
-    public CommandManager getManager() 
+    public static <M extends CommandManager<M>> CommandRobot<M> create(Supplier<M> managerSupplier)
     {
-        return manager;
+        return new CommandRobot<M>(managerSupplier.get());
+    }
+    public static <M extends CommandManager<M>> Supplier<CommandRobot<M>> creator(Supplier<M> managerSupplier)
+    {
+        return () -> create(managerSupplier);
     }
 
     @Override

@@ -2,11 +2,11 @@ package frc.robot.commands.drive;
 
 import java.util.function.DoubleSupplier;
 
-import frc.robot.Robot;
+import frc.robot.Robot2022;
 import frc.robot.framework.bases.ForeverCommand;
 
 
-public class DriveCommand extends ForeverCommand
+public class DriveCommand extends ForeverCommand<Robot2022>
 {
     /** Supplies the speed to drive the drivetain subsystem */
     private DoubleSupplier speedSupplier;
@@ -22,6 +22,6 @@ public class DriveCommand extends ForeverCommand
     @Override
     public void execute() 
     {
-        Robot.drivetrain.drive(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
+        getManager().drivetrain.drive(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
     }
 }
