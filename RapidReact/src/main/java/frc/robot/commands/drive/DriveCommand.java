@@ -2,11 +2,11 @@ package frc.robot.commands.drive;
 
 import java.util.function.DoubleSupplier;
 
-import frc.robot.Robot2022;
+import frc.robot.RapidReachManager;
 import frc.robot.framework.bases.ForeverCommand;
 
 
-public class DriveCommand extends ForeverCommand<Robot2022>
+public class DriveCommand extends ForeverCommand<RapidReachManager>
 {
     /** Supplies the speed to drive the drivetain subsystem */
     private DoubleSupplier speedSupplier;
