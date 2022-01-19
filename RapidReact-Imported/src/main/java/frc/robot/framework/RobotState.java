@@ -1,20 +1,7 @@
 package frc.robot.framework;
 
-public class RobotState
+public record RobotState(String name)
 {
-    private final String name;
-
-    public RobotState(String name)
-    {
-        this.name = name;
-    }
-
-    @Override
-    public boolean equals(Object obj) 
-    {
-        return obj instanceof RobotState ? ((RobotState)obj).name.equals(name) : false;
-    }
-
     // Default members
     public static final RobotState 
         TELEOP = new RobotState("teleop"),

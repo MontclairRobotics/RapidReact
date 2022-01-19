@@ -1,18 +1,18 @@
 package frc.robot.model;
 
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants;
 
 public class Drivetrain
 {
-    private final SpeedControllerGroup leftMotors = new SpeedControllerGroup(
+    private final MotorControllerGroup leftMotors = new MotorControllerGroup(
         new Spark(Constants.LEFT_MOTOR_1_PORT),
         new Spark(Constants.LEFT_MOTOR_2_PORT),
         new Spark(Constants.LEFT_MOTOR_3_PORT)
     );
-    private final SpeedControllerGroup rightMotors = new SpeedControllerGroup(
+    private final MotorControllerGroup rightMotors = new MotorControllerGroup(
         new Spark(Constants.RIGHT_MOTOR_1_PORT),
         new Spark(Constants.RIGHT_MOTOR_2_PORT),
         new Spark(Constants.RIGHT_MOTOR_3_PORT)

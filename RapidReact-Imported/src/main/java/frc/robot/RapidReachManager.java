@@ -11,7 +11,6 @@ import frc.robot.commands.drive.DriveCommand;
 import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.CommandRobot;
-import frc.robot.framework.Commands;
 import frc.robot.framework.RobotState;
 import frc.robot.model.Drivetrain;
 
@@ -55,7 +54,7 @@ public final class RapidReachManager extends CommandManager
         // Drive command
         addCommand(
             // Command
-            Commands.forever(
+            Command.forever(
                 () -> {
                     drivetrain.drive(
                         driverController.getRawAxis(XboxController.Axis.kLeftY.value), 
@@ -70,10 +69,10 @@ public final class RapidReachManager extends CommandManager
         // Basic auto command
         addCommand(
             // Command
-            Commands.series(
-                Commands.once(() -> drivetrain.drive(1, 0)),
-                Commands.wait(2.0),
-                Commands.once(() -> drivetrain.stop())
+            Command.forTime(
+                2.0, 
+                () -> drivetrain.drive(1, 0), 
+                () -> drivetrain.stop()
             ), 
             // State
             RobotState.AUTONOMOUS

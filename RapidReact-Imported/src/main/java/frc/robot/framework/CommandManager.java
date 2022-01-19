@@ -164,21 +164,27 @@ public abstract class CommandManager
         var originalState = currentState;
         currentState = newState;
 
-        activeCommands.removeIf(c -> !c.remainDuringStateChange(originalState, newState));
+        for(var c: activeCommands)
+        {
+            if(!c.remainDuringStateChange(originalState, newState))
+            {
+                stop(c);
+            }
+        };
 
         if(stateCommands.containsKey(newState))
         {
             for(var c: stateCommands.get(newState))
             {
                 if(!activeCommands.contains(c))
-                    activeCommands.add(c);
+                    start(c);
             }
         }
 
         for(var c: defaultCommands)
         {
             if(!activeCommands.contains(c))
-                activeCommands.add(c);
+                start(c);
         }
     }   
 
