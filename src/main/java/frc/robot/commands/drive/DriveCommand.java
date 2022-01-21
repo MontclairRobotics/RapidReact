@@ -22,6 +22,6 @@ public class DriveCommand extends ForeverCommand
     @Override
     public void execute() 
     {
-        RapidReachManager.drivetrain.drive(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
+        RapidReachManager.drivetrain.driveSmoothed(speedSupplier.getAsDouble(), turnSupplier.getAsDouble());
     }
 }

@@ -11,8 +11,10 @@ import frc.robot.commands.drive.DriveCommand;
 import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.CommandRobot;
+import frc.robot.framework.Commands;
 import frc.robot.framework.RobotState;
 import frc.robot.model.Drivetrain;
+import frc.robot.utilities.smoothing.NullSmoother;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -30,7 +32,7 @@ public final class RapidReachManager extends CommandManager
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final Drivetrain drivetrain = new Drivetrain();
+    public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
 
     ////////////////////////////////
     // INITIALIZATION
@@ -41,22 +43,12 @@ public final class RapidReachManager extends CommandManager
         // DELETE LATER
         enableDebug();
 
-        // addCommand
-        // (
-        //     new DriveCommand
-        //     (
-        //         () -> driverController.getRawAxis(XboxController.Axis.kLeftY.value),
-        //         () -> driverController.getRawAxis(XboxController.Axis.kLeftX.value)
-        //     ),
-        //     RobotState.TELEOP
-        // );
-
         // Drive command
         addCommand(
             // Command
-            Command.forever(
+            Commands.forever(
                 () -> {
-                    drivetrain.drive(
+                    drivetrain.driveSmoothed(
                         driverController.getRawAxis(XboxController.Axis.kLeftY.value), 
                         driverController.getRawAxis(XboxController.Axis.kLeftX.value)
                     );
@@ -66,12 +58,22 @@ public final class RapidReachManager extends CommandManager
             RobotState.TELEOP
         );
 
+        // Ease control command
+        addCommand(
+            Commands.whenBecomesTrueAndBecomesFalse(
+                () -> driverController.getLeftBumper(), 
+                () -> drivetrain.setSmoother(Constants.DRIVE_NULL_SMOOTHER),
+                () -> drivetrain.setSmoother(Constants.DRIVE_SMOOTHER)
+            ), 
+            RobotState.TELEOP
+        );
+
         // Basic auto command
         addCommand(
             // Command
-            Command.forTime(
+            Commands.forTime(
                 2.0, 
-                () -> drivetrain.drive(1, 0), 
+                () -> drivetrain.driveSmoothed(1, 0), 
                 () -> drivetrain.stop()
             ), 
             // State
