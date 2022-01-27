@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants;
+import frc.robot.utilities.smoothing.Smoother;
 
 public class Drivetrain
 {
@@ -21,8 +22,27 @@ public class Drivetrain
     private final DifferentialDrive differentialDrive 
         = new DifferentialDrive(leftMotors, rightMotors);
 
+    private Smoother smoother;
+
+    public void setSmoother(Smoother smoother) 
+    {
+        this.smoother = smoother;
+    }
     
-    public Drivetrain() {}
+    public Drivetrain(Smoother defaultSmoother) 
+    {
+        smoother = defaultSmoother;
+    }
+
+    /**
+     * Drive this subsystem's motors with smoothing
+     * @param speed The speed to drive at
+     * @param turn  The amount to turn
+     */
+    public void driveSmoothed(double speed, double turn)
+    {
+        drive(smoother.update(speed).getCurrent(), turn);
+    }
 
     /**
      * Drive this subsystem's motors
@@ -57,7 +77,7 @@ public class Drivetrain
      */
     public void driveStraight(double speed) 
     {
-        drive(speed, 0);
+        driveSmoothed(speed, 0);
     }
 
 }
