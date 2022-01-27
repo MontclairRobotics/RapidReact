@@ -2,6 +2,10 @@ package frc.robot.model;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants;
 import frc.robot.utilities.smoothing.Smoother;
@@ -9,14 +13,14 @@ import frc.robot.utilities.smoothing.Smoother;
 public class Drivetrain
 {
     private final MotorControllerGroup leftMotors = new MotorControllerGroup(
-        new Spark(Constants.LEFT_MOTOR_1_PORT),
-        new Spark(Constants.LEFT_MOTOR_2_PORT),
-        new Spark(Constants.LEFT_MOTOR_3_PORT)
+        new CANSparkMax(Constants.LEFT_MOTOR_1_PORT, MotorType.kBrushless),
+        new CANSparkMax(Constants.LEFT_MOTOR_2_PORT, MotorType.kBrushless),
+        new CANSparkMax(Constants.LEFT_MOTOR_3_PORT, MotorType.kBrushless)
     );
     private final MotorControllerGroup rightMotors = new MotorControllerGroup(
-        new Spark(Constants.RIGHT_MOTOR_1_PORT),
-        new Spark(Constants.RIGHT_MOTOR_2_PORT),
-        new Spark(Constants.RIGHT_MOTOR_3_PORT)
+        new CANSparkMax(Constants.RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
+        new CANSparkMax(Constants.RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
+        new CANSparkMax(Constants.RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
     );
 
     private final DifferentialDrive differentialDrive 

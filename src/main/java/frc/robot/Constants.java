@@ -19,18 +19,29 @@ import frc.robot.utilities.smoothing.Smoother;
 public final class Constants 
 {
     // Left motor port numbers
-    public static final int LEFT_MOTOR_1_PORT = 0;
-    public static final int LEFT_MOTOR_2_PORT = 1;
-    public static final int LEFT_MOTOR_3_PORT = 2;
+    public static final int LEFT_MOTOR_1_PORT = 1;
+    public static final int LEFT_MOTOR_2_PORT = 2;
+    public static final int LEFT_MOTOR_3_PORT = 3;
 
     // Right motor port numbers
-    public static final int RIGHT_MOTOR_1_PORT = 3;
-    public static final int RIGHT_MOTOR_2_PORT = 4;
-    public static final int RIGHT_MOTOR_3_PORT = 5;
+    public static final int RIGHT_MOTOR_1_PORT = 4;
+    public static final int RIGHT_MOTOR_2_PORT = 5;
+    public static final int RIGHT_MOTOR_3_PORT = 6;
 
     // Port for xbox controller
     public static final int XBOX_CONTROLLER_PORT = 0;
 
+    // Speeds for the robot
+    public static final double AUTO_SPEED = 0.7;
+    public static final double[] ROBOT_SPEEDS = {
+        0.8,
+        0.5
+    };
+
+    // Motors inversion
+    public static final boolean LEFT_INVERTED = false;
+    public static final boolean RIGHT_INVERTED = true;
+    
     public static final Smoother DRIVE_SMOOTHER 
         = new LinearSmoother(0, -1, 1, 0.1);
     public static final NullSmoother DRIVE_NULL_SMOOTHER

@@ -49,8 +49,8 @@ public final class RapidReachManager extends CommandManager
             Commands.forever(
                 () -> {
                     drivetrain.driveSmoothed(
-                        driverController.getRawAxis(XboxController.Axis.kLeftY.value), 
-                        driverController.getRawAxis(XboxController.Axis.kLeftX.value)
+                        driverController.getRawAxis(-XboxController.Axis.kLeftY.value), 
+                        driverController.getRawAxis(XboxController.Axis.kRightX.value)
                     );
                 }
             ),
