@@ -7,6 +7,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.drive.DriveCommand;
 import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
@@ -33,6 +34,7 @@ public final class RapidReachManager extends CommandManager
     // MODELS
     ////////////////////////////////
     public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
+    public static int speedIndex = 0;
 
     ////////////////////////////////
     // INITIALIZATION
@@ -42,6 +44,10 @@ public final class RapidReachManager extends CommandManager
     {
         // DELETE LATER
         enableDebug();
+
+        // SMART DASHBOARD
+        SmartDashboard.putString("Easing", "Drive");
+        SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[0]);
 
         // Drive command
         addCommand(
@@ -58,12 +64,46 @@ public final class RapidReachManager extends CommandManager
             RobotState.TELEOP
         );
 
+        // Max speed command
+        addCommand(
+            Commands.when(
+                () -> driverController.getAButtonPressed(), 
+                () -> 
+                {
+                    // Loop through speeds
+                    speedIndex++;
+                    speedIndex %= Constants.ROBOT_SPEEDS.length;
+
+                    // Set speed
+                    drivetrain.setMaxOutput(Constants.ROBOT_SPEEDS[speedIndex]);
+                    
+                    // Display on smart dashboard
+                    SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
+                }
+            ),
+            RobotState.TESTING
+        );
+
         // Ease control command
         addCommand(
             Commands.whenBecomesTrueAndBecomesFalse(
-                () -> driverController.getLeftBumper(), 
-                () -> drivetrain.setSmoother(Constants.DRIVE_NULL_SMOOTHER),
-                () -> drivetrain.setSmoother(Constants.DRIVE_SMOOTHER)
+                () -> driverController.getLeftTriggerAxis() > 0.5, 
+                () -> 
+                {
+                    // Display on smart dashboard
+                    SmartDashboard.putString("Easing", "None");
+
+                    // Set smoother
+                    drivetrain.setSmoother(Constants.DRIVE_NULL_SMOOTHER);
+                },
+                () -> 
+                {
+                    // Display on smart dashboard
+                    SmartDashboard.putString("Easing", "Drive");
+                    
+                    // Set smoother
+                    drivetrain.setSmoother(Constants.DRIVE_SMOOTHER);
+                }
             ), 
             RobotState.TELEOP
         );
@@ -71,10 +111,15 @@ public final class RapidReachManager extends CommandManager
         // Basic auto command
         addCommand(
             // Command
-            Commands.forTime(
-                2.0, 
-                () -> drivetrain.driveSmoothed(1, 0), 
-                () -> drivetrain.stop()
+            Commands.series(
+                Commands.forTime(
+                    2.0, 
+                    () -> {
+                        drivetrain.setMaxOutput(Constants.AUTO_SPEED);
+                        drivetrain.driveSmoothed(1, 0);
+                    }, 
+                    () -> drivetrain.stop()
+                )
             ), 
             // State
             RobotState.AUTONOMOUS
