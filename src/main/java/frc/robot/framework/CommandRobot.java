@@ -54,6 +54,6 @@ public final class CommandRobot<M extends CommandManager> extends TimedRobot
     @Override
     public void disabledInit() 
     {
-        manager.changeState(RobotState.DISABLED);
+        manager.changeState(RobotState.NONE);
     }
 }

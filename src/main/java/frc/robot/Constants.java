@@ -34,8 +34,9 @@ public final class Constants
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.7;
     public static final double[] ROBOT_SPEEDS = {
-        0.8,
-        0.5
+        0.7,
+        0.4,
+        1
     };
 
     // Motors inversion

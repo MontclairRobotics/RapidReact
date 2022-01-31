@@ -109,12 +109,14 @@ public abstract class CommandManager
      */
     public void execute()
     {
+        /*
         System.out.println("--------------------------------------");
         for(var c: activeCommands)
         {
             System.out.println(c == null);
         }
         System.out.println("--------------------------------------");
+        */
 
         var iter = activeCommands.iterator();
         while(iter.hasNext())
@@ -166,11 +168,16 @@ public abstract class CommandManager
 
         for(var c: activeCommands)
         {
-            if(!c.remainDuringStateChange(originalState, newState))
+            if(newState.equals(RobotState.NONE) || !c.remainDuringStateChange(originalState, newState))
             {
                 stop(c);
             }
         };
+
+        if(newState.equals(RobotState.NONE))
+        {
+            return;
+        }
 
         if(stateCommands.containsKey(newState))
         {
