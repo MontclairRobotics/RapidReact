@@ -5,7 +5,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.Constants;
 
-public class BallIntake
+public class BallSucker
 {
     
     private CANSparkMax motor = new CANSparkMax(Constants.INTAKE_MOTOR_PORT, MotorType.kBrushless);

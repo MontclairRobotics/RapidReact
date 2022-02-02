@@ -12,7 +12,7 @@ import frc.robot.framework.CommandManager;
 import frc.robot.framework.Commands;
 import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
-import frc.robot.model.BallIntake;
+import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
 
 /**
@@ -33,7 +33,7 @@ public final class RapidReachManager extends CommandManager
     // MODELS
     ////////////////////////////////
     public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
-    public static final BallIntake ballIntake = new BallIntake();
+    public static final BallSucker ballSucker = new BallSucker();
 
     public static int speedIndex = 0;
 
@@ -59,8 +59,8 @@ public final class RapidReachManager extends CommandManager
             // Commands
             Commands.pollToggle(
                 () -> operatorController.getBButton(),
-                () -> ballIntake.setMotor(Constants.BALL_INTAKE_SPEED), 
-                () -> ballIntake.setMotor(0)
+                () -> ballSucker.setMotor(Constants.BALL_INTAKE_SPEED), 
+                () -> ballSucker.setMotor(0)
             )
             .withOrder(Order.INPUT),
             // State
