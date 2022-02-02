@@ -8,7 +8,7 @@ public class NullSmoother extends Smoother
     }
 
     @Override
-    protected void updateInternal(double target) 
+    protected void updateInternal(double deltaTime, double target) 
     {
         current = target;
     }

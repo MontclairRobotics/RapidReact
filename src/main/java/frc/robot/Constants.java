@@ -28,8 +28,12 @@ public final class Constants
     public static final int RIGHT_MOTOR_2_PORT = 5;
     public static final int RIGHT_MOTOR_3_PORT = 6;
 
+    // Intake motor port number
+    public static final int INTAKE_MOTOR_PORT = 7;
+
     // Port for xbox controller
-    public static final int XBOX_CONTROLLER_PORT = 0;
+    public static final int DRIVER_CONTROLLER_PORT = 0;
+    public static final int OPERATOR_CONTROLLER_PORT = 1;
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.7;
@@ -39,6 +43,9 @@ public final class Constants
         1
     };
 
+    // Intake Motor Speed
+    public static final double BALL_SUCKER_SPEED = 0.5; //idk
+
     // Motors inversion
     public static final boolean LEFT_INVERTED = false;
     public static final boolean RIGHT_INVERTED = true;
@@ -47,4 +54,13 @@ public final class Constants
         = new LinearSmoother(0, -1, 1, 0.1);
     public static final NullSmoother DRIVE_NULL_SMOOTHER
         = new NullSmoother(0, -1, 1);
+
+    public static final class PID 
+    {
+        public static final double KP = 1;
+        public static final double KI = 0;
+        public static final double KD = 0;
+
+        public static final double KTolerance = 0.05;
+    }
 }

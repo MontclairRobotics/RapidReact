@@ -5,6 +5,12 @@ public abstract class Command
     private CommandManager manager;
     private boolean running;
 
+    private Order order = Order.EXECUTION;
+
+    Order getOrder() {
+        return order;
+    }
+
     void init(CommandManager manager) 
     {
         this.manager = manager;
@@ -46,5 +52,23 @@ public abstract class Command
     public final CommandManager getManager()
     {
         return manager;
+    }
+    /** Get an approximation for the time (in seconds) elapsed since the last execution. */
+    public final double deltaTime()
+    {
+        return manager.deltaTime();
+    }
+
+    /** Set this command's priority */
+    public final void setOrder(Order order)
+    {
+        this.order = order;
+    }
+
+    /** Set this command's priority and then return this command (fluent interface) */
+    public final Command withOrder(Order order)
+    {
+        this.order = order;
+        return this;
     }
 }

@@ -8,14 +8,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.drive.DriveCommand;
-import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
-import frc.robot.framework.CommandRobot;
 import frc.robot.framework.Commands;
+import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
+import frc.robot.model.BallIntake;
 import frc.robot.model.Drivetrain;
-import frc.robot.utilities.smoothing.NullSmoother;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -28,12 +26,15 @@ public final class RapidReachManager extends CommandManager
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
+    public static final XboxController driverController = new XboxController(Constants.DRIVER_CONTROLLER_PORT);
+    public static final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
     public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
+    public static final BallIntake ballIntake = new BallIntake();
+
     public static int speedIndex = 0;
 
     ////////////////////////////////
@@ -42,31 +43,34 @@ public final class RapidReachManager extends CommandManager
     @Override
     public void init()
     {
-        // DELETE LATER
+        // Debug
         enableDebug();
 
-        // SMART DASHBOARD
+        // Smart dashboard
         SmartDashboard.putString("Easing", "Drive");
-        SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[0]);
+        SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
 
-        // Drive command
+        ///////////////////////////////////////////////////
+        // TELEOP
+        ///////////////////////////////////////////////////
+
+        // Intake command
         addCommand(
-            // Command
-            Commands.forever(
-                () -> {
-                    drivetrain.driveSmoothed(
-                        driverController.getRawAxis(-XboxController.Axis.kLeftY.value), 
-                        driverController.getRawAxis(XboxController.Axis.kRightX.value)
-                    );
-                }
-            ),
+            // Commands
+            Commands.pollToggle(
+                () -> operatorController.getBButton(),
+                () -> ballIntake.setMotor(Constants.BALL_INTAKE_SPEED), 
+                () -> ballIntake.setMotor(0)
+            )
+            .withOrder(Order.INPUT),
             // State
             RobotState.TELEOP
         );
 
         // Max speed command
         addCommand(
-            Commands.when(
+            // Command
+            Commands.pollActive(
                 () -> driverController.getAButtonPressed(), 
                 () -> 
                 {
@@ -80,13 +84,16 @@ public final class RapidReachManager extends CommandManager
                     // Display on smart dashboard
                     SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
                 }
-            ),
+            )
+            .withOrder(Order.INPUT),
+            // State
             RobotState.TESTING
         );
 
         // Ease control command
         addCommand(
-            Commands.whenBecomesTrueAndBecomesFalse(
+            // Command
+            Commands.pollToggle(
                 () -> driverController.getLeftTriggerAxis() > 0.5, 
                 () -> 
                 {
@@ -104,10 +111,32 @@ public final class RapidReachManager extends CommandManager
                     // Set smoother
                     drivetrain.setSmoother(Constants.DRIVE_SMOOTHER);
                 }
-            ), 
+            )
+            .withOrder(Order.INPUT),
+            // State
             RobotState.TELEOP
         );
 
+        // Drive command
+        addCommand(
+            // Command
+            Commands.forever(
+                () -> {
+                    drivetrain.set(
+                        driverController.getRawAxis(-XboxController.Axis.kLeftY.value), 
+                        driverController.getRawAxis(XboxController.Axis.kRightX.value)
+                    );
+                }
+            )
+            .withOrder(Order.LATE_INPUT),
+            // State
+            RobotState.TELEOP
+        );
+
+        ///////////////////////////////////////////////////
+        // AUTONOMOUS
+        ///////////////////////////////////////////////////
+        
         // Basic auto command
         addCommand(
             // Command
@@ -116,13 +145,24 @@ public final class RapidReachManager extends CommandManager
                     2.0, 
                     () -> {
                         drivetrain.setMaxOutput(Constants.AUTO_SPEED);
-                        drivetrain.driveSmoothed(1, 0);
+                        drivetrain.set(1, 0);
                     }, 
                     () -> drivetrain.stop()
                 )
-            ), 
+            )
+            .withOrder(Order.EXECUTION),
             // State
             RobotState.AUTONOMOUS
+        );
+
+        ///////////////////////////////////////////////////
+        // DEFAULT
+        ///////////////////////////////////////////////////
+
+        // Update subsystems
+        addAlwaysCommand(
+            cmd -> drivetrain.update(cmd.deltaTime()),
+            Order.OUTPUT
         );
     }
 }

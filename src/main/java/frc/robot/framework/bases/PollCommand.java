@@ -1,6 +1,6 @@
 package frc.robot.framework.bases;
 
-public abstract class WhenCommand extends ForeverCommand
+public abstract class PollCommand extends ForeverCommand
 {
     private boolean previousEval;
     private boolean currentEval;

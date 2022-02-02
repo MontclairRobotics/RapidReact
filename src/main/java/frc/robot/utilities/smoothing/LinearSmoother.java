@@ -12,9 +12,9 @@ public class LinearSmoother extends Smoother
     }
 
     @Override
-    protected void updateInternal(double target) 
+    protected void updateInternal(double deltaTime, double target) 
     {
-        current += Maths.clamp(deltaTime() * (target - current), -lambda, lambda);
+        current += Maths.clamp(deltaTime * (target - current), -lambda, lambda);
     }
     
     // private static double clamp(double num) {

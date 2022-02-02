@@ -1,8 +1,8 @@
 package frc.robot.framework;
 
-public class RobotState
+public final class RobotState
 {
-    private String name;
+    private final String name;
     public RobotState(String name)
     {
         this.name = name;
@@ -13,16 +13,22 @@ public class RobotState
     {
         if(other instanceof RobotState)
         {
-            return (this.name == ((RobotState)other).name);
+            return name.equals(((RobotState)other).name);
         }
 
         return false;
     }
 
+    @Override
+    public String toString()
+    {
+        return "State {" + (name == null ? "none" : name) + "}";
+    }
+
     // Default members
     public static final RobotState 
-        TELEOP = new RobotState("teleop"),
-        AUTONOMOUS = new RobotState("autonomous"),
-        TESTING = new RobotState("testing"),
-        NONE = new RobotState("none");
+        TELEOP = new RobotState("TELEOP"),
+        AUTONOMOUS = new RobotState("AUTONOMOUS"),
+        TESTING = new RobotState("TESTING"),
+        NONE = new RobotState(null);
 }

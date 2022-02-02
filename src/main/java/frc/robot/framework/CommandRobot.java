@@ -28,32 +28,56 @@ public final class CommandRobot<M extends CommandManager> extends TimedRobot
     }
 
     @Override
-    public void robotPeriodic()
+    public final void robotInit() 
+    {
+        manager.initDeltaTime();
+    }
+
+    @Override
+    public final void robotPeriodic()
     {
         manager.execute();
     }
 
     @Override
-    public void autonomousInit() 
+    public final void autonomousInit() 
     {
         manager.changeState(RobotState.AUTONOMOUS);
     }
 
     @Override
-    public void teleopInit() 
+    public final void autonomousPeriodic() {
+        //DO NOTHING
+    }
+
+    @Override
+    public final void teleopInit() 
     {
         manager.changeState(RobotState.TELEOP);
     }
 
     @Override
-    public void testInit() 
-    {
+    public final void teleopPeriodic() {
+        //DO NOTHING
+    }
+
+    @Override
+    public final void testInit() {
         manager.changeState(RobotState.TESTING);
     }
 
     @Override
-    public void disabledInit() 
-    {
+    public final void testPeriodic() {
+        //DO NOTHING
+    }
+
+    @Override
+    public final void disabledInit() {
         manager.changeState(RobotState.NONE);
+    }
+
+    @Override
+    public final void disabledPeriodic() {
+        //DO NOTHING
     }
 }

@@ -9,7 +9,7 @@ import edu.wpi.first.util.function.BooleanConsumer;
 import frc.robot.framework.bases.ForeverCommand;
 import frc.robot.framework.bases.OnceCommand;
 import frc.robot.framework.bases.TimedCommand;
-import frc.robot.framework.bases.WhenCommand;
+import frc.robot.framework.bases.PollCommand;
 
 public final class Commands 
 {
@@ -65,67 +65,49 @@ public final class Commands
     }
 
 
-    public static WhenCommand when(BooleanSupplier pred, Runnable onTrue)
+    public static PollCommand pollActive(BooleanSupplier pred, Runnable onTrue)
     {
-        return when(pred, $ -> onTrue.run());
+        return pollActive(pred, $ -> onTrue.run());
     }
-    public static WhenCommand when(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue)
+    public static PollCommand pollActive(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue)
     {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, onTrue, $ -> {}, $ -> {}, $ -> {});
+        return pollActiveAndToggle(pred, onTrue, $ -> {}, $ -> {}, $ -> {});
     }
 
-    public static WhenCommand whenBecomesTrue(BooleanSupplier pred, Runnable onBecomeTrue)
+    public static PollCommand pollToggle(BooleanSupplier pred, Runnable onBecomeTrue)
     {
-        return whenBecomesTrue(pred, $ -> onBecomeTrue.run());
+        return pollToggle(pred, $ -> onBecomeTrue.run());
     }
-    public static WhenCommand whenBecomesTrue(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeTrue)
+    public static PollCommand pollToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onBecomeTrue)
     {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, $ -> {}, $ -> {}, onBecomeTrue, $ -> {});
+        return pollActiveAndToggle(pred, $ -> {}, $ -> {}, onBecomeTrue, $ -> {});
+    }
+
+    public static PollCommand pollActive(BooleanSupplier pred, Runnable onTrue, Runnable onFalse)
+    {
+        return pollActive(pred, $ -> onTrue.run(), $ -> onFalse.run());
+    }
+    public static PollCommand pollActive(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue, CommandRunnable<PollCommand> onFalse)
+    {
+        return pollActiveAndToggle(pred, onTrue, onFalse, $ -> {}, $ -> {});
     }
     
-    public static WhenCommand whenNot(BooleanSupplier pred, Runnable onFalse)
+    public static PollCommand pollToggle(BooleanSupplier pred, Runnable onBecomeTrue, Runnable onBecomeFalse)
     {
-        return whenNot(pred, $ -> onFalse.run());
+        return pollToggle(pred, $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
     }
-    public static WhenCommand whenNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onFalse)
+    public static PollCommand pollToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onBecomeTrue, CommandRunnable<PollCommand> onBecomeFalse)
     {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, $ -> {}, onFalse, $ -> {}, $ -> {});
-    }
-
-    public static WhenCommand whenBecomesFalse(BooleanSupplier pred, Runnable onBecomeFalse)
-    {
-        return whenBecomesFalse(pred, $ -> onBecomeFalse.run());
-    }
-    public static WhenCommand whenBecomesFalse(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeFalse)
-    {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, $ -> {}, $ -> {}, $ -> {}, onBecomeFalse);
+        return pollActiveAndToggle(pred, $ -> {}, $ -> {}, onBecomeTrue, onBecomeFalse);
     }
 
-    public static WhenCommand whenAndWhenNot(BooleanSupplier pred, Runnable onTrue, Runnable onFalse)
+    public static PollCommand pollActiveAndToggle(BooleanSupplier pred, Runnable onTrue, Runnable onFalse, Runnable onBecomeTrue, Runnable onBecomeFalse)
     {
-        return whenAndWhenNot(pred, $ -> onTrue.run(), $ -> onFalse.run());
+        return pollActiveAndToggle(pred, $ -> onTrue.run(), $ -> onFalse.run(), $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
     }
-    public static WhenCommand whenAndWhenNot(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue, CommandRunnable<WhenCommand> onFalse)
+    public static PollCommand pollActiveAndToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue, CommandRunnable<PollCommand> onFalse, CommandRunnable<PollCommand> onBecomeTrue, CommandRunnable<PollCommand> onBecomeFalse)
     {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, onTrue, onFalse, $ -> {}, $ -> {});
-    }
-    
-    public static WhenCommand whenBecomesTrueAndBecomesFalse(BooleanSupplier pred, Runnable onBecomeTrue, Runnable onBecomeFalse)
-    {
-        return whenBecomesTrueAndBecomesFalse(pred, $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
-    }
-    public static WhenCommand whenBecomesTrueAndBecomesFalse(BooleanSupplier pred, CommandRunnable<WhenCommand> onBecomeTrue, CommandRunnable<WhenCommand> onBecomeFalse)
-    {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, $ -> {}, $ -> {}, onBecomeTrue, onBecomeFalse);
-    }
-
-    public static WhenCommand whenAndWhenNotAndBecomesTrueAndBecomesFalse(BooleanSupplier pred, Runnable onTrue, Runnable onFalse, Runnable onBecomeTrue, Runnable onBecomeFalse)
-    {
-        return whenAndWhenNotAndBecomesTrueAndBecomesFalse(pred, $ -> onTrue.run(), $ -> onFalse.run(), $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
-    }
-    public static WhenCommand whenAndWhenNotAndBecomesTrueAndBecomesFalse(BooleanSupplier pred, CommandRunnable<WhenCommand> onTrue, CommandRunnable<WhenCommand> onFalse, CommandRunnable<WhenCommand> onBecomeTrue, CommandRunnable<WhenCommand> onBecomeFalse)
-    {
-        return new WhenCommand()
+        return new PollCommand()
         {
             @Override
             public boolean predicate() 

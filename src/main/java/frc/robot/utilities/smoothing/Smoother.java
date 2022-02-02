@@ -15,50 +15,35 @@ public abstract class Smoother
         this.maxValue = maxValue;
     }
 
-    public double getMaxValue() {
+    public final double getMaxValue() {
         return maxValue;
     }
 
-    public void setMaxValue(double maxValue) {
+    public final void setMaxValue(double maxValue) {
         this.maxValue = maxValue;
     }
 
-    public double getMinValue() {
+    public final double getMinValue() {
         return minValue;
     }
 
-    public void setMinValue(double minValue) {
+    public final void setMinValue(double minValue) {
         this.minValue = minValue;
     }
 
-    private long lastUpdateTime;
-
-    public double getCurrent() 
+    public final double getCurrent() 
     {
         return current;
     }
 
-    public Smoother update(double target) 
+    public final Smoother update(double deltaTime, double target) 
     {
-        // Fix for first update
-        if(lastUpdateTime == 0)
-        {
-            lastUpdateTime = System.currentTimeMillis() - 33;
-        }
-
-        updateInternal(target);
+        updateInternal(deltaTime, target);
         current = Maths.clamp(current, minValue, maxValue);
-
-        lastUpdateTime = System.currentTimeMillis();
 
         return this;
     }
 
-    public double deltaTime()
-    {
-        return (System.currentTimeMillis() - lastUpdateTime) / 1000.0;
-    }
-
-    protected abstract void updateInternal(double target);
+    protected abstract void updateInternal(double deltaTime, double target);
 }
 

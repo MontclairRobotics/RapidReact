@@ -10,7 +10,7 @@ public class ExponentialSmoother extends Smoother
         this.factor = factor;
     }
 
-    protected void updateInternal(double target) 
+    protected void updateInternal(double deltaTime, double target) 
     {
         current += (target - current) / factor;
     }

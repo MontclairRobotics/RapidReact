@@ -2,6 +2,13 @@ package frc.robot.framework;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.concurrent.ConcurrentSkipListSet;
+
+import frc.robot.framework.bases.ForeverCommand;
+
 import java.util.HashMap;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,20 +16,24 @@ import java.util.ArrayList;
 public abstract class CommandManager
 {
     // Data structures
-    private final HashSet<Command> activeCommands;
-    private final HashMap<RobotState, ArrayList<Command>> stateCommands;
-    private final HashSet<Command> defaultCommands;
+    private final SortedSet<Command> activeCommands;
+    private final Map<RobotState, ArrayList<Command>> stateCommands;
+    private final Set<Command> defaultCommands;
 
     private RobotState currentState;
+
+    private long lastUpdateTime;
 
     // Constructor
     public CommandManager()
     {
-        activeCommands = new HashSet<>();
+        activeCommands = new ConcurrentSkipListSet<>((a, b) -> a.getOrder().compareTo(b.getOrder()));
         stateCommands = new HashMap<>();
         defaultCommands = new HashSet<>();
 
         currentState = RobotState.NONE;
+
+        lastUpdateTime = -1;
 
         init();
     }
@@ -69,6 +80,17 @@ public abstract class CommandManager
         defaultCommands.add(command);
     }
 
+    /** A fluent interface for adding some action to run always, in every state. */
+    public final void addAlwaysCommand(Runnable runnable, Order order)
+    {
+        addDefaultCommand(Commands.forever(runnable).withOrder(order));
+    }
+    /** A fluent interface for adding some action to run always, in every state. */
+    public final void addAlwaysCommand(CommandRunnable<ForeverCommand> runnable, Order order)
+    {
+        addDefaultCommand(Commands.forever(runnable).withOrder(order));
+    }
+
     /**
      * Start a new command.
      * If the command is already running, restart it.
@@ -77,7 +99,7 @@ public abstract class CommandManager
      */
     public final void start(Command command)
     {
-        if(command.getManager() != this) return;
+        if(command.getManager() != null && command.getManager() != this) return;
 
         if(!command.isRunning())
         {
@@ -123,6 +145,8 @@ public abstract class CommandManager
         {
             handleNextCommand(iter);
         }
+
+        lastUpdateTime = System.currentTimeMillis();
     }
 
     /**
@@ -163,18 +187,20 @@ public abstract class CommandManager
     {
         if(newState.equals(currentState)) return;
 
+        var newIsNone = newState.equals(RobotState.NONE);
+
         var originalState = currentState;
         currentState = newState;
 
         for(var c: activeCommands)
         {
-            if(newState.equals(RobotState.NONE) || !c.remainDuringStateChange(originalState, newState))
+            if(newIsNone || !c.remainDuringStateChange(originalState, newState))
             {
                 stop(c);
             }
-        };
+        }
 
-        if(newState.equals(RobotState.NONE))
+        if(newIsNone)
         {
             return;
         }
@@ -183,14 +209,14 @@ public abstract class CommandManager
         {
             for(var c: stateCommands.get(newState))
             {
-                if(!activeCommands.contains(c))
+                if(!c.isRunning())
                     start(c);
             }
         }
 
         for(var c: defaultCommands)
         {
-            if(!activeCommands.contains(c))
+            if(!c.isRunning())
                 start(c);
         }
     }   
@@ -213,9 +239,27 @@ public abstract class CommandManager
      */
     public void debug(String msg)
     {
-        if (debug);
+        if (debug)
         {
             System.out.println("DEBUG @ " + Instant.now().toString() + ": " + msg);
         }
+    }
+
+    /** Returns an approximation of the time (in seconds) elapsed since the last update. */
+    public double deltaTime()
+    {
+        if(lastUpdateTime == -1)
+        {
+            return 1 / 60.0;
+        }
+        else
+        {
+            return (System.currentTimeMillis() - lastUpdateTime) / 1000.0;
+        }
+    }
+
+    void initDeltaTime()
+    {
+        lastUpdateTime = System.currentTimeMillis();
     }
 }

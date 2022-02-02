@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants;
 import frc.robot.utilities.smoothing.Smoother;
@@ -25,26 +26,26 @@ public class Drivetrain
     private final DifferentialDrive differentialDrive 
         = new DifferentialDrive(leftMotors, rightMotors);
 
-    private Smoother smoother;
+    private Smoother speedSmoother;
+    private PIDController pid; //pid
 
-    public void setSmoother(Smoother smoother) 
+    private double targetSpeed = 0, targetTurn = 0;
+
+    public void setSmoother(Smoother speedSmoother) 
     {
-        this.smoother = smoother;
+        this.speedSmoother = speedSmoother;
     }
     
     public Drivetrain(Smoother defaultSmoother) 
     {
-        smoother = defaultSmoother;
-    }
+        speedSmoother = defaultSmoother;
 
-    /**
-     * Drive this subsystem's motors with smoothing
-     * @param speed The speed to drive at
-     * @param turn  The amount to turn
-     */
-    public void driveSmoothed(double speed, double turn)
-    {
-        drive(smoother.update(speed).getCurrent(), turn);
+        pid = new PIDController(
+            Constants.PID.KP,
+            Constants.PID.KI,
+            Constants.PID.KD
+        );
+        pid.setTolerance(Constants.PID.KTolerance);
     }
 
     /**
@@ -52,9 +53,10 @@ public class Drivetrain
      * @param speed The speed to drive at
      * @param turn  The amount to turn
      */
-    public void drive(double speed, double turn)
+    public void set(double speed, double turn)
     {
-        differentialDrive.arcadeDrive(speed, turn);
+        targetSpeed = speed;
+        targetTurn = turn;
     }
 
     /**
@@ -75,12 +77,11 @@ public class Drivetrain
     }
 
     /**
-     * Drive this subsystem's motors straight
-     * @param speed The speed to drive at
+     * Update this subsystem
      */
-    public void driveStraight(double speed) 
+    public void update(double deltaTime)
     {
-        driveSmoothed(speed, 0);
+        speedSmoother.update(deltaTime, targetSpeed);
+        differentialDrive.arcadeDrive(speedSmoother.getCurrent(), targetTurn);
     }
-
 }
