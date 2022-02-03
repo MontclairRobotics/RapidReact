@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.framework.controllers.InputController;
 import frc.robot.utilities.smoothing.LinearSmoother;
 import frc.robot.utilities.smoothing.NullSmoother;
 import frc.robot.utilities.smoothing.Smoother;
@@ -35,6 +36,9 @@ public final class Constants
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
+    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
+    public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
+
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.7;
     public static final double[] ROBOT_SPEEDS = {
@@ -44,7 +48,7 @@ public final class Constants
     };
 
     // Intake Motor Speed
-    public static final double BALL_SUCKER_SPEED = 0.5; //idk
+    public static final double BALL_INTAKE_SPEED = 0.5; //idk
 
     // Motors inversion
     public static final boolean LEFT_INVERTED = false;
@@ -61,6 +65,16 @@ public final class Constants
         public static final double KI = 0;
         public static final double KD = 0;
 
-        public static final double KTolerance = 0.05;
+        public static final double TOLERANCE = 0.05;
+    }
+    public static final class AnglePID
+    {
+        public static final double DEADBAND = 0.1;
+
+        public static final double KP = 1;
+        public static final double KI = 0;
+        public static final double KD = 0;
+
+        public static final double TOLERANCE = 0.05;
     }
 }

@@ -6,15 +6,21 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.PS4Controller; 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.Commands;
 import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
+import frc.robot.framework.controllers.InputController;
 import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
+
+import static frc.robot.Constants.*;
+import static frc.robot.framework.controllers.InputController.Button.*;
+
+import com.kauailabs.navx.frc.AHRS;
+
+import static frc.robot.framework.controllers.InputController.Axis.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -27,13 +33,14 @@ public final class RapidReachManager extends CommandManager
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final XboxController driverController = new XboxController(Constants.DRIVER_CONTROLLER_PORT);
-    public static final XboxController operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
+    public static final InputController driverController   = InputController.from(DRIVER_CONTROLLER_TYPE, DRIVER_CONTROLLER_PORT);
+    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE, OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
+    public static final AHRS navigator = new AHRS();
+    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator);
     public static final BallSucker ballSucker = new BallSucker();
 
     public static int speedIndex = 0;
@@ -44,23 +51,31 @@ public final class RapidReachManager extends CommandManager
     @Override
     public void init()
     {
+        // Navigator setup
+        drivetrain.startStraightPid();
+
         // Debug
         enableDebug();
 
         // Smart dashboard
         SmartDashboard.putString("Easing", "Drive");
-        SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
+        SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
 
         ///////////////////////////////////////////////////
         // TELEOP
         ///////////////////////////////////////////////////
 
+        // Calibrate the navx
+        addStartupCommand(
+            () -> navigator.calibrate()
+        );
+
         // Intake command
         addCommand(
             // Commands
             Commands.pollToggle(
-                () -> operatorController.getBButton(),
-                () -> ballSucker.setMotor(Constants.BALL_INTAKE_SPEED), 
+                () -> operatorController.getButton(B_CIRCLE),
+                () -> ballSucker.setMotor(BALL_INTAKE_SPEED), 
                 () -> ballSucker.setMotor(0)
             )
             .withOrder(Order.INPUT),
@@ -72,18 +87,18 @@ public final class RapidReachManager extends CommandManager
         addCommand(
             // Command
             Commands.pollActive(
-                () -> driverController.getAButtonPressed(), 
+                () -> driverController.getButtonPressed(A_CROSS), 
                 () -> 
                 {
                     // Loop through speeds
                     speedIndex++;
-                    speedIndex %= Constants.ROBOT_SPEEDS.length;
+                    speedIndex %= ROBOT_SPEEDS.length;
 
                     // Set speed
-                    drivetrain.setMaxOutput(Constants.ROBOT_SPEEDS[speedIndex]);
+                    drivetrain.setMaxOutput(ROBOT_SPEEDS[speedIndex]);
                     
                     // Display on smart dashboard
-                    SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
+                    SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
                 }
             )
             .withOrder(Order.INPUT),
@@ -95,14 +110,14 @@ public final class RapidReachManager extends CommandManager
         addCommand(
             // Command
             Commands.pollToggle(
-                () -> driverController.getLeftTriggerAxis() > 0.5, 
+                () -> driverController.getAxis(LEFT_TRIGGER) > 0.5, 
                 () -> 
                 {
                     // Display on smart dashboard
                     SmartDashboard.putString("Easing", "None");
 
                     // Set smoother
-                    drivetrain.setSmoother(Constants.DRIVE_NULL_SMOOTHER);
+                    drivetrain.setSmoother(DRIVE_NULL_SMOOTHER);
                 },
                 () -> 
                 {
@@ -110,7 +125,7 @@ public final class RapidReachManager extends CommandManager
                     SmartDashboard.putString("Easing", "Drive");
                     
                     // Set smoother
-                    drivetrain.setSmoother(Constants.DRIVE_SMOOTHER);
+                    drivetrain.setSmoother(DRIVE_SMOOTHER);
                 }
             )
             .withOrder(Order.INPUT),
@@ -124,8 +139,8 @@ public final class RapidReachManager extends CommandManager
             Commands.forever(
                 () -> {
                     drivetrain.set(
-                        driverController.getRawAxis(-XboxController.Axis.kLeftY.value), 
-                        driverController.getRawAxis(XboxController.Axis.kRightX.value)
+                       -driverController.getAxis(LEFT_Y), 
+                        driverController.getAxis(LEFT_X)
                     );
                 }
             )
@@ -144,8 +159,9 @@ public final class RapidReachManager extends CommandManager
             Commands.series(
                 Commands.forTime(
                     2.0, 
-                    () -> {
-                        drivetrain.setMaxOutput(Constants.AUTO_SPEED);
+                    () -> 
+                    {
+                        drivetrain.setMaxOutput(AUTO_SPEED);
                         drivetrain.set(1, 0);
                     }, 
                     () -> drivetrain.stop()

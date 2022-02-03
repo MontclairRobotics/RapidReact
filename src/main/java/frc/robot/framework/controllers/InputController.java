@@ -1,0 +1,219 @@
+package frc.robot.framework.controllers;
+
+import java.util.function.IntPredicate;
+
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.XboxController;
+
+public abstract class InputController 
+{
+    public static enum Axis
+    {
+        LEFT_X,
+        LEFT_Y,
+
+        RIGHT_X,
+        RIGHT_Y,
+
+        LEFT_TRIGGER,
+        RIGHT_TRIGGER
+    }
+    public static enum Button
+    {
+        A_CROSS,
+        B_CIRCLE,
+        Y_TRIANGLE,
+        X_SQUARE,
+
+        START_TOUCHPAD,
+
+        LEFT_BUTTON,
+        RIGHT_BUTTON,
+
+        LEFT_STICK,
+        RIGHT_STICK,
+    }
+
+    public static XboxController.Axis toXbox(Axis axisType)
+    {
+        switch(axisType)
+        {
+            case LEFT_X:
+                return XboxController.Axis.kLeftX;
+            case RIGHT_X:
+                return XboxController.Axis.kRightX;
+            case LEFT_Y:
+                return XboxController.Axis.kLeftY;
+            case RIGHT_Y: 
+                return XboxController.Axis.kRightY;
+            case LEFT_TRIGGER:
+                return XboxController.Axis.kLeftTrigger;
+            case RIGHT_TRIGGER:
+                return XboxController.Axis.kRightTrigger;
+        }
+        return null;
+    }
+
+    public static PS4Controller.Axis toPS4(Axis axisType)
+    {
+        switch(axisType) 
+        {
+            case LEFT_X:
+                return PS4Controller.Axis.kLeftX;
+            case RIGHT_X:
+                return PS4Controller.Axis.kRightX;
+            case LEFT_Y:
+                return PS4Controller.Axis.kLeftY;
+            case RIGHT_Y:
+                return PS4Controller.Axis.kRightY;
+            case LEFT_TRIGGER:
+                return PS4Controller.Axis.kL2;
+            case RIGHT_TRIGGER:
+                return PS4Controller.Axis.kR2;
+        }
+        return null;
+    }
+
+    public static XboxController.Button toXbox(Button buttonType)
+    {
+        switch(buttonType)
+        {
+            case A_CROSS:
+                return XboxController.Button.kA;
+            case B_CIRCLE:
+                return XboxController.Button.kB;
+            case X_SQUARE:
+                return XboxController.Button.kX;
+            case Y_TRIANGLE:
+                return XboxController.Button.kY;
+
+            case START_TOUCHPAD:
+                return XboxController.Button.kStart;
+            
+            case LEFT_BUTTON:
+                return XboxController.Button.kLeftBumper;
+            case RIGHT_BUTTON:
+                return XboxController.Button.kRightBumper;
+
+            case LEFT_STICK:
+                return XboxController.Button.kLeftStick;
+            case RIGHT_STICK:
+                return XboxController.Button.kRightStick;
+        }
+        return null;
+    }
+
+    public static PS4Controller.Button toPS4(Button buttonType)
+    {
+        switch(buttonType)
+        {
+            case A_CROSS:
+                return PS4Controller.Button.kCross;
+            case B_CIRCLE:
+                return PS4Controller.Button.kCircle;
+            case X_SQUARE:
+                return PS4Controller.Button.kSquare;
+            case Y_TRIANGLE:
+                return PS4Controller.Button.kTriangle;
+
+            case START_TOUCHPAD:
+                return PS4Controller.Button.kTouchpad;
+            
+            case LEFT_BUTTON:
+                return PS4Controller.Button.kL1;
+            case RIGHT_BUTTON:
+                return PS4Controller.Button.kR1;
+
+            case LEFT_STICK:
+                return PS4Controller.Button.kL3;
+            case RIGHT_STICK:
+                return PS4Controller.Button.kR3;
+        }
+        return null;
+    }
+
+    public static enum Type
+    {
+        XBOX,
+        PS4,
+    }
+    
+    public abstract boolean getButton(Button type);
+    public abstract boolean getButtonPressed(Button type);
+    public abstract boolean getButtonReleased(Button type);
+    
+    public abstract double getAxis(Axis type);
+
+    public abstract Type getType();
+
+    public static InputController xbox(int channel)
+    {
+        return new InputController()
+        {
+            private XboxController innerCont = new XboxController(channel);
+
+            @Override
+            public boolean getButton(Button type) {
+                return innerCont.getRawButton(toXbox(type).value);
+            }
+
+            @Override
+            public boolean getButtonPressed(Button type) {
+                return innerCont.getRawButtonPressed(toXbox(type).value);
+            }
+
+            @Override
+            public boolean getButtonReleased(Button type) {
+                return innerCont.getRawButtonReleased(toXbox(type).value);
+            }
+
+            @Override
+            public double getAxis(Axis type) {
+                return innerCont.getRawAxis(toXbox(type).value);
+            }
+
+            @Override
+            public Type getType() {
+                return Type.XBOX;
+            }
+        };
+    }
+    public static InputController ps4(int channel)
+    {
+        return new InputController()
+        {
+            private PS4Controller innerCont = new PS4Controller(channel);
+
+            @Override
+            public boolean getButton(Button type) {
+                return innerCont.getRawButton(toPS4(type).value);
+            }
+            
+            @Override
+            public boolean getButtonPressed(Button type) {
+                return innerCont.getRawButtonPressed(toPS4(type).value);
+            }
+
+            @Override
+            public boolean getButtonReleased(Button type) {
+                return innerCont.getRawButtonReleased(toPS4(type).value);
+            }
+
+            @Override
+            public double getAxis(Axis type) {
+                return innerCont.getRawAxis(toPS4(type).value);
+            }
+
+            @Override
+            public Type getType() {
+                return Type.PS4;
+            }
+        };
+    }
+
+    public static InputController from(Type type, int channel)
+    {
+        return type.equals(Type.XBOX) ? xbox(channel) : ps4(channel);
+    }
+}

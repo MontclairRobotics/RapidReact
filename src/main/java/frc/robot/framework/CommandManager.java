@@ -7,7 +7,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import javax.naming.spi.StateFactory;
+
 import frc.robot.framework.bases.ForeverCommand;
+import frc.robot.framework.bases.OnceCommand;
 
 import java.util.HashMap;
 import java.time.Instant;
@@ -19,6 +22,7 @@ public abstract class CommandManager
     private final SortedSet<Command> activeCommands;
     private final Map<RobotState, ArrayList<Command>> stateCommands;
     private final Set<Command> defaultCommands;
+    private final Set<Command> startupCommands;
 
     private RobotState currentState;
 
@@ -30,6 +34,7 @@ public abstract class CommandManager
         activeCommands = new ConcurrentSkipListSet<>((a, b) -> a.getOrder().compareTo(b.getOrder()));
         stateCommands = new HashMap<>();
         defaultCommands = new HashSet<>();
+        startupCommands = new HashSet<>();
 
         currentState = RobotState.NONE;
 
@@ -89,6 +94,32 @@ public abstract class CommandManager
     public final void addAlwaysCommand(CommandRunnable<ForeverCommand> runnable, Order order)
     {
         addDefaultCommand(Commands.forever(runnable).withOrder(order));
+    }
+
+    /** A fluent interface for adding some action to run when the robot starts. */
+    public final void addStartupCommand(Command command)
+    {
+        startupCommands.add(command);
+    }
+    /** A fluent interface for adding some action to run when the robot starts. */
+    public final void addStartupCommand(Runnable runnable)
+    {
+        addStartupCommand(Commands.once(runnable));
+    }
+    /** A fluent interface for adding some action to run when the robot starts. */
+    public final void addStartupCommand(Runnable runnable, Order order)
+    {
+        addStartupCommand(Commands.once(runnable).withOrder(order));
+    }
+    /** A fluent interface for adding some action to run when the robot starts. */
+    public final void addStartupCommand(CommandRunnable<OnceCommand> runnable)
+    {
+        addStartupCommand(Commands.once(runnable));
+    }
+    /** A fluent interface for adding some action to run when the robot starts. */
+    public final void addStartupCommand(CommandRunnable<OnceCommand> runnable, Order order)
+    {
+        addStartupCommand(Commands.once(runnable).withOrder(order));
     }
 
     /**
@@ -205,16 +236,25 @@ public abstract class CommandManager
             return;
         }
 
-        if(stateCommands.containsKey(newState))
+        if(originalState.equals(RobotState.NONE))
         {
-            for(var c: stateCommands.get(newState))
+            for(var c : startupCommands)
             {
                 if(!c.isRunning())
                     start(c);
             }
         }
 
-        for(var c: defaultCommands)
+        if(stateCommands.containsKey(newState))
+        {
+            for(var c : stateCommands.get(newState))
+            {
+                if(!c.isRunning())
+                    start(c);
+            }
+        }
+
+        for(var c : defaultCommands)
         {
             if(!c.isRunning())
                 start(c);
