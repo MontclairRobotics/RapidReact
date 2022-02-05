@@ -13,7 +13,7 @@ public final class RobotState
     {
         if(other instanceof RobotState)
         {
-            return name.equals(((RobotState)other).name);
+            return name.equals(((RobotState) other).name);
         }
 
         return false;
@@ -30,5 +30,5 @@ public final class RobotState
         TELEOP = new RobotState("TELEOP"),
         AUTONOMOUS = new RobotState("AUTONOMOUS"),
         TESTING = new RobotState("TESTING"),
-        NONE = new RobotState(null);
+        NONE = new RobotState("none");
 }

@@ -5,7 +5,9 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import java.util.Arrays;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -19,23 +21,47 @@ public final class Drivetrain
     ////////////////////////////////////////////////
     // Final fields
     ////////////////////////////////////////////////
+    private final CANSparkMax leftMotor1 = new CANSparkMax(Constants.LEFT_MOTOR_1_PORT, MotorType.kBrushless);
+    private final CANSparkMax leftMotor2 = new CANSparkMax(Constants.LEFT_MOTOR_2_PORT, MotorType.kBrushless);
+    private final CANSparkMax leftMotor3 = new CANSparkMax(Constants.LEFT_MOTOR_3_PORT, MotorType.kBrushless);
+    private final CANSparkMax rightMotor1 = new CANSparkMax(Constants.RIGHT_MOTOR_1_PORT, MotorType.kBrushless);
+    private final CANSparkMax rightMotor2 = new CANSparkMax(Constants.RIGHT_MOTOR_2_PORT, MotorType.kBrushless);
+    private final CANSparkMax rightMotor3 = new CANSparkMax(Constants.RIGHT_MOTOR_3_PORT, MotorType.kBrushless);
+    
     private final CANSparkMax[]
         leftMotors = {
-            new CANSparkMax(Constants.LEFT_MOTOR_1_PORT, MotorType.kBrushless),
-            new CANSparkMax(Constants.LEFT_MOTOR_2_PORT, MotorType.kBrushless),
-            new CANSparkMax(Constants.LEFT_MOTOR_3_PORT, MotorType.kBrushless),
+            leftMotor1,
+            leftMotor2,
+            leftMotor3
         },
         rightMotors = {
-            new CANSparkMax(Constants.RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
-            new CANSparkMax(Constants.RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
-            new CANSparkMax(Constants.RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
+            rightMotor1, 
+            rightMotor2,
+            rightMotor3
         }
     ;
 
-    private final Encoder[]
-        leftEncoders  = Arrays.stream(leftMotors) .map(CANSparkMax::getEncoder).toArray(Encoder[]::new),
-        rightEncoders = Arrays.stream(rightMotors).map(CANSparkMax::getEncoder).toArray(Encoder[]::new)
+    private RelativeEncoder leftEncoder1 = leftMotor1.getEncoder();
+    private RelativeEncoder leftEncoder2 = leftMotor2.getEncoder();
+    private RelativeEncoder leftEncoder3 = leftMotor3.getEncoder();
+    private RelativeEncoder rightEncoder1 = rightMotor1.getEncoder();
+    private RelativeEncoder rightEncoder2 = rightMotor2.getEncoder();
+    private RelativeEncoder rightEncoder3 = rightMotor3.getEncoder();
+
+
+    private final RelativeEncoder[]
+        leftEncoders = {
+            leftEncoder1,
+            leftEncoder2,
+            leftEncoder3
+        },
+        rightEncoders = {
+            rightEncoder1, 
+            rightEncoder2,
+            rightEncoder3
+        }
     ;
+
 
     private final MotorControllerGroup leftMotorGroup = new MotorControllerGroup(leftMotors);
     private final MotorControllerGroup rightMotorGroup = new MotorControllerGroup(rightMotors);
@@ -83,6 +109,17 @@ public final class Drivetrain
         anglePid.setTolerance(Constants.AnglePID.TOLERANCE);
 
         this.navx = navx;
+
+        leftMotorGroup.setInverted(Constants.LEFT_INVERTED);
+        rightMotorGroup.setInverted(Constants.RIGHT_INVERTED);
+        
+        leftEncoder1.setPositionConversionFactor(Constants.CONVERSION_RATE);
+        leftEncoder2.setPositionConversionFactor(Constants.CONVERSION_RATE);
+        leftEncoder3.setPositionConversionFactor(Constants.CONVERSION_RATE);
+
+        rightEncoder1.setPositionConversionFactor(Constants.CONVERSION_RATE);
+        rightEncoder2.setPositionConversionFactor(Constants.CONVERSION_RATE);
+        rightEncoder3.setPositionConversionFactor(Constants.CONVERSION_RATE);
     }
 
     ////////////////////////////////////////////////
@@ -134,13 +171,13 @@ public final class Drivetrain
         // 42 ticks per revolutions
         // gear box ratio is 10.86 : 1
         double sum = 0.0;
-        for (Encoder e : leftEncoders) 
+        for (RelativeEncoder e : leftEncoders) 
         {
-            sum += e.getDistance();
+            sum += e.getPosition();
         }
-        for (Encoder e : rightEncoders) 
+        for (RelativeEncoder e : rightEncoders) 
         {
-            sum += e.getDistance();
+            sum += e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -205,6 +242,7 @@ public final class Drivetrain
     public void releaseDistanceTarget() 
     {
         isTargetingADistance = false;
+        leftEncoder1.setPosition(0.0);
     }
 
     public void releaseAngleTarget() 
