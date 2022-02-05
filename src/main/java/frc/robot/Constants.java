@@ -83,4 +83,7 @@ public final class Constants
 
         public static final double TOLERANCE = 0.05;
     }
+
+    // drive train coversion rate in ticks per feet
+    public static final double CONVERSION_RATE = 912.24;
 }

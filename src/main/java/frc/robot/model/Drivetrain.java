@@ -131,6 +131,8 @@ public final class Drivetrain
      */
     public double getAverageDistanceTraveled()
     {
+        // 42 ticks per revolutions
+        // gear box ratio is 10.86 : 1
         double sum = 0.0;
         for (Encoder e : leftEncoders) 
         {

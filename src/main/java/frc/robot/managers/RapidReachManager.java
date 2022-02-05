@@ -217,14 +217,10 @@ public final class RapidReachManager extends CommandManager {
         addCommand(
             // Command
             Commands.series(
-                Commands.forTime(
-                    2.0, 
-                    () -> 
-                    {
-                        drivetrain.setMaxOutput(AUTO_SPEED);
-                        drivetrain.set(1, 0);
-                    }, 
-                    () -> drivetrain.stop()
+                Commands.once(
+                    () -> {
+                        drivetrain.setTargetDistance(3 * CONVERSION_RATE);
+                    }
                 )
             )
             .withOrder(Order.EXECUTION),
