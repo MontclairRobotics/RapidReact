@@ -20,9 +20,12 @@ public class Falcon500Manager extends CommandManager {
         addCommand(
             Commands.forever(
                 cmd -> {
-                    var spd =  driverController.getRawAxis(XboxController.Axis.kLeftY.value);
-                    cmd.debug("Axis is " + spd);
-                    talon.set(ControlMode.PercentOutput, spd);
+                    var speed =  driverController.getRawAxis(XboxController.Axis.kLeftY.value);
+
+                    // TODO: Why the fuck is this not working D Y L A N ! ! ! ! ! ! ! ! ! ! ! ! ! (love you btw <3)
+                    // cmd.debug("Axis is " + speed);
+                    
+                    talon.set(ControlMode.PercentOutput, speed);
                 }
             ),
             RobotState.TELEOP

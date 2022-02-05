@@ -6,35 +6,49 @@
 
 package frc.robot.managers;
 
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import frc.robot.commands.drive.DriveCommand;
-import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
-import frc.robot.framework.CommandRobot;
 import frc.robot.framework.Commands;
+import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
+import frc.robot.framework.controllers.InputController;
+import frc.robot.model.BallMover;
+import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
-import frc.robot.utilities.smoothing.NullSmoother;
+
+import static frc.robot.Constants.*;
+import static frc.robot.framework.controllers.InputController.Button.*;
+
+import com.kauailabs.navx.frc.AHRS;
+
+import static frc.robot.framework.controllers.InputController.Axis.*;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the
+ * name of this class or
+ * the package after creating this project, you must also update the
+ * build.gradle file in the
  * project.
  */
-public final class RapidReachManager extends CommandManager
-{
+public final class RapidReachManager extends CommandManager {
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final XboxController driverController = new XboxController(Constants.XBOX_CONTROLLER_PORT);
+    public static final InputController driverController = InputController.from(DRIVER_CONTROLLER_TYPE,
+            DRIVER_CONTROLLER_PORT);
+    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
+            OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final Drivetrain drivetrain = new Drivetrain(Constants.DRIVE_SMOOTHER);
+    public static final AHRS navigator = new AHRS();
+    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator);
+    public static final BallSucker ballSucker = new BallSucker();
+    public static final BallMover ballMover = new BallMover();
+
     public static int speedIndex = 0;
 
     ////////////////////////////////
@@ -43,59 +57,86 @@ public final class RapidReachManager extends CommandManager
     @Override
     public void init()
     {
-        // DELETE LATER
+        // Navigator setup
+        drivetrain.startStraightPid();
+
+        // Debug
         enableDebug();
 
-        // SMART DASHBOARD
+        // Smart dashboard
         SmartDashboard.putString("Easing", "Drive");
-        SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[0]);
+        SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
 
-        // Drive command
+        ///////////////////////////////////////////////////
+        // TELEOP
+        ///////////////////////////////////////////////////
+
+        // Calibrate the navx
+        addStartupCommand(
+            () -> navigator.calibrate()
+        );
+
+        // Intake command
         addCommand(
-            // Command
-            Commands.forever(
-                () -> {
-                    drivetrain.driveSmoothed(
-                        driverController.getRawAxis(-XboxController.Axis.kLeftY.value), 
-                        driverController.getRawAxis(XboxController.Axis.kRightX.value)
-                    );
-                }
-            ),
+            // Commands
+            Commands.pollToggle(
+                () -> operatorController.getButton(B_CIRCLE),
+                () -> ballSucker.setMotor(BALL_INTAKE_SPEED), 
+                () -> ballSucker.setMotor(0.0)
+            )
+            .withOrder(Order.INPUT),
+            // State
+            RobotState.TELEOP
+        );
+
+        // Transport command
+        addCommand(
+            // Commands
+            Commands.pollToggle(
+                () -> operatorController.getButton(Y_TRIANGLE),
+                () -> ballMover.setMotor(BALL_TRANSPORT_SPEED), 
+                () -> ballMover.setMotor(0.0)
+            )
+            .withOrder(Order.INPUT),
             // State
             RobotState.TELEOP
         );
 
         // Max speed command
         addCommand(
-            Commands.when(
-                () -> driverController.getAButtonPressed(), 
+            // Command
+            Commands.pollActive(
+                () -> driverController.getButtonPressed(A_CROSS), 
                 () -> 
                 {
                     // Loop through speeds
                     speedIndex++;
-                    speedIndex %= Constants.ROBOT_SPEEDS.length;
+                    speedIndex %= ROBOT_SPEEDS.length;
 
                     // Set speed
-                    drivetrain.setMaxOutput(Constants.ROBOT_SPEEDS[speedIndex]);
+                    drivetrain.setMaxOutput(ROBOT_SPEEDS[speedIndex]);
                     
                     // Display on smart dashboard
-                    SmartDashboard.putNumber("Speed", Constants.ROBOT_SPEEDS[speedIndex]);
+                    SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
                 }
-            ),
+            )
+            .withOrder(Order.INPUT),
+            // State
             RobotState.TESTING
         );
 
         // Ease control command
         addCommand(
-            Commands.whenBecomesTrueAndBecomesFalse(
-                () -> driverController.getLeftTriggerAxis() > 0.5, 
+            // Command
+            Commands.pollToggle(
+                () -> driverController.getAxis(LEFT_TRIGGER) > 0.5, 
                 () -> 
                 {
                     // Display on smart dashboard
                     SmartDashboard.putString("Easing", "None");
 
                     // Set smoother
-                    drivetrain.setSmoother(Constants.DRIVE_NULL_SMOOTHER);
+                    drivetrain.setSmoother(DRIVE_NULL_SMOOTHER);
                 },
                 () -> 
                 {
@@ -103,27 +144,103 @@ public final class RapidReachManager extends CommandManager
                     SmartDashboard.putString("Easing", "Drive");
                     
                     // Set smoother
-                    drivetrain.setSmoother(Constants.DRIVE_SMOOTHER);
+                    drivetrain.setSmoother(DRIVE_SMOOTHER);
                 }
-            ), 
+            )
+            .withOrder(Order.INPUT),
+            // State
             RobotState.TELEOP
         );
 
+        // Drive command
+        addCommand(
+            // Command
+            Commands.forever(
+                () -> {
+                    drivetrain.set(
+                       -driverController.getAxis(LEFT_Y), 
+                        driverController.getAxis(LEFT_X)
+                    );
+                }
+            )
+            .withOrder(Order.LATE_INPUT),
+            // State
+            RobotState.TELEOP
+        );
+
+        //PID angle command
+        addCommand(
+            // Command
+            Commands.pollToggle (
+                // If joystick angle is within the deadband, PID angle
+                () -> Math.abs(driverController.getAxis(LEFT_Y)) <= AnglePID.DEADBAND,
+                () -> 
+                {
+                    // PID the angle to 0
+                    drivetrain.setTargetAngle(0.0);
+                },
+                () -> 
+                {
+                    // If not in deadband, stop PIDing angle
+                    drivetrain.releaseAngleTarget();
+                }
+            )
+            .withOrder(Order.INPUT),
+            // State
+            RobotState.TELEOP
+        );
+
+        ///////////////////////////////////////////////////
+        // AUTONOMOUS
+        ///////////////////////////////////////////////////
+        
         // Basic auto command
         addCommand(
             // Command
             Commands.series(
                 Commands.forTime(
                     2.0, 
-                    () -> {
-                        drivetrain.setMaxOutput(Constants.AUTO_SPEED);
-                        drivetrain.driveSmoothed(1, 0);
+                    () -> 
+                    {
+                        drivetrain.setMaxOutput(AUTO_SPEED);
+                        drivetrain.set(1, 0);
                     }, 
                     () -> drivetrain.stop()
                 )
-            ), 
+            )
+            .withOrder(Order.EXECUTION),
             // State
             RobotState.AUTONOMOUS
+        );
+
+        // Auto command with PID
+        addCommand(
+            // Command
+            Commands.series(
+                Commands.forTime(
+                    2.0, 
+                    () -> 
+                    {
+                        drivetrain.setMaxOutput(AUTO_SPEED);
+                        drivetrain.set(1, 0);
+                    }, 
+                    () -> drivetrain.stop()
+                )
+            )
+            .withOrder(Order.EXECUTION),
+            // State
+            RobotState.AUTONOMOUS
+        );
+
+
+        ///////////////////////////////////////////////////
+        // DEFAULT
+        ///////////////////////////////////////////////////
+
+        // Update subsystems
+        addAlwaysCommand(
+            cmd -> drivetrain.update(cmd.deltaTime()),
+            Order.OUTPUT
         );
     }
 }

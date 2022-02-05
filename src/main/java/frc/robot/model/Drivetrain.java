@@ -163,7 +163,7 @@ public final class Drivetrain
         // Locals for speed and turn
         double speed, turn;
 
-        // Pid the angle of the input turn is within the deadband
+        // Pid the angle if the input turn is within the deadband
         if(isTargetingAnAngle)
         {
             turn = anglePid.calculate(navx.getYaw(), targetTurn);

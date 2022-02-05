@@ -9,12 +9,6 @@ public final class RobotState
     }
 
     @Override
-    public String toString()
-    {
-        return "State{" + name + "}";
-    }
-
-    @Override
     public boolean equals(Object other)
     {
         if(other instanceof RobotState)

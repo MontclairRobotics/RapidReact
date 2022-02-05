@@ -32,6 +32,9 @@ public final class Constants
     // Intake motor port number
     public static final int INTAKE_MOTOR_PORT = 7;
 
+    // Transport motor port number
+    public static final int TRANSPORT_MOTOR_PORT = 8;
+
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
@@ -49,6 +52,9 @@ public final class Constants
 
     // Intake Motor Speed
     public static final double BALL_INTAKE_SPEED = 0.5; //idk
+
+    // Transport Motor Speed
+    public static final double BALL_TRANSPORT_SPEED = 0.5; //idk
 
     // Motors inversion
     public static final boolean LEFT_INVERTED = false;
