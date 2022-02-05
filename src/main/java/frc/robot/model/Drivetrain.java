@@ -150,6 +150,10 @@ public final class Drivetrain
         targetDistance = td;
         isTargetingADistance = true;
     }
+    public void setTargetAngle(double ta){
+        targetTurn = ta;
+        isTargetingAnAngle = true;
+    }
 
     /**
      * Update this subsystem
@@ -183,6 +187,17 @@ public final class Drivetrain
 
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn);
+    }
+
+
+    public void activateDistanceTarget() 
+    {
+        isTargetingADistance = true;
+    }
+
+    public void activateAngleTarget() 
+    {
+        isTargetingAnAngle = true;;
     }
 
     public void releaseDistanceTarget() 

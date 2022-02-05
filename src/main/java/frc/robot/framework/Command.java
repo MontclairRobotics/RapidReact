@@ -2,8 +2,8 @@ package frc.robot.framework;
 
 public abstract class Command
 {
-    private CommandManager manager;
-    private boolean running;
+    private CommandManager manager = null;
+    private boolean running = false;
 
     private Order order = Order.EXECUTION;
 

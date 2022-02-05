@@ -134,6 +134,7 @@ public abstract class CommandManager
 
         if(!command.isRunning())
         {
+            debug("wow 2");
             activeCommands.add(command);
             command.init(this);
         }
@@ -259,6 +260,8 @@ public abstract class CommandManager
             if(!c.isRunning())
                 start(c);
         }
+
+        System.out.println(newState);
     }   
 
     private boolean debug;
