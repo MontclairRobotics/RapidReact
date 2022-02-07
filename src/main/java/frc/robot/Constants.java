@@ -56,6 +56,9 @@ public final class Constants
     // Transport Motor Speed
     public static final double BALL_TRANSPORT_SPEED = 0.5; //idk
 
+    //Climber Motor Time  
+    public static final double TIME_FOR_CLIMBER = 1; //idk
+
     // Motors inversion
     public static final boolean LEFT_INVERTED = false;
     public static final boolean RIGHT_INVERTED = true;

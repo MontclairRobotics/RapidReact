@@ -9,8 +9,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 public class Falcon500Manager extends CommandManager {
 
-    public static final TalonFX talon = new TalonFX(0);
-    public static final XboxController driverController = new XboxController(0);
+    public static final TalonFX talon1 = new TalonFX(0);
+    public static final TalonFX talon2 = new TALONFX(0);
+    // public static final XboxController driverController = new XboxController(0);
 
     @Override
     public void init() {
@@ -22,12 +23,7 @@ public class Falcon500Manager extends CommandManager {
                 cmd -> {
                     var speed =  driverController.getRawAxis(XboxController.Axis.kLeftY.value);
 
-<<<<<<< Updated upstream
-                    // TODO: Why the fuck is this not working D Y L A N ! ! ! ! ! ! ! ! ! ! ! ! ! (love you btw <3)
-                   // cmd.debug("Axis is " + speed);
-=======
                     
->>>>>>> Stashed changes
                     
                     talon.set(ControlMode.PercentOutput, speed);
                 }
@@ -35,6 +31,9 @@ public class Falcon500Manager extends CommandManager {
             RobotState.TELEOP
         );
 
+    }
+    public void spin(){
+        
     }
     
 }
