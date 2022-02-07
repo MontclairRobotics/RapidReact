@@ -237,6 +237,18 @@ public final class RapidReachManager extends CommandManager {
          //   // State
         //    RobotState.AUTONOMOUS
        // );
+
+       addCommand(
+            // Shooter Button
+            Commands.pollToggle(
+                () -> operatorController.getButton(Contants.SHOOTER_BUTTON),
+                () -> ballShooter.shoot(), 
+                () -> ballSucker.stop()
+            )
+            .withOrder(Order.INPUT),
+            // State
+            RobotState.OUTPUT
+        );
        
 
 

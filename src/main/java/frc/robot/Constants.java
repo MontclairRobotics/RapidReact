@@ -96,3 +96,17 @@ public final class Constants
     public static final double CONVERSION_RATE 
         = TICKS_PER_ROT * GEAR_RATIO / WHEEL_DIAM *IN_TO_FT;
 }
+
+// Shooter Inversion
+public static final SHOOTER_LEFT_INVERSION = true;
+public static final SHOOTER_RIGHT_INVERSION = false;
+
+//Shooter Speed
+public static final SHOOTER_SPEED = 100;
+
+//Shooter Port
+public static final LEFT_SHOOTER_MOTOR_PORT = 9;
+public static final RIGHT_SHOOTER_MOTOR_PORT = 10;
+
+//Button to activate shooter
+public static final SHOOTER_BUTTON = InputController.button.A_CROSS;
