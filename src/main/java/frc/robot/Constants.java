@@ -98,15 +98,15 @@ public final class Constants
 }
 
 // Shooter Inversion
-public static final SHOOTER_LEFT_INVERSION = true;
-public static final SHOOTER_RIGHT_INVERSION = false;
+public static final boolean SHOOTER_LEFT_INVERSION = true;
+public static final boolean SHOOTER_RIGHT_INVERSION = false;
 
 //Shooter Speed
-public static final SHOOTER_SPEED = 100;
+public static final int SHOOTER_SPEED = 100;
 
 //Shooter Port
-public static final LEFT_SHOOTER_MOTOR_PORT = 9;
-public static final RIGHT_SHOOTER_MOTOR_PORT = 10;
+public static final int LEFT_SHOOTER_MOTOR_PORT = 9;
+public static final int RIGHT_SHOOTER_MOTOR_PORT = 10;
 
 //Button to activate shooter
-public static final SHOOTER_BUTTON = InputController.button.A_CROSS;
+public static final InputController SHOOTER_BUTTON = InputController.button.A_CROSS;
