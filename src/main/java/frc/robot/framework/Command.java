@@ -87,4 +87,10 @@ public abstract class Command
         this.order = order;
         return this;
     }
+
+    /** Debug a command */
+    public final void debug(String msg)
+    {
+        getManager().debug(msg);
+    }
 }
