@@ -88,5 +88,11 @@ public final class Constants
 
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change
-    public static final double CONVERSION_RATE = 912.24;
+    public static final double TICKS_PER_ROT = 42.0;
+    public static final double GEAR_RATIO = 10.86 / 1.0;
+    public static final double WHEEL_DIAM = 6.0; //inches
+    public static final double IN_TO_FT = 12.0; //feet
+
+    public static final double CONVERSION_RATE 
+        = TICKS_PER_ROT * GEAR_RATIO / WHEEL_DIAM *IN_TO_FT;
 }
