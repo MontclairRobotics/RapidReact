@@ -11,17 +11,21 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 public final class CommandRobot<M extends CommandManager> extends TimedRobot
 {
+    /** The command manager for this robot. */
     private M manager;
 
+    // Constructor
     private CommandRobot(M manager)
     {
         this.manager = manager;
     }
 
+    /** Create this command robot given a provider for the command manager. */
     public static <M extends CommandManager> CommandRobot<M> create(Supplier<M> managerSupplier)
     {
         return new CommandRobot<M>(managerSupplier.get());
     }
+    /** Get a creator for this command robot given a provider for the command manager. */
     public static <M extends CommandManager> Supplier<CommandRobot<M>> creator(Supplier<M> managerSupplier)
     {
         return () -> create(managerSupplier);

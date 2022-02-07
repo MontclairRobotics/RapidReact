@@ -58,8 +58,6 @@ public final class RapidReachManager extends CommandManager {
     public void init()
     {
         System.out.println("this guy");
-        // Navigator setup
-        drivetrain.startStraightPid();
 
         // Debug
         enableDebug();
@@ -169,7 +167,7 @@ public final class RapidReachManager extends CommandManager {
             RobotState.TELEOP
         );
 
-        //PID angle command
+        //PID straught angle command
         addCommand(
             // Command
             Commands.pollToggle (
@@ -219,12 +217,12 @@ public final class RapidReachManager extends CommandManager {
         // Auto command with PID
         addCommand(
             // Command
-            Commands.forever(
-                    () -> {
-                        drivetrain.setTargetDistance(3);
-                    }
-                )
-            .withOrder(Order.END),
+            Commands.series(
+                Commands.once(() -> drivetrain.setTargetDistance(3)),
+                Commands.waitUntil(() -> drivetrain.reachedTargetDistance()),
+                Commands.once(() -> drivetrain.releaseDistanceTarget())
+            )
+            .withOrder(Order.INPUT),
             // State
             RobotState.AUTONOMOUS
         );

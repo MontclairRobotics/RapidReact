@@ -11,6 +11,9 @@ import frc.robot.framework.bases.OnceCommand;
 import frc.robot.framework.bases.TimedCommand;
 import frc.robot.framework.bases.PollCommand;
 
+/** 
+ * A utility class which provides methods to create commands from lambdas.
+ */
 public final class Commands 
 {
     private Commands() {}
@@ -391,6 +394,10 @@ public final class Commands
     public static TimedCommand wait(double time)
     {
         return forTime(time, () -> {});
+    }
+    public static Command waitUntil(BooleanSupplier pred)
+    {
+        return untilSome(pred, () -> {});
     }
 
     public static Command debug(String msg)

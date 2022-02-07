@@ -1,5 +1,8 @@
 package frc.robot.framework;
 
+/**
+ * A class which ...
+ */
 public final class Order implements Comparable<Order>
 {
     // Note: earlier is smaller valued

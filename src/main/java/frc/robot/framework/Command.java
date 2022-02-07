@@ -1,16 +1,31 @@
 package frc.robot.framework;
 
+/** 
+ * The basic unit of the command framework.
+ * Can be run, and can control whether or not it has ended and should stop running.
+ * Can be run again.
+ * 
+ * When started, the 'onInit()' method will be called.
+ * When stopped, the 'onEnd()' method will be called
+ * When running, the 'execute()' method will be called
+ * To determine if the command has finished, the 'finished()' method will be called
+ */
 public abstract class Command
 {
+    /** The command manager in charge of this command. */
     private CommandManager manager = null;
+    /** Whether or not the command is currently running. */
     private boolean running = false;
 
+    /** The order of this command defined by the Order class. */
     private Order order = Order.EXECUTION;
 
+    // Getter
     Order getOrder() {
         return order;
     }
 
+    /** The internal method which starts a command on a given command manager */
     void init(CommandManager manager) 
     {
         this.manager = manager;
@@ -19,6 +34,7 @@ public abstract class Command
         onInit();
     }
 
+    /** The internal method which ends a command */
     void end(boolean wasCancelled)
     {
         manager = null;

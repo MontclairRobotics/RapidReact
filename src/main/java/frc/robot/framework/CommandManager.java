@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.naming.spi.StateFactory;
 
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.framework.bases.ForeverCommand;
 import frc.robot.framework.bases.OnceCommand;
 
@@ -16,22 +18,35 @@ import java.util.HashMap;
 import java.time.Instant;
 import java.util.ArrayList;
 
+/**
+ * The class responsible for managing and running commands.
+ * Should be inherited by command managers.
+ */
 public abstract class CommandManager
 {
+    //////////////////////////
     // Data structures
+    //////////////////////////
+
+    /** The set of commands that are currently running, sorted by order. */
     private final SortedSet<Command> activeCommands;
+
+    /** The set of commands that are added whenever their state begins. */
     private final Map<RobotState, ArrayList<Command>> stateCommands;
+    /** The set of commands that are added when any state begins. */
     private final Set<Command> defaultCommands;
+    /** The set of commands that are added on startup (change from RobotState.NONE). */
     private final Set<Command> startupCommands;
 
+    /** The current state of the command manager. */
     private RobotState currentState;
-
+    /** The last time which this manager updated. */
     private long lastUpdateTime;
 
     // Constructor
     public CommandManager()
     {
-        activeCommands = new ConcurrentSkipListSet<>((a, b) -> a.getOrder().compareTo(b.getOrder()));
+        activeCommands = new ConcurrentSkipListSet<Command>((a, b) -> b.getOrder().compareTo(a.getOrder()));
         stateCommands = new HashMap<>();
         defaultCommands = new HashSet<>();
         startupCommands = new HashSet<>();
@@ -86,14 +101,24 @@ public abstract class CommandManager
     }
 
     /** A fluent interface for adding some action to run always, in every state. */
+    public final void addAlwaysCommand(Runnable runnable)
+    {
+        addStartupCommand(Commands.forever(runnable));
+    }
+    /** A fluent interface for adding some action to run always, in every state. */
     public final void addAlwaysCommand(Runnable runnable, Order order)
     {
-        addDefaultCommand(Commands.forever(runnable).withOrder(order));
+        addStartupCommand(Commands.forever(runnable).withOrder(order));
+    }
+    /** A fluent interface for adding some action to run always, in every state. */
+    public final void addAlwaysCommand(CommandRunnable<ForeverCommand> runnable)
+    {
+        addStartupCommand(Commands.forever(runnable));
     }
     /** A fluent interface for adding some action to run always, in every state. */
     public final void addAlwaysCommand(CommandRunnable<ForeverCommand> runnable, Order order)
     {
-        addDefaultCommand(Commands.forever(runnable).withOrder(order));
+        addStartupCommand(Commands.forever(runnable).withOrder(order));
     }
 
     /** A fluent interface for adding some action to run when the robot starts. */
@@ -264,6 +289,7 @@ public abstract class CommandManager
         System.out.println(newState);
     }   
 
+    /** Whether or not this manager is in debug mode. */
     private boolean debug;
     /** Returns whether or not the manager is currently in debug mode. */
     public boolean isDebug()
@@ -293,7 +319,7 @@ public abstract class CommandManager
     {
         if(lastUpdateTime == -1)
         {
-            return 1 / 60.0;
+            return TimedRobot.kDefaultPeriod;
         }
         else
         {
@@ -301,6 +327,7 @@ public abstract class CommandManager
         }
     }
 
+    /** Initialize the delta time. */
     void initDeltaTime()
     {
         lastUpdateTime = System.currentTimeMillis();

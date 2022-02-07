@@ -65,6 +65,7 @@ public final class Constants
     public static final NullSmoother DRIVE_NULL_SMOOTHER
         = new NullSmoother(0, -1, 1);
 
+    // Constants for drive pid
     public static final class PID 
     {
         public static final double KP = 1;
@@ -73,6 +74,7 @@ public final class Constants
 
         public static final double TOLERANCE = 0.05;
     }
+    // Constants for angle pid
     public static final class AnglePID
     {
         public static final double DEADBAND = 0.1;
@@ -85,5 +87,6 @@ public final class Constants
     }
 
     // drive train coversion rate in ticks per feet
+    // TODO: make easier to change
     public static final double CONVERSION_RATE = 912.24;
 }

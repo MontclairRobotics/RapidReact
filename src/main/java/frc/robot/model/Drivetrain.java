@@ -13,7 +13,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import frc.robot.Constants;
+import static frc.robot.Constants.*;
 import frc.robot.utilities.smoothing.Smoother;
 
 public final class Drivetrain
@@ -21,12 +21,14 @@ public final class Drivetrain
     ////////////////////////////////////////////////
     // Final fields
     ////////////////////////////////////////////////
-    private final CANSparkMax leftMotor1 = new CANSparkMax(Constants.LEFT_MOTOR_1_PORT, MotorType.kBrushless);
-    private final CANSparkMax leftMotor2 = new CANSparkMax(Constants.LEFT_MOTOR_2_PORT, MotorType.kBrushless);
-    private final CANSparkMax leftMotor3 = new CANSparkMax(Constants.LEFT_MOTOR_3_PORT, MotorType.kBrushless);
-    private final CANSparkMax rightMotor1 = new CANSparkMax(Constants.RIGHT_MOTOR_1_PORT, MotorType.kBrushless);
-    private final CANSparkMax rightMotor2 = new CANSparkMax(Constants.RIGHT_MOTOR_2_PORT, MotorType.kBrushless);
-    private final CANSparkMax rightMotor3 = new CANSparkMax(Constants.RIGHT_MOTOR_3_PORT, MotorType.kBrushless);
+    private final CANSparkMax 
+        leftMotor1 = new CANSparkMax(LEFT_MOTOR_1_PORT, MotorType.kBrushless),
+        leftMotor2 = new CANSparkMax(LEFT_MOTOR_2_PORT, MotorType.kBrushless),
+        leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
+        rightMotor1 = new CANSparkMax(RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
+        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
+        rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
+    ;
     
     private final CANSparkMax[]
         leftMotors = {
@@ -41,12 +43,14 @@ public final class Drivetrain
         }
     ;
 
-    private RelativeEncoder leftEncoder1 = leftMotor1.getEncoder();
-    private RelativeEncoder leftEncoder2 = leftMotor2.getEncoder();
-    private RelativeEncoder leftEncoder3 = leftMotor3.getEncoder();
-    private RelativeEncoder rightEncoder1 = rightMotor1.getEncoder();
-    private RelativeEncoder rightEncoder2 = rightMotor2.getEncoder();
-    private RelativeEncoder rightEncoder3 = rightMotor3.getEncoder();
+    private final RelativeEncoder 
+        leftEncoder1 = leftMotor1.getEncoder(),
+        leftEncoder2 = leftMotor2.getEncoder(),
+        leftEncoder3 = leftMotor3.getEncoder(),
+        rightEncoder1 = rightMotor1.getEncoder(),
+        rightEncoder2 = rightMotor2.getEncoder(),
+        rightEncoder3 = rightMotor3.getEncoder()
+    ;
 
 
     private final RelativeEncoder[]
@@ -84,6 +88,8 @@ public final class Drivetrain
     private boolean isTargetingADistance = false;
     private double targetDistance = 0.0;
     private boolean isTargetingAnAngle = false;
+    private double targetAngle = 0.0;
+
     
     ////////////////////////////////////////////////
     // Constructor
@@ -94,42 +100,38 @@ public final class Drivetrain
 
         // Setup distance pid
         distancePid = new PIDController(
-            Constants.PID.KP,
-            Constants.PID.KI,
-            Constants.PID.KD
+            PID.KP,
+            PID.KI,
+            PID.KD
         );
-        distancePid.setTolerance(Constants.PID.TOLERANCE);
+        distancePid.setTolerance(PID.TOLERANCE);
 
         // Setup angle pid
         anglePid = new PIDController(
-            Constants.AnglePID.KP,
-            Constants.AnglePID.KI,
-            Constants.AnglePID.KD
+            AnglePID.KP,
+            AnglePID.KI,
+            AnglePID.KD
         );
-        anglePid.setTolerance(Constants.AnglePID.TOLERANCE);
+        anglePid.setTolerance(AnglePID.TOLERANCE);
 
         this.navx = navx;
 
-        leftMotorGroup.setInverted(Constants.LEFT_INVERTED);
-        rightMotorGroup.setInverted(Constants.RIGHT_INVERTED);
+        leftMotorGroup.setInverted(LEFT_INVERTED);
+        rightMotorGroup.setInverted(RIGHT_INVERTED);
         
-        leftEncoder1.setPositionConversionFactor(Constants.CONVERSION_RATE);
-        leftEncoder2.setPositionConversionFactor(Constants.CONVERSION_RATE);
-        leftEncoder3.setPositionConversionFactor(Constants.CONVERSION_RATE);
-
-        rightEncoder1.setPositionConversionFactor(Constants.CONVERSION_RATE);
-        rightEncoder2.setPositionConversionFactor(Constants.CONVERSION_RATE);
-        rightEncoder3.setPositionConversionFactor(Constants.CONVERSION_RATE);
+        for(var e : leftEncoders)
+        {
+            e.setPositionConversionFactor(CONVERSION_RATE);
+        }
+        for(var e : rightEncoders)
+        {
+            e.setPositionConversionFactor(CONVERSION_RATE);
+        }
     }
 
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
-    public void startStraightPid()
-    {
-        navx.zeroYaw();
-    }
-
     public void setSmoother(Smoother speedSmoother) 
     {
         this.speedSmoother = speedSmoother;
@@ -186,11 +188,12 @@ public final class Drivetrain
      * Updates the target distance from what is inputted
      */
     public void setTargetDistance(double td){
+
         targetDistance = td;
         isTargetingADistance = true;
     }
     public void setTargetAngle(double ta){
-        targetTurn = ta;
+        targetAngle = navx.getAngle() + ta;
         isTargetingAnAngle = true;
     }
 
@@ -205,7 +208,7 @@ public final class Drivetrain
         // Pid the angle if the input turn is within the deadband
         if(isTargetingAnAngle)
         {
-            turn = anglePid.calculate(navx.getYaw(), targetTurn);
+            turn = anglePid.calculate(navx.getAngle() - targetAngle, targetTurn);
         }
         else
         {
@@ -228,25 +231,22 @@ public final class Drivetrain
         differentialDrive.arcadeDrive(speed, turn);
     }
 
-
-    public void activateDistanceTarget() 
-    {
-        isTargetingADistance = true;
-    }
-
-    public void activateAngleTarget() 
-    {
-        isTargetingAnAngle = true;;
-    }
-
     public void releaseDistanceTarget() 
     {
         isTargetingADistance = false;
-        leftEncoder1.setPosition(0.0);
     }
 
     public void releaseAngleTarget() 
     {
         isTargetingAnAngle = false;
+    }
+
+    public boolean reachedTargetDistance()
+    {
+        return distancePid.atSetpoint();
+    }
+    public boolean reachedTargetAngle()
+    {
+        return anglePid.atSetpoint();
     }
 }
