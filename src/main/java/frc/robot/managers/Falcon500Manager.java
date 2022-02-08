@@ -1,11 +1,4 @@
-package frc.robot.managers;
-
-import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.framework.CommandManager;
-import frc.robot.framework.Commands;
-import frc.robot.framework.RobotState;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+c
 
 public class Falcon500Manager extends CommandManager {
 

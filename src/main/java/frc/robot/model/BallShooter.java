@@ -14,7 +14,7 @@ public class BallShooter
     rightMotor.setInverted(Constants.RIGHT_SHOOTER_MOTOR_INVERTED);
     leftMotor.setInverted(Constants.LEFT_SHOOTER_MOTOR_INVERTED);
     public void shoot() {
-        leftMotor.set(Contsants.SHOOTER_SPEED);
+        leftMotor.set(Constants.SHOOTER_SPEED);
         rightMotor.set(Constants.SHOOTER_SPEED);
     }
     public void stop() {
