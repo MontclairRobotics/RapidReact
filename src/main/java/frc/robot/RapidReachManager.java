@@ -196,7 +196,7 @@ public final class RapidReachManager extends CommandManager {
         ///////////////////////////////////////////////////
         
         // Basic auto command 
-        /*
+        
         addCommand(
             // Command
             Commands.series(
@@ -214,10 +214,10 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.AUTONOMOUS
         );
-        */
+        
         
         // Auto command with PID
-        addCommand(
+        /*addCommand(
             // Command
             Commands.forever(
                     () -> {
@@ -227,7 +227,7 @@ public final class RapidReachManager extends CommandManager {
             .withOrder(Order.END),
             // State
             RobotState.AUTONOMOUS
-        );
+        );*/
        // addCommand(
             // Command
           //  Commands.forever(
