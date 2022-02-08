@@ -11,10 +11,13 @@ public class BallShooter
     private CANSparkMax rightMotor = new CANSparkMax(Constants.RIGHT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
     private CANSparkMax leftMotor = new CANSparkMax(Constants.LEFT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
 
-    rightMotor.setInverted(Constants.RIGHT_SHOOTER_MOTOR_INVERTED);
-    leftMotor.setInverted(Constants.LEFT_SHOOTER_MOTOR_INVERTED);
+    public BallShooter() {
+        rightMotor.setInverted(Constants.SHOOTER_RIGHT_INVERSION);
+        leftMotor.setInverted(Constants.SHOOTER_LEFT_INVERSION);
+    }
+
     public void shoot() {
-        leftMotor.set(Contsants.SHOOTER_SPEED);
+        leftMotor.set(Constants.SHOOTER_SPEED);
         rightMotor.set(Constants.SHOOTER_SPEED);
     }
     public void stop() {

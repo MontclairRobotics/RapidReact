@@ -14,9 +14,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
+
+import frc.robot.Constants;
+import frc.robot.framework.CommandManager;
+import frc.robot.framework.CommandModel;
 import frc.robot.utilities.smoothing.Smoother;
 
-public final class Drivetrain
+public final class Drivetrain extends CommandModel
 {
     ////////////////////////////////////////////////
     // Final fields
@@ -94,8 +98,10 @@ public final class Drivetrain
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(Smoother defaultSmoother, AHRS navx) 
+    public Drivetrain(Smoother defaultSmoother, AHRS navx, CommandManager manager) 
     {
+        super(manager);
+
         speedSmoother = defaultSmoother;
 
         // Setup distance pid
@@ -187,13 +193,15 @@ public final class Drivetrain
     /** 
      * Updates the target distance from what is inputted
      */
-    public void setTargetDistance(double td){
-
+    public void setTargetDistance(double td)
+    {
         targetDistance = td;
         isTargetingADistance = true;
     }
-    public void setTargetAngle(double ta){
-        targetAngle = navx.getAngle() + ta;
+    public void setTargetAngle(double ta)
+    {
+        targetAngle = ta;
+        navx.zeroYaw();
         isTargetingAnAngle = true;
     }
 
@@ -205,26 +213,27 @@ public final class Drivetrain
         // Locals for speed and turn
         double speed, turn;
 
-        // Pid the angle if the input turn is within the deadband
-        if(isTargetingAnAngle)
-        {
-            turn = anglePid.calculate(navx.getAngle() - targetAngle, targetTurn);
-        }
-        else
-        {
-            turn = targetTurn;
-        }
-
         // Pid the speed distance of the input if targetting a distacne
         if(isTargetingADistance)
         {
-            speed = distancePid.calculate(getAverageDistanceTraveled(), targetDistance);
+            System.out.println(getAverageDistanceTraveled());
+            speed = -distancePid.calculate(getAverageDistanceTraveled(), targetDistance);
         }
         else
         {            
             // Update the speed with the smoother
             speedSmoother.update(deltaTime, targetSpeed);
             speed = speedSmoother.getCurrent();
+        }
+
+        // Pid the angle if the input turn is within the deadband
+        if(isTargetingAnAngle)
+        {
+            turn = anglePid.calculate(navx.getAngle(), targetAngle);
+        }
+        else
+        {
+            turn = Constants.adjustTurn(speed, targetTurn);
         }
 
         // Set the drive
