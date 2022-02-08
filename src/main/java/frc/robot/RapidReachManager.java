@@ -194,7 +194,7 @@ public final class RapidReachManager extends CommandManager {
         ///////////////////////////////////////////////////
         
         // Basic auto command 
-        /*
+        
         addCommand(
             // Command
             Commands.series(
@@ -212,10 +212,10 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.AUTONOMOUS
         );
-        */
+        
         
         // Auto command with PID
-        addCommand(
+        /*addCommand(
             // Command
             Commands.series(
                 Commands.once(() -> drivetrain.setTargetDistance(3)),
@@ -225,7 +225,7 @@ public final class RapidReachManager extends CommandManager {
             .withOrder(Order.INPUT),
             // State
             RobotState.AUTONOMOUS
-        );
+        );*/
        // addCommand(
             // Command
           //  Commands.forever(
