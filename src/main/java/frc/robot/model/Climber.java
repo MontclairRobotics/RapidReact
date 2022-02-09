@@ -1,4 +1,4 @@
-package frc.robot.managers;
+package frc.robot.model;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.framework.CommandManager;

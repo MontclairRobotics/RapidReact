@@ -7,6 +7,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.PIDDistanceCommand;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.Commands;
 import frc.robot.framework.Order;
@@ -47,9 +48,9 @@ public final class RapidReachManager extends CommandManager {
     ////////////////////////////////
     public AHRS navigator = new AHRS();
     public Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
-    //public BallSucker ballSucker = new BallSucker();
-    //public BallMover ballMover = new BallMover();
-    //public BallShooter ballShooter = new BallShooter();
+    public BallSucker ballSucker = new BallSucker(this);
+    public BallMover ballMover = new BallMover(this);
+    public BallShooter ballShooter = new BallShooter(this);
 
     public static int speedIndex = 0;
 
@@ -233,6 +234,7 @@ public final class RapidReachManager extends CommandManager {
         
         
         // Auto command with PID
+        /*
         addCommand(
             // Command
             Commands.series(
@@ -253,6 +255,76 @@ public final class RapidReachManager extends CommandManager {
             )
             .withOrder(Order.OUTPUT),
             // State
+            RobotState.AUTONOMOUS
+        );
+        */
+
+        // Auto Command that goes backward, shoots, and goes forward :)
+        addCommand(
+            // Command
+            Commands.series(
+                // drives backward for 2 seconds
+                Commands.forTime(
+                    2.0,
+                    () -> drivetrain.set(-1, 0)
+                ),
+                // stops driving and starts revving up shooter
+                Commands.once(
+                    () -> {
+                        drivetrain.stop();
+                        ballShooter.startShooting();
+                    }
+                ),
+                // wait for shooter to rev
+                Commands.wait(
+                    2.0
+                ),
+                // start transport
+                Commands.once(
+                    () -> ballMover.startMoving() // fucking shit hell bitcoins
+                ),
+                // wait for ball to shoot
+                Commands.wait(
+                    2.0
+                ),
+                // stop shooter and stop transport
+                Commands.once(
+                    () -> {
+                        ballShooter.stop();
+                        ballMover.stop();
+                    }
+                ),
+                // drive forward 5 feet :P
+                // hello, my name is my name. I am my name. I am 10 years old.
+                // my favorite name is my favorite name. I eat food and my favorite name.
+                // Caitie is my favorite name, shoots is my favorite name, 
+                // and my favorite name is my favorite name.
+                // Lila is my least favorite name. I eat food and my favorite bucket of ballMover.
+                // Open Source Software 
+                // Update subsystems speed with subsystems smoother my favorite name
+                // Cesca is my least favorite name Cesca root directory of this project.
+                // Who is my least favorite? I think that is my favorite name. What about the name of the name of the name of the name of the name of the name of the?
+                // I think that goes backward. 86.
+                // Max speed command.
+                // Max is command least favorite name Max root directory of this project.
+                // Mert wasCancelled.
+                // Josh is be least favorite.
+                // Rohan is not a favorite,
+
+                // I think that science is a cool thing
+                // TODO
+                // My favorite type of science is my favorite type of science that 
+                // is my favorite type of science that is my favorite type of science 
+                // Serena is my least favorite name Serena root directory of this project            
+
+                // Modified by Montclair Robotics Team 555 per feet
+
+                // I think that the Montclair Robotics Team is a goes 
+                // In favorite, i this this the Robotics is my favorite     
+                new PIDDistanceCommand(drivetrain, 5.0)
+            )
+            //ballsucker.a      
+            .withOrder(Order.EXECUTION),
             RobotState.AUTONOMOUS
         );
 
