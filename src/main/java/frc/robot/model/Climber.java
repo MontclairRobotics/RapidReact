@@ -12,7 +12,8 @@ public class Climber {
     private TalonFX talonLeft = new TalonFX(0);
     private TalonFX talonRight = new TalonFX(0);
     
-    public Climber(TALON talonLeft, TALON talonRight){
+    public Climber(TALON talonLeft, TALON talonRight)
+    {
             this.talonLeft = talonLeft;
             this.talongRight = talonRight;
             
@@ -20,11 +21,13 @@ public class Climber {
             talonRight.setInverted(Constants.RIGHT_INVERTED);
     }
     
-    public void climb(){
+    public void climb()
+    {
         talonLeft.set(CONSTANTS.TALON_MOTOR_SPEED);
         talonRight.set(CONSTANTS.TALON_MOTOR_SPEED);
     }
-    public void stop(){
+    public void stop()
+    {
         talonLeft.set(0);
         talonRight.set(0);
     }
