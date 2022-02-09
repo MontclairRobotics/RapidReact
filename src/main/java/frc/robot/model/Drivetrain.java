@@ -122,8 +122,8 @@ public final class Drivetrain extends CommandModel
 
         this.navx = navx;
 
-        leftMotorGroup.setInverted(LEFT_INVERTED);
-        rightMotorGroup.setInverted(RIGHT_INVERTED);
+        leftMotorGroup.setInverted(LEFT_DRIVE_INVERSION);
+        rightMotorGroup.setInverted(RIGHT_DRIVE_INVERSION);
         
         for(var e : leftEncoders)
         {

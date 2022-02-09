@@ -22,8 +22,8 @@ public final class Main
      */
     public static void main(String... args) 
     {
-        //RobotBase.startRobot(CommandRobot.creator(RapidReachManager::new));
-        RobotBase.startRobot(CommandRobot.creator(MotorTestManager::new));
+        RobotBase.startRobot(CommandRobot.creator(RapidReachManager::new));
+        //RobotBase.startRobot(CommandRobot.creator(MotorTestManager::new));
     }
 }
 

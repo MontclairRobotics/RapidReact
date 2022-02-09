@@ -58,6 +58,9 @@ public final class Constants
     //20.25 to 1 ratio
     public static final double CLIMBER_MOTOR_SPEED = .5; //idk
 
+    // Drivetrain Inversion
+    public static final boolean LEFT_DRIVE_INVERSION = true;
+    public static final boolean RIGHT_DRIVE_INVERSION = false;
 
     // Shooter Inversion
     public static final boolean SHOOTER_LEFT_INVERSION = true;
