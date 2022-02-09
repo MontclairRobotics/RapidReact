@@ -29,6 +29,9 @@ public final class Constants
     public static final int RIGHT_MOTOR_2_PORT = 6;
     public static final int RIGHT_MOTOR_3_PORT = 1;
 
+    // Ball Sucker motor speed
+    public static final int BALL_SUCKER_MOTOR_SPEED = .5;
+
     // Intake motor port number
     public static final int INTAKE_MOTOR_PORT = 7;
 
@@ -46,6 +49,10 @@ public final class Constants
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
+    
+    //Port for Climber Motor
+    public static final int CLIMBER_MOTOR_LEFT_PORT = 11;
+    public static final int CLIMBER_MOTOR_RIGHT_PORT = 12;
 
     public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
@@ -64,30 +71,29 @@ public final class Constants
     // Transport Motor Speed
     public static final double BALL_TRANSPORT_SPEED = 0.5; //idk
 
-    //Climber Motor Time  
-    public static final double TIME_FOR_CLIMBER = 1; //idk
+    //Climber Motor SPEED
+    //256 ticks per rotation
+    //20.25 to 1 ratio
+    public static final double TALON_MOTOR_SPEED = .5; //idk
+
 
     // Motors inversion
     public static final boolean LEFT_INVERTED = false;
     public static final boolean RIGHT_INVERTED = true;
+
+    // Motors inversion for climber
+    public static final int Constants.LEFT_CLIMB_INVERTED = false;
+    public static final int Constants.RIGHT_CLIMB_INVERTED = true;
     
     public static final Smoother DRIVE_SMOOTHER 
-        = new LinearSmoother(0, -1, 1, 0.333);
+        = new LinearSmoother(0, -1, 1, 0.1);
     public static final NullSmoother DRIVE_NULL_SMOOTHER
         = new NullSmoother(0, -1, 1);
-
-    public static final double TURN_FACTOR = 0.7;
-    public static final double TURN_DRIVE_FACTOR = 0.5;
-
-    public static double adjustTurn(double speed, double targetTurn)
-    {
-        return (1 - TURN_DRIVE_FACTOR * speed) * targetTurn * TURN_FACTOR;
-    }
 
     // Constants for drive pid
     public static final class PID 
     {
-        public static final double KP = 0.1;
+        public static final double KP = 1;
         public static final double KI = 0;
         public static final double KD = 0;
 
