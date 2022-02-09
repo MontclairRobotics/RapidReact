@@ -15,12 +15,7 @@ public class Falcon500Manager extends CommandManager {
                 cmd -> {
                     var speed =  driverController.getRawAxis(XboxController.Axis.kLeftY.value);
 
-<<<<<<< Updated upstream
-                    // TODO: Why the fuck is this not working D Y L A N ! ! ! ! ! ! ! ! ! ! ! ! ! (love you btw <3)
-                   // cmd.debug("Axis is " + speed);
-=======
                     
->>>>>>> Stashed changes
                     
                     talon.set(ControlMode.PercentOutput, speed);
                 }
