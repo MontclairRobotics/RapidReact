@@ -11,16 +11,22 @@ public class BallShooter extends CommandModel
     private CANSparkMax rightMotor = new CANSparkMax(Constants.RIGHT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
     private CANSparkMax leftMotor = new CANSparkMax(Constants.LEFT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
 
-    public BallShooter() {
+    public BallShooter(CommandManager manager) 
+    {
+        super(manager);
+
         rightMotor.setInverted(Constants.SHOOTER_RIGHT_INVERSION);
         leftMotor.setInverted(Constants.SHOOTER_LEFT_INVERSION);
     }
 
-    public void shoot() {
+    public void startShooting() 
+    {
         leftMotor.set(Constants.SHOOTER_SPEED);
         rightMotor.set(Constants.SHOOTER_SPEED);
     }
-    public void stop() {
+    
+    public void stop() 
+    {
         leftMotor.set(0);
         rightMotor.set(0);
     }

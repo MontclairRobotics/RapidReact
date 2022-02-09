@@ -10,27 +10,26 @@ import frc.robot.Constants;
 
 public class Climber extends CommandModel
 {
-    private TalonFX talonLeft = new TalonFX(0);
-    private TalonFX talonRight = new TalonFX(0);
+    private TalonFX talonLeft = new TalonFX(Constants.LEFT_CLIMBER_MOTOR_PORT);
+    private TalonFX talonRight = new TalonFX(Constants.RIGHT_CLIMBER_MOTOR_PORT);
     
-    public Climber(TALON talonLeft, TALON talonRight)
-    {
-            this.talonLeft = talonLeft;
-            this.talongRight = talonRight;
-            
-            talonLeft.setInverted(Constants.LEFT_INVERTED);
-            talonRight.setInverted(Constants.RIGHT_INVERTED);
+    public Climber(CommandManager manager)
+    {       
+        super(manager);
+
+        talonLeft.setInverted(Constants.LEFT_INVERTED);
+        talonRight.setInverted(Constants.RIGHT_INVERTED);
     }
     
-    public void climb()
+    public void startClimbing()
     {
-        talonLeft.set(CONSTANTS.TALON_MOTOR_SPEED);
-        talonRight.set(CONSTANTS.TALON_MOTOR_SPEED);
+        talonLeft.set(ControlMode.PercentOutput, CONSTANTS.TALON_MOTOR_SPEED);
+        talonRight.set(ControlMode.PercentOutput, CONSTANTS.TALON_MOTOR_SPEED);
     }
     public void stop()
     {
-        talonLeft.set(0);
-        talonRight.set(0);
+        talonLeft.set(ControlMode.PercentOutput, 0);
+        talonRight.set(ControlMode.PercentOutput, 0);
     }
 
 

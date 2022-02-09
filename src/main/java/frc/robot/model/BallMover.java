@@ -10,9 +10,19 @@ public class BallMover extends CommandModel
 
     private TalonFX motor = new TalonFX(Constants.TRANSPORT_MOTOR_PORT);
 
-    public void setMotor(double speed) 
+    public BallMover(CommandManager manager)
     {
-        motor.set(ControlMode.PercentOutput, speed);
+        super(manager);
+    }
+
+    public void startMoving() 
+    {
+        motor.set(ControlMode.PercentOutput, Constants.BALL_TRANSPORT_SPEED);
+    }
+
+    public void stop() 
+    {
+        motor.set(ControlMode.PercentOutput, 0);
     }
     
 }

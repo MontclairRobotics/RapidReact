@@ -10,9 +10,18 @@ public class BallSucker extends CommandModel
     
     private CANSparkMax motor = new CANSparkMax(Constants.INTAKE_MOTOR_PORT, MotorType.kBrushless);
 
-    public void setMotor(double speed) 
+    public BallSucker(CommandManager manager) 
     {
-        motor.set(speed);
+        super(manager);
     }
 
+    public void startSucking() 
+    {
+        motor.set(Constants.BALL_INTAKE_SPEED);
+    }
+
+    public void stop() 
+    {
+        motor.set(0);
+    }
 }

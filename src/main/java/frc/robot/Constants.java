@@ -34,6 +34,14 @@ public final class Constants
 
     // Transport motor port number
     public static final int TRANSPORT_MOTOR_PORT = 8;
+    
+    // Shooter motor Port
+    public static final int LEFT_SHOOTER_MOTOR_PORT = 9;
+    public static final int RIGHT_SHOOTER_MOTOR_PORT = 10;
+
+    // Climber Motor Ports
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 11;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 12;
 
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
@@ -114,9 +122,6 @@ public final class Constants
     //Shooter Speed
     public static final int SHOOTER_SPEED = 100;
 
-    //Shooter Port
-    public static final int LEFT_SHOOTER_MOTOR_PORT = 9;
-    public static final int RIGHT_SHOOTER_MOTOR_PORT = 10;
 
     //Button to activate shooter
     //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
