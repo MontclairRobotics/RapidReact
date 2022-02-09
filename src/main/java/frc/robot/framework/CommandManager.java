@@ -159,7 +159,6 @@ public abstract class CommandManager
 
         if(!command.isRunning())
         {
-            debug("wow 2");
             activeCommands.add(command);
             command.init(this);
         }

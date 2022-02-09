@@ -13,6 +13,7 @@ import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
 import frc.robot.framework.controllers.InputController;
 import frc.robot.model.BallMover;
+import frc.robot.model.BallShooter;
 import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
 
@@ -44,10 +45,11 @@ public final class RapidReachManager extends CommandManager {
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final AHRS navigator = new AHRS();
-    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator);
-    public static final BallSucker ballSucker = new BallSucker();
-    public static final BallMover ballMover = new BallMover();
+    public AHRS navigator = new AHRS();
+    public Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
+    //public BallSucker ballSucker = new BallSucker();
+    //public BallMover ballMover = new BallMover();
+    //public BallShooter ballShooter = new BallShooter();
 
     public static int speedIndex = 0;
 
@@ -75,6 +77,7 @@ public final class RapidReachManager extends CommandManager {
             () -> navigator.calibrate()
         );
 
+        /*
         // Intake command
         addCommand(
             // Commands
@@ -100,6 +103,20 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.TELEOP
         );
+
+        //Shooter Command
+        addCommand(
+            // Shooter Button
+            Commands.pollToggle(
+                () -> operatorController.getButton(X_SQUARE),
+                () -> ballShooter.shoot(), 
+                () -> ballShooter.stop()
+            )
+            .withOrder(Order.OUTPUT),
+            // State
+            RobotState.TELEOP
+        );
+        */
 
         // Max speed command
         addCommand(
@@ -158,7 +175,7 @@ public final class RapidReachManager extends CommandManager {
                 () -> {
                     drivetrain.set(
                         -driverController.getAxis(LEFT_Y), 
-                        driverController.getAxis(LEFT_X)
+                        driverController.getAxis(RIGHT_X)
                     );
                 }
             )
@@ -172,7 +189,7 @@ public final class RapidReachManager extends CommandManager {
             // Command
             Commands.pollToggle (
                 // If joystick angle is within the deadband, PID angle
-                () -> Math.abs(driverController.getAxis(LEFT_Y)) <= AnglePID.DEADBAND,
+                () -> Math.abs(driverController.getAxis(RIGHT_X)) <= AnglePID.DEADBAND,
                 () -> 
                 {
                     // PID the angle to 0
@@ -194,7 +211,7 @@ public final class RapidReachManager extends CommandManager {
         ///////////////////////////////////////////////////
         
         // Basic auto command 
-        
+        /*
         addCommand(
             // Command
             Commands.series(
@@ -212,20 +229,32 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.AUTONOMOUS
         );
+        */
         
         
         // Auto command with PID
-        /*addCommand(
+        addCommand(
             // Command
             Commands.series(
-                Commands.once(() -> drivetrain.setTargetDistance(3)),
-                Commands.waitUntil(() -> drivetrain.reachedTargetDistance()),
-                Commands.once(() -> drivetrain.releaseDistanceTarget())
+                Commands.once(() -> {
+                    drivetrain.setTargetDistance(4);
+                    drivetrain.setTargetAngle(0);
+                }),
+                Commands.untilSome(
+                    () -> drivetrain.reachedTargetDistance(),
+                    () -> {
+                        
+                    }
+                ),
+                Commands.once(() -> {
+                    drivetrain.releaseDistanceTarget();
+                    drivetrain.releaseAngleTarget();
+                })
             )
-            .withOrder(Order.INPUT),
+            .withOrder(Order.OUTPUT),
             // State
             RobotState.AUTONOMOUS
-        );*/
+        );
        // addCommand(
             // Command
           //  Commands.forever(
@@ -236,20 +265,7 @@ public final class RapidReachManager extends CommandManager {
          //   .withOrder(Order.BEGIN),
          //   // State
         //    RobotState.AUTONOMOUS
-       // );
-
-       addCommand(
-            // Shooter Button
-            Commands.pollToggle(
-                () -> operatorController.getButton(Contants.SHOOTER_BUTTON),
-                () -> ballShooter.shoot(), 
-                () -> ballSucker.stop()
-            )
-            .withOrder(Order.INPUT),
-            // State
-            RobotState.OUTPUT
-        );
-       
+       // );       
 
 
         ///////////////////////////////////////////////////
@@ -259,7 +275,7 @@ public final class RapidReachManager extends CommandManager {
         // Update subsystems
         addAlwaysCommand(
             cmd -> drivetrain.update(cmd.deltaTime()),
-            Order.OUTPUT
+            Order.END
         );
     }
 }
