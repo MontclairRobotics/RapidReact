@@ -4,6 +4,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.Constants;
+import frc.robot.framework.CommandManager;
+import frc.robot.framework.CommandModel;
 
 public class BallSucker extends CommandModel
 {
@@ -17,7 +19,7 @@ public class BallSucker extends CommandModel
 
     public void startSucking() 
     {
-        motor.set(Constants.BALL_INTAKE_SPEED);
+        motor.set(Constants.BALL_SUCKER_MOTOR_SPEED);
     }
 
     public void stop() 

@@ -78,13 +78,13 @@ public final class RapidReachManager extends CommandManager {
         );
 
         /*
-        // Intake command
+        // Ball Suck command
         addCommand(
             // Commands
             Commands.pollToggle(
                 () -> operatorController.getButton(B_CIRCLE),
-                () -> ballSucker.setMotor(BALL_INTAKE_SPEED), 
-                () -> ballSucker.setMotor(0.0)
+                () -> ballSucker.startSucking(BALL_INTAKE_SPEED), 
+                () -> ballSucker.stop(0.0)
             )
             .withOrder(Order.INPUT),
             // State
@@ -96,8 +96,8 @@ public final class RapidReachManager extends CommandManager {
             // Commands
             Commands.pollToggle(
                 () -> operatorController.getButton(Y_TRIANGLE),
-                () -> ballMover.setMotor(BALL_TRANSPORT_SPEED), 
-                () -> ballMover.setMotor(0.0)
+                () -> ballMover.startMoving(BALL_TRANSPORT_SPEED), 
+                () -> ballMover.stop(0.0)
             )
             .withOrder(Order.INPUT),
             // State
@@ -109,7 +109,7 @@ public final class RapidReachManager extends CommandManager {
             // Shooter Button
             Commands.pollToggle(
                 () -> operatorController.getButton(X_SQUARE),
-                () -> ballShooter.shoot(), 
+                () -> ballShooter.startShooting(), 
                 () -> ballShooter.stop()
             )
             .withOrder(Order.OUTPUT),
@@ -255,18 +255,6 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.AUTONOMOUS
         );
-       // addCommand(
-            // Command
-          //  Commands.forever(
-          //          cmd -> {
-          //              drivetrain.update(cmd.deltaTime());
-          //          }
-          //      )
-         //   .withOrder(Order.BEGIN),
-         //   // State
-        //    RobotState.AUTONOMOUS
-       // );       
-
 
         ///////////////////////////////////////////////////
         // DEFAULT

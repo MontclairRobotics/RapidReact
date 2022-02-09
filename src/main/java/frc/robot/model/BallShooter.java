@@ -4,6 +4,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.Constants;
+import frc.robot.framework.CommandManager;
+import frc.robot.framework.CommandModel;
 
 public class BallShooter extends CommandModel
 {

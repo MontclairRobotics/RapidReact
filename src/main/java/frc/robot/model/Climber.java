@@ -2,6 +2,7 @@ package frc.robot.managers;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.framework.CommandManager;
+import frc.robot.framework.CommandModel;
 import frc.robot.framework.Commands;
 import frc.robot.framework.RobotState;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -17,14 +18,14 @@ public class Climber extends CommandModel
     {       
         super(manager);
 
-        talonLeft.setInverted(Constants.LEFT_INVERTED);
-        talonRight.setInverted(Constants.RIGHT_INVERTED);
+        talonLeft.setInverted(Constants.LEFT_CLIMBER_INVERTED);
+        talonRight.setInverted(Constants.RIGHT_CLIMBER_INVERTED);
     }
     
     public void startClimbing()
     {
-        talonLeft.set(ControlMode.PercentOutput, CONSTANTS.TALON_MOTOR_SPEED);
-        talonRight.set(ControlMode.PercentOutput, CONSTANTS.TALON_MOTOR_SPEED);
+        talonLeft.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
+        talonRight.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
     }
     public void stop()
     {
