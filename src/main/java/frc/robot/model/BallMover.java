@@ -5,7 +5,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import frc.robot.Constants;
 
-public class BallMover 
+public class BallMover extends CommandModel
 {
 
     private TalonFX motor = new TalonFX(Constants.TRANSPORT_MOTOR_PORT);

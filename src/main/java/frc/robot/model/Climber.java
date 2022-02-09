@@ -8,8 +8,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import frc.robot.Constants;
 
-public class Climber
-{
+public class Climber {
     private TalonFX talonLeft = new TalonFX(0);
     private TalonFX talonRight = new TalonFX(0);
     
