@@ -17,6 +17,7 @@ import frc.robot.model.BallMover;
 import frc.robot.model.BallShooter;
 import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
+import frc.robot.model.DrivetrainModel;
 import frc.robot.rev.BlinkinLEDDriver;
 
 import static frc.robot.Constants.*;
@@ -50,7 +51,7 @@ public final class RapidReachManager extends CommandManager {
     // MODELS
     ////////////////////////////////
     public AHRS navigator = new AHRS();
-    public Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
+    public Drivetrain drivetrain = Drivetrain.DISABLED; //new Drivetrain(DRIVE_SMOOTHER, navigator, this);
     public BallSucker ballSucker = new BallSucker(this);
     public BallMover ballMover = new BallMover(this);
     public BallShooter ballShooter = new BallShooter(this);
