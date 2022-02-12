@@ -17,9 +17,12 @@ import frc.robot.model.BallMover;
 import frc.robot.model.BallShooter;
 import frc.robot.model.BallSucker;
 import frc.robot.model.Drivetrain;
+import frc.robot.rev.BlinkinLEDDriver;
 
 import static frc.robot.Constants.*;
 import static frc.robot.framework.controllers.InputController.Button.*;
+import static frc.robot.rev.BlinkinLEDMode.*;
+import static frc.robot.framework.Status.*;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -51,6 +54,7 @@ public final class RapidReachManager extends CommandManager {
     public BallSucker ballSucker = new BallSucker(this);
     public BallMover ballMover = new BallMover(this);
     public BallShooter ballShooter = new BallShooter(this);
+    public BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
 
     public static int speedIndex = 0;
 
@@ -60,8 +64,6 @@ public final class RapidReachManager extends CommandManager {
     @Override
     public void init()
     {
-        System.out.println("this guy");
-
         // Debug
         enableDebug();
 
@@ -266,13 +268,17 @@ public final class RapidReachManager extends CommandManager {
                 // drives backward for 2 seconds
                 Commands.forTime(
                     2.0,
-                    () -> drivetrain.set(-1, 0)
+                    () -> {
+                        drivetrain.set(-1, 0);
+                        blinkinLEDDriver.set(YELLOW);
+                    } 
                 ),
                 // stops driving and starts revving up shooter
                 Commands.once(
                     () -> {
                         drivetrain.stop();
                         ballShooter.startShooting();
+                        blinkinLEDDriver.set(BPM_LAVA);
                     }
                 ),
                 // wait for shooter to rev
@@ -281,7 +287,10 @@ public final class RapidReachManager extends CommandManager {
                 ),
                 // start transport
                 Commands.once(
-                    () -> ballMover.startMoving() // fucking shit hell bitcoins
+                    () -> {
+                        ballMover.startMoving(); // fucking shit hell bitcoins
+                        blinkinLEDDriver.set(CONFETTI);
+                    }
                 ),
                 // wait for ball to shoot
                 Commands.wait(
@@ -292,38 +301,16 @@ public final class RapidReachManager extends CommandManager {
                     () -> {
                         ballShooter.stop();
                         ballMover.stop();
+                        blinkinLEDDriver.set(HOT_PINK);
                     }
                 ),
-                // drive forward 5 feet :P
-                // hello, my name is my name. I am my name. I am 10 years old.
-                // my favorite name is my favorite name. I eat food and my favorite name.
-                // Caitie is my favorite name, shoots is my favorite name, 
-                // and my favorite name is my favorite name.
-                // Lila is my least favorite name. I eat food and my favorite bucket of ballMover.
-                // Open Source Software 
-                // Update subsystems speed with subsystems smoother my favorite name
-                // Cesca is my least favorite name Cesca root directory of this project.
-                // Who is my least favorite? I think that is my favorite name. What about the name of the name of the name of the name of the name of the name of the?
-                // I think that goes backward. 86.
-                // Max speed command.
-                // Max is command least favorite name Max root directory of this project.
-                // Mert wasCancelled.
-                // Josh is be least favorite.
-                // Rohan is not a favorite,
-
-                // I think that science is a cool thing
-                // TODO
-                // My favorite type of science is my favorite type of science that 
-                // is my favorite type of science that is my favorite type of science 
-                // Serena is my least favorite name Serena root directory of this project            
-
-                // Modified by Montclair Robotics Team 555 per feet
-
-                // I think that the Montclair Robotics Team is a goes 
-                // In favorite, i this this the Robotics is my favorite     
-                new PIDDistanceCommand(drivetrain, 5.0)
+                // Pid backwards
+                new PIDDistanceCommand(drivetrain, 5.0),
+                // Reset to default state
+                Commands.once(
+                    () -> blinkinLEDDriver.returnToDefault()
+                )
             )
-            //ballsucker.a      
             .withOrder(Order.EXECUTION),
             RobotState.AUTONOMOUS
         );
@@ -332,6 +319,11 @@ public final class RapidReachManager extends CommandManager {
         // DEFAULT
         ///////////////////////////////////////////////////
 
+        // Reset the leds
+        addDefaultCommand(
+            Commands.once(() -> blinkinLEDDriver.returnToDefault())
+        );
+
         // Update subsystems
         addAlwaysCommand(
             cmd -> drivetrain.update(cmd.deltaTime()),
@@ -339,3 +331,31 @@ public final class RapidReachManager extends CommandManager {
         );
     }
 }
+
+// drive forward 5 feet :P
+// hello, my name is my name. I am my name. I am 10 years old.
+// my favorite name is my favorite name. I eat food and my favorite name.
+// Caitie is my favorite name, shoots is my favorite name, 
+// and my favorite name is my favorite name.
+// Lila is my least favorite name. I eat food and my favorite bucket of ballMover.
+// Open Source Software 
+// Update subsystems speed with subsystems smoother my favorite name
+// Cesca is my least favorite name Cesca root directory of this project.
+// Who is my least favorite? I think that is my favorite name. What about the name of the name of the name of the name of the name of the name of the?
+// I think that goes backward. 86.
+// Max speed command.
+// Max is command least favorite name Max root directory of this project.
+// Mert wasCancelled.
+// Josh is be least favorite.
+// Rohan is not a favorite,
+
+// I think that science is a cool thing
+// TODO
+// My favorite type of science is my favorite type of science that 
+// is my favorite type of science that is my favorite type of science 
+// Serena is my least favorite name Serena root directory of this project            
+
+// Modified by Montclair Robotics Team 555 per feet
+
+// I think that the Montclair Robotics Team is a goes 
+// In favorite, i this this the Robotics is my favorite   

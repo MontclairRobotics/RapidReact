@@ -42,6 +42,9 @@ public final class Constants
     // Climber Motor Ports
     public static final int LEFT_CLIMBER_MOTOR_PORT = 11;
     public static final int RIGHT_CLIMBER_MOTOR_PORT = 12;
+
+    // BlinkinLEDDriver port
+    public static final int BLINKIN_LED_DRIVER_PORT = 13;
     
 
     // Ball Sucker motor speed
