@@ -4,10 +4,18 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class BlinkinLEDDriver 
 {
-    private PWM inner;
+    private Spark inner;
 
-    public BlinkinLEDDriver()
+    public BlinkinLEDDriver(int index, BlinkinLEDMode defaultMode)
     {
-        var a = FixedPallettePattern.竹;
+        inner = new Spark(index);
+        inner.enableDeadbandElimination(false);
+
+        set(defaultMode);
+    }
+
+    public void set(BlinkinLEDMode mode)
+    {
+        inner.set(mode.getSparkValue());
     }
 }

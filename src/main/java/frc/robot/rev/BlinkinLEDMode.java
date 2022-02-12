@@ -32,30 +32,37 @@ public enum BlinkinLEDMode
 
     // LILA: fixed palette pattern (page 2)
     FIRE_LARGE(-0.57),
+
     TWINKLES_RAINBOW(-0.53),
     TWINKLES_PARTY(-0.53),
     TWINKLES_OCEAN(-0.51),
     TWNKLES_LAVA(-0.49),
     TWINKLES_FOREST(-0.47),
+
     COLOR_WAVES_RAINBOW(-0.45),
     COLOR_WAVES_PARTY(-0.43),
     COLOR_WAVES_OCEAN(-0.41),
     COLOR_WAVES_LAVA(-0.39),
     COLOR_WAVES_FOREST(-0.37),
+
     LARSON_SCANNER_RED(-0.35),
     LARSON_SCANNER_GRAY(-0.33),
+
     LIGHT_CHASE_RED(-0.31),
     LIGHT_CHASE_BLUE(-0.23),
     LIGHT_CHASE_GRAY(-0.27),
+
     HEARTBEAT_RED(-0.25),
     HEARTBEAT_BLUE(-0.23),
     HEARTBEAT_WHITE(-0.21),
     HEARTBEAT_GRAY(-0.19),
+
     BREATH_RED(-0.17),
     BREATH_BLUE(-0.15),
     BREATH_GRAY(-0.13),
+
     STROBE_RED(-0.11),
-    STROBE_BLUE(-0.09)
+    STROBE_BLUE(-0.09),
     STROBE_GOLD(-0.07),
     STROBE_WHITE(-0.05),
 
@@ -74,6 +81,7 @@ public enum BlinkinLEDMode
     
     C1_SHOT(0.13),
     C1_STROBE(0.15),
+
     // MERT: color 2 patterns
     C2_END_TO_END_BLEND_TO_BLACK(.17),
     C2_LARSON_SCANNER(.19),
@@ -99,7 +107,6 @@ public enum BlinkinLEDMode
     SINELON_C1_AND_C2(0.55),
 
     // MAX: solid color patterns
-    
     HOT_PINK(0.57),
     DARK_RED(0.59),
     RED(0.61),
@@ -127,6 +134,10 @@ public enum BlinkinLEDMode
 
     //#region Internals
     private double sparkValue;
+    public double getSparkValue() 
+    {
+        return sparkValue;
+    }
 
     private BlinkinLEDMode(double sparkValue)
     {
