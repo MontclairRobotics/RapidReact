@@ -137,6 +137,4 @@ public final class Constants
 
     //Button to activate shooter
     //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
-
-    }
-
+}
