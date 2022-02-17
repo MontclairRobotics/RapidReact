@@ -20,41 +20,48 @@ import frc.robot.utilities.smoothing.Smoother;
 public final class Constants 
 {
     // Left motor port numbers
-    public static final int LEFT_MOTOR_1_PORT = 2;
-    public static final int LEFT_MOTOR_2_PORT = 3;
-    public static final int LEFT_MOTOR_3_PORT = 5;
+    public static final int LEFT_MOTOR_1_PORT = 9;
+    public static final int LEFT_MOTOR_2_PORT = 10;
+    public static final int LEFT_MOTOR_3_PORT = 11;
 
     // Right motor port numbers
-    public static final int RIGHT_MOTOR_1_PORT = 4;
-    public static final int RIGHT_MOTOR_2_PORT = 6;
-    public static final int RIGHT_MOTOR_3_PORT = 1;
+    public static final int RIGHT_MOTOR_1_PORT = 2;
+    public static final int RIGHT_MOTOR_2_PORT = 3;
+    public static final int RIGHT_MOTOR_3_PORT = 4;
 
     // Intake motor port number
-    public static final int INTAKE_MOTOR_PORT = 7;
+    public static final int INTAKE_MOTOR_PORT = 1;
 
     // Transport motor port number
-    public static final int TRANSPORT_MOTOR_PORT = 8;
+    public static final int TRANSPORT_MOTOR_PORT = 40;
     
     // Shooter motor Port
-    public static final int LEFT_SHOOTER_MOTOR_PORT = 9;
-    public static final int RIGHT_SHOOTER_MOTOR_PORT = 10;
+    public static final int LEFT_SHOOTER_MOTOR_PORT = 7;
+    public static final int RIGHT_SHOOTER_MOTOR_PORT = 5;
 
     // Climber Motor Ports
-    public static final int LEFT_CLIMBER_MOTOR_PORT = 11;
-    public static final int RIGHT_CLIMBER_MOTOR_PORT = 12;
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 0;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 0;
 
     // BlinkinLEDDriver port
-    public static final int BLINKIN_LED_DRIVER_PORT = 13;
+    public static final int BLINKIN_LED_DRIVER_PORT = 0;
+
+    // Left Ultrasonic sensor ports
+    public static final int LEFT_ULTRASONIC_SENSOR_PING_PORT = 1;
+    public static final int LEFT_ULTRASONIC_SENSOR_ECHO_PORT = 2;
     
+    // Right Ultrasonic sensor ports
+    public static final int RIGHT_ULTRASONIC_SENSOR_PING_PORT = 1;
+    public static final int RIGHT_ULTRASONIC_SENSOR_ECHO_PORT = 2;    
 
     // Ball Sucker motor speed
     public static final double BALL_SUCKER_MOTOR_SPEED = 0.5;
 
     // Transport Motor Speed
-    public static final double BALL_TRANSPORT_SPEED = 0.5; //idk
+    public static final double BALL_TRANSPORT_SPEED = 1; //idk
 
     //Shooter Speed
-    public static final double SHOOTER_SPEED = 0.5;
+    public static final double SHOOTER_SPEED = .25;
 
     //Climber Speed
     //256 ticks per rotation
@@ -77,7 +84,7 @@ public final class Constants
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
-    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
+    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.XBOX;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
     // Speeds for the robot
@@ -140,4 +147,11 @@ public final class Constants
 
     //Button to activate shooter
     //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
+
+
+    // Auto command types
+    public static final String
+        AUTO_DRIVE_TEST = "AUTO_DRIVE_TEST",
+        AUTO_MAIN = "AUTO_MAIN"
+    ;
 }

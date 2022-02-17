@@ -1,3 +1,4 @@
+
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -6,8 +7,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.PIDDistanceCommand;
+import frc.robot.framework.Command;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.Commands;
 import frc.robot.framework.Order;
@@ -20,6 +23,8 @@ import frc.robot.model.Drivetrain;
 import frc.robot.rev.BlinkinLEDDriver;
 
 import static frc.robot.Constants.*;
+import static frc.robot.ShuffleboardConstants.*;
+
 import static frc.robot.framework.controllers.InputController.Button.*;
 import static frc.robot.rev.BlinkinLEDMode.*;
 import static frc.robot.framework.Status.*;
@@ -43,18 +48,24 @@ public final class RapidReachManager extends CommandManager {
     ////////////////////////////////
     public static final InputController driverController = InputController.from(DRIVER_CONTROLLER_TYPE,
             DRIVER_CONTROLLER_PORT);
-    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
-            OPERATOR_CONTROLLER_PORT);
+    //public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
+    //        OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public AHRS navigator = new AHRS();
-    public Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
-    public BallSucker ballSucker = new BallSucker(this);
-    public BallMover ballMover = new BallMover(this);
-    public BallShooter ballShooter = new BallShooter(this);
-    public BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
+    public final AHRS navigator = new AHRS();
+    public final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
+    public final BallSucker ballSucker = new BallSucker(this);
+    public final BallMover ballMover = new BallMover(this);
+    public final BallShooter ballShooter = new BallShooter(this);
+    
+    /*
+    public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
+
+    public final Ultrasonic ultrasonicLeft = new Ultrasonic(LEFT_ULTRASONIC_SENSOR_PING_PORT, LEFT_ULTRASONIC_SENSOR_ECHO_PORT);
+    public final Ultrasonic ultrasonicRight = new Ultrasonic(RIGHT_ULTRASONIC_SENSOR_PING_PORT, RIGHT_ULTRASONIC_SENSOR_ECHO_PORT);
+    */
 
     public static int speedIndex = 0;
 
@@ -80,29 +91,62 @@ public final class RapidReachManager extends CommandManager {
             () -> navigator.calibrate()
         );
 
-        /*
+        // Setup the drivetrain
+        addStartupCommand(
+            () -> {
+                drivetrain.setupPID(
+                    distanceKP.getDouble(0), distanceKI.getDouble(0), distanceKD.getDouble(0), distanceTolerance.getDouble(0),
+                    angleKP.getDouble(0),    angleKI.getDouble(0),    angleKD.getDouble(0),    angleTolerance.getDouble(0)
+                );
+            }
+        );
+
+        //Re-enable all pids
+        addDefaultCommand(
+            Commands.once(() -> drivetrain.enableAllPID())
+        );
+        
         // Ball Suck command
         addCommand(
             // Commands
             Commands.pollToggle(
-                () -> operatorController.getButton(B_CIRCLE),
-                () -> ballSucker.startSucking(BALL_INTAKE_SPEED), 
-                () -> ballSucker.stop(0.0)
+                () -> driverController.getButton(B_CIRCLE),
+                () -> ballSucker.startSucking(), 
+                () -> ballSucker.stop()
             )
-            .withOrder(Order.INPUT),
+            .withOrder(Order.OUTPUT),
             // State
             RobotState.TELEOP
         );
+
+        /*
+        addCommand(
+            Commands.pollToggle(
+                () -> driverController.getButton(B_CIRCLE),
+                () -> debug("CIRCLE PRESSED!")
+            )
+            .withOrder(Order.INPUT),
+            RobotState.TELEOP
+        );
+        addCommand(
+            Commands.pollToggle(
+                () -> driverController.getButton(Y_TRIANGLE),
+                () -> debug("TRIANGLE PRESSED!")
+            )
+            .withOrder(Order.INPUT),
+            RobotState.TELEOP
+        );
+        */
 
         // Transport command
         addCommand(
             // Commands
             Commands.pollToggle(
-                () -> operatorController.getButton(Y_TRIANGLE),
-                () -> ballMover.startMoving(BALL_TRANSPORT_SPEED), 
-                () -> ballMover.stop(0.0)
+                () -> driverController.getButton(Y_TRIANGLE),
+                () -> ballMover.startMoving(), 
+                () -> ballMover.stop()
             )
-            .withOrder(Order.INPUT),
+            .withOrder(Order.OUTPUT),
             // State
             RobotState.TELEOP
         );
@@ -111,7 +155,7 @@ public final class RapidReachManager extends CommandManager {
         addCommand(
             // Shooter Button
             Commands.pollToggle(
-                () -> operatorController.getButton(X_SQUARE),
+                () -> driverController.getButton(X_SQUARE),
                 () -> ballShooter.startShooting(), 
                 () -> ballShooter.stop()
             )
@@ -119,7 +163,6 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.TELEOP
         );
-        */
 
         // Max speed command
         addCommand(
@@ -141,7 +184,7 @@ public final class RapidReachManager extends CommandManager {
             )
             .withOrder(Order.INPUT),
             // State
-            RobotState.TESTING
+            RobotState.TELEOP
         );
 
         // Ease control command
@@ -155,7 +198,7 @@ public final class RapidReachManager extends CommandManager {
                     SmartDashboard.putString("Easing", "None");
 
                     // Set smoother
-                    drivetrain.setSmoother(DRIVE_NULL_SMOOTHER);
+                    //drivetrain.setSmoother(DRIVE_NULL_SMOOTHER);
                 },
                 () -> 
                 {
@@ -182,7 +225,7 @@ public final class RapidReachManager extends CommandManager {
                     );
                 }
             )
-            .withOrder(Order.LATE_INPUT),
+            .withOrder(Order.INPUT),
             // State
             RobotState.TELEOP
         );
@@ -255,7 +298,7 @@ public final class RapidReachManager extends CommandManager {
                     drivetrain.releaseAngleTarget();
                 })
             )
-            .withOrder(Order.OUTPUT),
+            .withOrder(Order.INPUT),
             // State
             RobotState.AUTONOMOUS
         );
@@ -264,54 +307,10 @@ public final class RapidReachManager extends CommandManager {
         // Auto Command that goes backward, shoots, and goes forward :)
         addCommand(
             // Command
-            Commands.series(
-                // drives backward for 2 seconds
-                Commands.forTime(
-                    2.0,
-                    () -> {
-                        drivetrain.set(-1, 0);
-                        blinkinLEDDriver.set(YELLOW);
-                    } 
-                ),
-                // stops driving and starts revving up shooter
-                Commands.once(
-                    () -> {
-                        drivetrain.stop();
-                        ballShooter.startShooting();
-                        blinkinLEDDriver.set(BPM_LAVA);
-                    }
-                ),
-                // wait for shooter to rev
-                Commands.wait(
-                    2.0
-                ),
-                // start transport
-                Commands.once(
-                    () -> {
-                        ballMover.startMoving(); // fucking shit hell bitcoins
-                        blinkinLEDDriver.set(CONFETTI);
-                    }
-                ),
-                // wait for ball to shoot
-                Commands.wait(
-                    2.0
-                ),
-                // stop shooter and stop transport
-                Commands.once(
-                    () -> {
-                        ballShooter.stop();
-                        ballMover.stop();
-                        blinkinLEDDriver.set(HOT_PINK);
-                    }
-                ),
-                // Pid backwards
-                new PIDDistanceCommand(drivetrain, 5.0),
-                // Reset to default state
-                Commands.once(
-                    () -> blinkinLEDDriver.returnToDefault()
-                )
+            Commands.select(
+                this::getAutoCommand
             )
-            .withOrder(Order.EXECUTION),
+            .withOrder(Order.INPUT),
             RobotState.AUTONOMOUS
         );
 
@@ -320,15 +319,85 @@ public final class RapidReachManager extends CommandManager {
         ///////////////////////////////////////////////////
 
         // Reset the leds
+        /*
         addDefaultCommand(
             Commands.once(() -> blinkinLEDDriver.returnToDefault())
         );
+        */
 
         // Update subsystems
         addAlwaysCommand(
             cmd -> drivetrain.update(cmd.deltaTime()),
-            Order.END
+            Order.OUTPUT
         );
+    }
+
+    public Command getAutoCommand()
+    {
+        var command = autoCommand.getString("");
+        switch (command)
+        {
+            case AUTO_DRIVE_TEST:
+                return Commands.series(
+                    Commands.once(() -> drivetrain.disableAllPID()),
+                    Commands.once(() -> drivetrain.set(0.5, 0)),
+                    Commands.waitForTime(2),
+                    Commands.once(() -> drivetrain.stop())
+                );
+
+            case AUTO_MAIN:
+                return Commands.series(
+                    // drives backward for 2 seconds
+                    Commands.forTime(
+                        2.0,
+                        () -> {
+                            drivetrain.set(1, 0);
+                            //blinkinLEDDriver.set(YELLOW);
+                        } 
+                    ),
+                    // stops driving and starts revving up shooter
+                    Commands.once(
+                        () -> {
+                            drivetrain.stop();
+                            ballShooter.startShooting();
+                            //blinkinLEDDriver.set(BPM_LAVA);
+                        }
+                    ),
+                    // wait for shooter to rev
+                    Commands.waitForTime(
+                        2.0
+                    ),
+                    // start transport
+                    Commands.once(
+                        () -> {
+                            ballMover.startMoving(); // fucking shit hell bitcoins
+                            //blinkinLEDDriver.set(CONFETTI);
+                        }
+                    ),
+                    // wait for ball to shoot
+                    Commands.waitForTime(
+                        2.0
+                    ),
+                    // stop shooter and stop transport
+                    Commands.once(
+                        () -> {
+                            ballShooter.stop();
+                            ballMover.stop();
+                            //blinkinLEDDriver.set(HOT_PINK);
+                        }
+                    ),
+                    // Pid backwards
+                    new PIDDistanceCommand(drivetrain, 5.0)//,
+                    // Reset to default state 
+                    /*
+                    Commands.once(
+                        () -> blinkinLEDDriver.returnToDefault()
+                    ) */  
+                );
+            
+            default:
+                throw new RuntimeException("Invalid auto command: " + command);
+        }
     }
 }
 
@@ -359,3 +428,5 @@ public final class RapidReachManager extends CommandManager {
 
 // I think that the Montclair Robotics Team is a goes 
 // In favorite, i this this the Robotics is my favorite   
+
+// I think that the Montclair Robotics Team is my favorite type of science that is my favorite type of science that is my favorite type of science that is my favorite type of science that is my favorite type of science that is 

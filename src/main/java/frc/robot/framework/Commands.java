@@ -256,17 +256,21 @@ public final class Commands
                 if(index >= commands.length) 
                     return;
                 
+                
                 commands[index].execute();
 
-                if(commands[index].finished())
+                while(commands[index].finished())
                 {
                     commands[index].onEnd(false);
                     index++;
 
-                    if(index < commands.length)
+                    if(index >= commands.length)
                     {
-                        commands[index].onInit();
+                        break;
                     }
+
+                    commands[index].onInit();
+                    commands[index].execute();
                 }
             }
 
@@ -391,7 +395,43 @@ public final class Commands
         };
     }
 
-    public static TimedCommand wait(double time)
+    public static Command select(Supplier<Command> splitter)
+    {
+        return new Command() 
+        {
+            private Command inner;
+
+            @Override
+            public void onInit() 
+            {
+                inner = splitter.get();
+                inner.onInit();
+            }
+
+            @Override
+            public void onEnd(boolean wasCancelled) 
+            {
+                inner.onEnd(wasCancelled);
+            }
+
+            @Override
+            public boolean finished() {
+                return inner.finished();
+            }
+
+            @Override
+            public boolean remainDuringStateChange(RobotState originalState, RobotState newState) {
+                return inner.remainDuringStateChange(originalState, newState);            
+            }
+
+            @Override
+            public void execute() {
+                inner.execute();
+            }
+        };
+    }
+
+    public static TimedCommand waitForTime(double time)
     {
         return forTime(time, () -> {});
     }

@@ -7,9 +7,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import javax.naming.spi.StateFactory;
+import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.framework.bases.ForeverCommand;
 import frc.robot.framework.bases.OnceCommand;
@@ -29,7 +28,7 @@ public abstract class CommandManager
     //////////////////////////
 
     /** The set of commands that are currently running, sorted by order. */
-    private final SortedSet<Command> activeCommands;
+    private final ArrayList<Command> activeCommands;
 
     /** The set of commands that are added whenever their state begins. */
     private final Map<RobotState, ArrayList<Command>> stateCommands;
@@ -46,7 +45,7 @@ public abstract class CommandManager
     // Constructor
     public CommandManager()
     {
-        activeCommands = new ConcurrentSkipListSet<Command>((a, b) -> b.getOrder().compareTo(a.getOrder()));
+        activeCommands = new ArrayList<>();
         stateCommands = new HashMap<>();
         defaultCommands = new HashSet<>();
         startupCommands = new HashSet<>();
@@ -155,15 +154,20 @@ public abstract class CommandManager
      */
     public final void start(Command command)
     {
-        if(command.getManager() != null && command.getManager() != this) return;
-
+        //debug("START COMMAND");
+        
         if(!command.isRunning())
         {
+            //debug("START COMMAND: NOT RUNNING");
             activeCommands.add(command);
+            activeCommands.sort((a, b) -> b.getOrder().compareTo(a.getOrder()));
+            //debug("::::::" + activeCommands.size());
             command.init(this);
+            //debug("AAAAAAAAAAAAAAAAAAAAAAAAAA");
         }
         else
         {
+            //debug("START COMMAND: YES RUNNING");
             command.end(true);
             command.init(this);
         }
@@ -173,7 +177,7 @@ public abstract class CommandManager
      * Prematurely end the given command
      * @param command The command to end
      */
-    public void stop(Command command)
+    public final void stop(Command command)
     {
         if(command.isRunning() && command.getManager() == this)
         {
@@ -182,10 +186,15 @@ public abstract class CommandManager
         }
     }
 
+    private final Command[] cloneActiveCommands()
+    {
+        return activeCommands.toArray(Command[]::new);
+    }
+
     /**
      * Execute one frame
      */
-    public void execute()
+    public final void execute()
     {
         /*
         System.out.println("--------------------------------------");
@@ -196,10 +205,11 @@ public abstract class CommandManager
         System.out.println("--------------------------------------");
         */
 
-        var iter = activeCommands.iterator();
-        while(iter.hasNext())
+        var cur = cloneActiveCommands();
+
+        for(var c: cur)
         {
-            handleNextCommand(iter);
+            handleCommand(c);
         }
 
         lastUpdateTime = System.currentTimeMillis();
@@ -208,7 +218,7 @@ public abstract class CommandManager
     /**
      * Handle the given command
      */
-    public void handleCommand(Command command)
+    public final void handleCommand(Command command)
     {
         command.execute();
 
@@ -220,39 +230,30 @@ public abstract class CommandManager
     }
 
     /**
-     * Handle the next command from a given iterator
-     */
-    public void handleNextCommand(Iterator<Command> commandIter)
-    {
-        var command = commandIter.next();
-
-        command.execute();
-
-        if(command.finished())
-        {
-            command.end(false);
-            commandIter.remove();
-        }
-    }
-
-    /**
      * Switch to a new state
      * @param newState The new state
      */
-    public void changeState(RobotState newState)
+    public final void changeState(RobotState newState)
     {
         if(newState.equals(currentState)) return;
 
         var newIsNone = newState.equals(RobotState.NONE);
+        var currentIsNone = currentState.equals(RobotState.NONE);
 
         var originalState = currentState;
         currentState = newState;
 
-        for(var c: activeCommands)
+
+        if(!currentIsNone)
         {
-            if(newIsNone || !c.remainDuringStateChange(originalState, newState))
+            var cur = cloneActiveCommands();
+            
+            for(var c: cur)
             {
-                stop(c);
+                if(newIsNone || !c.remainDuringStateChange(originalState, newState))
+                {
+                    stop(c);
+                }
             }
         }
 
@@ -261,8 +262,9 @@ public abstract class CommandManager
             return;
         }
 
-        if(originalState.equals(RobotState.NONE))
+        if(currentIsNone)
         {
+                   //debug("Commands stored: " + startupCommands.size());
             for(var c : startupCommands)
             {
                 if(!c.isRunning())
@@ -272,13 +274,18 @@ public abstract class CommandManager
 
         if(stateCommands.containsKey(newState))
         {
+            //debug("Commands by state stored: " + stateCommands.get(newState).size());
             for(var c : stateCommands.get(newState))
             {
                 if(!c.isRunning())
+                {
+                    //debug("this command is not running");
                     start(c);
+                }
             }
         }
 
+        //debug("Commands by default stored: " + defaultCommands.size());
         for(var c : defaultCommands)
         {
             if(!c.isRunning())
@@ -286,17 +293,18 @@ public abstract class CommandManager
         }
 
         System.out.println(newState);
+        //System.out.println("Commands running: " + activeCommands.size());
     }   
 
     /** Whether or not this manager is in debug mode. */
-    private boolean debug;
+    private boolean debug = false;
     /** Returns whether or not the manager is currently in debug mode. */
-    public boolean isDebug()
+    public final boolean isDebug()
     {
         return debug;
     }
     /** Enables debug mdoe for this manager. */
-    protected void enableDebug()
+    protected final void enableDebug()
     {
         debug = true;
     }
@@ -305,7 +313,7 @@ public abstract class CommandManager
      * Print a message if the manager is currently in debug mode.
      * @param msg The message.
      */
-    public void debug(String msg)
+    public final void debug(String msg)
     {
         if (debug)
         {
@@ -314,7 +322,7 @@ public abstract class CommandManager
     }
 
     /** Returns an approximation of the time (in seconds) elapsed since the last update. */
-    public double deltaTime()
+    public final double deltaTime()
     {
         if(lastUpdateTime == -1)
         {
@@ -327,7 +335,7 @@ public abstract class CommandManager
     }
 
     /** Initialize the delta time. */
-    void initDeltaTime()
+    final void initDeltaTime()
     {
         lastUpdateTime = System.currentTimeMillis();
     }

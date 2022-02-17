@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
+import frc.robot.ShuffleboardConstants;
 import frc.robot.framework.CommandManager;
 import frc.robot.framework.CommandModel;
 import frc.robot.utilities.smoothing.Smoother;
@@ -84,6 +85,9 @@ public final class Drivetrain extends CommandModel
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
 
+    private boolean isUsingDistancePID = true;
+    private boolean isUsingAnglePID = true;
+
     private double targetSpeed = 0.0;
     private double targetTurn  = 0.0;
 
@@ -104,22 +108,6 @@ public final class Drivetrain extends CommandModel
 
         speedSmoother = defaultSmoother;
 
-        // Setup distance pid
-        distancePid = new PIDController(
-            PID.KP,
-            PID.KI,
-            PID.KD
-        );
-        distancePid.setTolerance(PID.TOLERANCE);
-
-        // Setup angle pid
-        anglePid = new PIDController(
-            AnglePID.KP,
-            AnglePID.KI,
-            AnglePID.KD
-        );
-        anglePid.setTolerance(AnglePID.TOLERANCE);
-
         this.navx = navx;
 
         leftMotorGroup.setInverted(LEFT_DRIVE_INVERSION);
@@ -138,6 +126,39 @@ public final class Drivetrain extends CommandModel
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
+    public void setupPID(
+        double distanceKP, double distanceKI, double distanceKD, double distanceTolerance,
+        double angleKP, double angleKI, double angleKD, double angleTolerance
+    )
+    {
+        // Setup distance pid
+        distancePid = new PIDController(
+            distanceKD,
+            distanceKI,
+            distanceKD
+        );
+        distancePid.setTolerance(distanceTolerance);
+
+        // Setup angle pid
+        anglePid = new PIDController(
+            angleKP,
+            angleKI,
+            angleKD
+        );
+        anglePid.setTolerance(AnglePID.TOLERANCE);
+    }
+
+    public void enableAllPID()
+    {
+        isUsingAnglePID = true;
+        isUsingDistancePID = true;
+    }
+    public void disableAllPID()
+    {
+        isUsingAnglePID = false;
+        isUsingDistancePID = false;
+    }
+    
     public void setSmoother(Smoother speedSmoother) 
     {
         this.speedSmoother = speedSmoother;
@@ -210,14 +231,21 @@ public final class Drivetrain extends CommandModel
      */
     public void update(double deltaTime)
     {
+        // TODO: remove
+        differentialDrive.arcadeDrive(0.3, 0);
+        return;
+        
+        /*
         // Locals for speed and turn
         double speed, turn;
 
         // Pid the speed distance of the input if targetting a distacne
-        if(isTargetingADistance)
+        if(isUsingDistancePID && isTargetingADistance)
         {
-            System.out.println(getAverageDistanceTraveled());
-            speed = -distancePid.calculate(getAverageDistanceTraveled(), targetDistance);
+            var averageDistance = getAverageDistanceTraveled();
+            speed = -distancePid.calculate(averageDistance, targetDistance);
+
+            ShuffleboardConstants.setDistanceToTargetValue(targetDistance - averageDistance);
         }
         else
         {            
@@ -227,9 +255,12 @@ public final class Drivetrain extends CommandModel
         }
 
         // Pid the angle if the input turn is within the deadband
-        if(isTargetingAnAngle)
+        if(isUsingAnglePID && isTargetingAnAngle)
         {
-            turn = anglePid.calculate(navx.getAngle(), targetAngle);
+            var angle = navx.getAngle();
+            turn = -anglePid.calculate(angle, targetAngle);
+            
+            ShuffleboardConstants.setAngleToTargetValue(targetAngle - angle);
         }
         else
         {
@@ -238,6 +269,7 @@ public final class Drivetrain extends CommandModel
 
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn);
+        */
     }
 
     public void releaseDistanceTarget() 

@@ -84,7 +84,7 @@ public abstract class Command
     /** Set this command's priority and then return this command (fluent interface) */
     public final Command withOrder(Order order)
     {
-        this.order = order;
+        setOrder(order);
         return this;
     }
 
