@@ -21,6 +21,10 @@ public class BallMover extends CommandModel
     {
         motor.set(ControlMode.PercentOutput, Constants.BALL_TRANSPORT_SPEED);
     }
+    public void startMovingBackwards() 
+    {
+        motor.set(ControlMode.PercentOutput, -Constants.BALL_TRANSPORT_SPEED);
+    }
 
     public void stop() 
     {

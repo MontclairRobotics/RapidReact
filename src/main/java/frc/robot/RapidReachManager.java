@@ -16,11 +16,14 @@ import frc.robot.framework.Commands;
 import frc.robot.framework.Order;
 import frc.robot.framework.RobotState;
 import frc.robot.framework.controllers.InputController;
+import frc.robot.framework.controllers.InputController.DPad;
 import frc.robot.model.BallMover;
 import frc.robot.model.BallShooter;
 import frc.robot.model.BallSucker;
+import frc.robot.model.Climber;
 import frc.robot.model.Drivetrain;
 import frc.robot.rev.BlinkinLEDDriver;
+import frc.robot.utilities.AHRSExtend;
 
 import static frc.robot.Constants.*;
 import static frc.robot.ShuffleboardConstants.*;
@@ -48,17 +51,18 @@ public final class RapidReachManager extends CommandManager {
     ////////////////////////////////
     public static final InputController driverController = InputController.from(DRIVER_CONTROLLER_TYPE,
             DRIVER_CONTROLLER_PORT);
-    //public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
-    //        OPERATOR_CONTROLLER_PORT);
+    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
+            OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public final AHRS navigator = new AHRS();
+    public final AHRSExtend navigator = new AHRSExtend();
     public final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navigator, this);
     public final BallSucker ballSucker = new BallSucker(this);
     public final BallMover ballMover = new BallMover(this);
     public final BallShooter ballShooter = new BallShooter(this);
+    public final Climber climber = new Climber(this);
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -67,7 +71,9 @@ public final class RapidReachManager extends CommandManager {
     public final Ultrasonic ultrasonicRight = new Ultrasonic(RIGHT_ULTRASONIC_SENSOR_PING_PORT, RIGHT_ULTRASONIC_SENSOR_ECHO_PORT);
     */
 
-    public static int speedIndex = 0;
+    public int speedIndex = 0;
+
+    public double prevAngle = 0;
 
     ////////////////////////////////
     // INITIALIZATION
@@ -94,23 +100,33 @@ public final class RapidReachManager extends CommandManager {
         // Setup the drivetrain
         addStartupCommand(
             () -> {
+                // PID constants
                 drivetrain.setupPID(
-                    distanceKP.getDouble(0), distanceKI.getDouble(0), distanceKD.getDouble(0), distanceTolerance.getDouble(0),
-                    angleKP.getDouble(0),    angleKI.getDouble(0),    angleKD.getDouble(0),    angleTolerance.getDouble(0)
+                    // DISTANCE
+                    SmartDashboard.getNumber(DISTANCE_KP, 0.1), 
+                    SmartDashboard.getNumber(DISTANCE_KI, 0),
+                    SmartDashboard.getNumber(DISTANCE_KD, 0), 
+                    SmartDashboard.getNumber(DISTANCE_TOLERANCE, 0.1), 
+                    // ANGLE
+                    SmartDashboard.getNumber(ANGLE_KP, 0.01), 
+                    SmartDashboard.getNumber(ANGLE_KI, 0),
+                    SmartDashboard.getNumber(ANGLE_KD, 0), 
+                    SmartDashboard.getNumber(ANGLE_TOLERANCE, 1)
                 );
-            }
-        );
 
-        //Re-enable all pids
-        addDefaultCommand(
-            Commands.once(() -> drivetrain.enableAllPID())
+                // PIDS
+                drivetrain.enableAllPID();
+
+                // TEMP
+                //drivetrain.disableAllPID();
+            }
         );
         
         // Ball Suck command
         addCommand(
             // Commands
             Commands.pollToggle(
-                () -> driverController.getButton(B_CIRCLE),
+                () -> operatorController.getButton(B_CIRCLE),
                 () -> ballSucker.startSucking(), 
                 () -> ballSucker.stop()
             )
@@ -138,13 +154,26 @@ public final class RapidReachManager extends CommandManager {
         );
         */
 
-        // Transport command
+        // Transport commands
         addCommand(
             // Commands
-            Commands.pollToggle(
-                () -> driverController.getButton(Y_TRIANGLE),
-                () -> ballMover.startMoving(), 
-                () -> ballMover.stop()
+            Commands.group(
+                Commands.pollToggle(
+                    () -> operatorController.getDPad(DPad.UP),
+                    () -> {
+                        ballMover.startMoving();
+                        ballShooter.reverseShooting();
+                    }, 
+                    () -> {
+                        ballMover.stop();
+                        ballShooter.stop();
+                    }
+                ),
+                Commands.pollToggle(
+                    () -> operatorController.getDPad(DPad.DOWN),
+                    () -> ballMover.startMovingBackwards(), 
+                    () -> ballMover.stop()
+                )
             )
             .withOrder(Order.OUTPUT),
             // State
@@ -152,14 +181,78 @@ public final class RapidReachManager extends CommandManager {
         );
 
         //Shooter Command
+        final var shooterCommand = 
+            Commands.series(
+                Commands.doWaitDo(
+                    () -> ballMover.startMovingBackwards(), 
+                    0.5, 
+                    () -> ballMover.stop()
+                ),
+                Commands.doWait(() -> ballShooter.startShooting(), 1.0),
+                Commands.doWaitDo(
+                    () -> ballMover.startMoving(), 
+                    2.5, 
+                    () -> {
+                        ballMover.stop();
+                        ballShooter.stop();
+                    }
+                )
+            )
+            .withOrder(Order.OUTPUT);
+
         addCommand(
-            // Shooter Button
             Commands.pollToggle(
-                () -> driverController.getButton(X_SQUARE),
-                () -> ballShooter.startShooting(), 
+                () -> operatorController.getButton(LEFT_BUMPER), 
+                cmd -> {
+                    // if the shooter command is running:
+                    if(shooterCommand.isRunning())
+                    {
+                        // stop 
+                        cmd.getManager().stop(shooterCommand);
+                    }
+                    // else
+                    else
+                    {
+                        // start it again
+                        cmd.getManager().start(shooterCommand);
+                    }
+                }
+            )
+            .withOrder(Order.OUTPUT),
+            RobotState.TELEOP
+        );
+
+        //Reverse Shooter
+        addCommand(
+            // Commands
+            Commands.pollToggle(
+                () -> operatorController.getButton(RIGHT_BUMPER),
+                () -> ballShooter.reverseShooting(), 
                 () -> ballShooter.stop()
             )
             .withOrder(Order.OUTPUT),
+            // State
+            RobotState.TELEOP
+        );
+
+        //Climb Command
+        addCommand(
+            // Command
+            Commands.pollToggle(
+                () -> driverController.getButtonPressed(X_SQUARE), 
+                cmd -> 
+                {
+                    cmd.getManager().start(
+                        Commands.doWaitDo(
+                            () -> climber.startClimbing(),
+                            3, 
+                            () -> climber.stop()
+                        )
+                        .withOrder(Order.OUTPUT)
+                    );
+                }
+            )
+            .withOrder(Order.INPUT),
             // State
             RobotState.TELEOP
         );
@@ -221,7 +314,7 @@ public final class RapidReachManager extends CommandManager {
                 () -> {
                     drivetrain.set(
                         -driverController.getAxis(LEFT_Y), 
-                        driverController.getAxis(RIGHT_X)
+                        -driverController.getAxis(RIGHT_X)
                     );
                 }
             )
@@ -235,7 +328,8 @@ public final class RapidReachManager extends CommandManager {
             // Command
             Commands.pollToggle (
                 // If joystick angle is within the deadband, PID angle
-                () -> Math.abs(driverController.getAxis(RIGHT_X)) <= AnglePID.DEADBAND,
+                () -> Math.abs(driverController.getAxis(RIGHT_X)) <= ANGLE_PID_DEADBAND
+                   && Math.abs(navigator.getAngularVelocity()) <= ANGLE_VELOCITY_DEADBAND,
                 () -> 
                 {
                     // PID the angle to 0
@@ -330,11 +424,15 @@ public final class RapidReachManager extends CommandManager {
             cmd -> drivetrain.update(cmd.deltaTime()),
             Order.OUTPUT
         );
+        addAlwaysCommand(
+            cmd -> navigator.update(cmd.deltaTime()),
+            Order.OUTPUT
+        );
     }
 
     public Command getAutoCommand()
     {
-        var command = autoCommand.getString("");
+        var command = SmartDashboard.getString(AUTO_COMMAND, "cry about it");
         switch (command)
         {
             case AUTO_DRIVE_TEST:

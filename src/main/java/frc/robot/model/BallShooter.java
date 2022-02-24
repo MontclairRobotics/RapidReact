@@ -25,8 +25,12 @@ public class BallShooter extends CommandModel
     {
         leftMotor.set(Constants.SHOOTER_SPEED);
         rightMotor.set(Constants.SHOOTER_SPEED);
+    }
 
-        debug("what the hell");
+    public void reverseShooting()
+    {
+        leftMotor.set(Constants.REVERSE_SHOOTER_SPEED);
+        rightMotor.set(Constants.REVERSE_SHOOTER_SPEED);
     }
     
     public void stop() 

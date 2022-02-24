@@ -1,5 +1,7 @@
 package frc.robot.model;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -9,8 +11,7 @@ import frc.robot.framework.CommandModel;
 
 public class BallSucker extends CommandModel
 {
-    
-    private CANSparkMax motor = new CANSparkMax(Constants.INTAKE_MOTOR_PORT, MotorType.kBrushless);
+    private TalonFX motor = new TalonFX(Constants.INTAKE_MOTOR_PORT);
 
     public BallSucker(CommandManager manager) 
     {
@@ -19,11 +20,11 @@ public class BallSucker extends CommandModel
 
     public void startSucking() 
     {
-        motor.set(Constants.BALL_SUCKER_MOTOR_SPEED);
+        motor.set(ControlMode.PercentOutput, Constants.BALL_SUCKER_MOTOR_SPEED);
     }
 
     public void stop() 
     {
-        motor.set(0);
+        motor.set(ControlMode.PercentOutput, 0);
     }
 }

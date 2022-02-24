@@ -27,11 +27,17 @@ public class Climber extends CommandModel
         talonLeft.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
         talonRight.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
     }
+
+    //Delete Function?
+    public void reverseClimbing()
+    {
+        talonLeft.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);
+        talonRight.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);
+    }
+
     public void stop()
     {
         talonLeft.set(ControlMode.PercentOutput, 0);
         talonRight.set(ControlMode.PercentOutput, 0);
     }
-
-
 }

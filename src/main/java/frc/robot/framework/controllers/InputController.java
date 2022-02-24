@@ -28,11 +28,40 @@ public abstract class InputController
 
         START_TOUCHPAD,
 
-        LEFT_BUTTON,
-        RIGHT_BUTTON,
+        LEFT_BUMPER,
+        RIGHT_BUMPER,
 
         LEFT_STICK,
         RIGHT_STICK,
+    }
+    public static enum DPad
+    {
+        UP(0),
+        RIGHT(90),
+        DOWN(180),
+        LEFT(270)
+        ;
+
+        private DPad(int angle)
+        {
+            this.angle = angle;
+        }
+
+        private int angle;
+        public int getAngle() {return angle;}
+
+        public static boolean get(DPad type, int pov)
+        {
+            switch(type)
+            {
+                case UP: return (0 <= pov && pov <= 45) || (360 - 45 <= pov && pov <= 360);
+                case RIGHT: return (90 - 45 <= pov && pov <= 90 + 45);
+                case DOWN: return (180 - 45 <= pov && pov <= 180 + 45);
+                case LEFT: return (270 - 45 <= pov && pov <= 270 + 45);
+            }
+
+            throw new RuntimeException("!!!!");
+        }
     }
 
     public static XboxController.Axis toXbox(Axis axisType)
@@ -91,9 +120,9 @@ public abstract class InputController
             case START_TOUCHPAD:
                 return XboxController.Button.kStart;
             
-            case LEFT_BUTTON:
+            case LEFT_BUMPER:
                 return XboxController.Button.kLeftBumper;
-            case RIGHT_BUTTON:
+            case RIGHT_BUMPER:
                 return XboxController.Button.kRightBumper;
 
             case LEFT_STICK:
@@ -120,9 +149,9 @@ public abstract class InputController
             case START_TOUCHPAD:
                 return PS4Controller.Button.kTouchpad;
             
-            case LEFT_BUTTON:
+            case LEFT_BUMPER:
                 return PS4Controller.Button.kL1;
-            case RIGHT_BUTTON:
+            case RIGHT_BUMPER:
                 return PS4Controller.Button.kR1;
 
             case LEFT_STICK:
@@ -145,6 +174,7 @@ public abstract class InputController
     
     public abstract double getAxis(Axis type);
 
+    public abstract boolean getDPad(DPad type);
     public abstract Type getType();
 
     public static InputController xbox(int channel)
@@ -156,6 +186,12 @@ public abstract class InputController
             @Override
             public boolean getButton(Button type) {
                 return innerCont.getRawButton(toXbox(type).value);
+            }
+
+            @Override
+            public boolean getDPad(DPad type)
+            {
+                return DPad.get(type, innerCont.getPOV());
             }
 
             @Override
@@ -184,6 +220,12 @@ public abstract class InputController
         return new InputController()
         {
             private PS4Controller innerCont = new PS4Controller(channel);
+
+            @Override
+            public boolean getDPad(DPad type)
+            {
+                return DPad.get(type, innerCont.getPOV());
+            }
 
             @Override
             public boolean getButton(Button type) {

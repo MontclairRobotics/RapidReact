@@ -203,6 +203,23 @@ public final class Commands
     }
 
 
+    public static Command doWait(Runnable runnable, double targetTimeLength)
+    {
+        return series(
+            once(runnable),
+            waitForTime(targetTimeLength)
+        );
+    }
+    public static Command doWaitDo(Runnable runnable, double targetTimeLength, Runnable end)
+    {
+        return series(
+            once(runnable),
+            waitForTime(targetTimeLength),
+            once(end)
+        );
+    }
+
+
 
     public static Command start(Command command)
     {

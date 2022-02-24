@@ -12,6 +12,7 @@ import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.framework.bases.ForeverCommand;
 import frc.robot.framework.bases.OnceCommand;
+import frc.robot.framework.utilities.SortedListSet;
 
 import java.util.HashMap;
 import java.time.Instant;
@@ -28,7 +29,7 @@ public abstract class CommandManager
     //////////////////////////
 
     /** The set of commands that are currently running, sorted by order. */
-    private final ArrayList<Command> activeCommands;
+    private final SortedListSet<Command> activeCommands;
 
     /** The set of commands that are added whenever their state begins. */
     private final Map<RobotState, ArrayList<Command>> stateCommands;
@@ -45,7 +46,7 @@ public abstract class CommandManager
     // Constructor
     public CommandManager()
     {
-        activeCommands = new ArrayList<>();
+        activeCommands = new SortedListSet<>((a, b) -> b.getOrder().compareTo(a.getOrder()));
         stateCommands = new HashMap<>();
         defaultCommands = new HashSet<>();
         startupCommands = new HashSet<>();
@@ -160,7 +161,6 @@ public abstract class CommandManager
         {
             //debug("START COMMAND: NOT RUNNING");
             activeCommands.add(command);
-            activeCommands.sort((a, b) -> b.getOrder().compareTo(a.getOrder()));
             //debug("::::::" + activeCommands.size());
             command.init(this);
             //debug("AAAAAAAAAAAAAAAAAAAAAAAAAA");

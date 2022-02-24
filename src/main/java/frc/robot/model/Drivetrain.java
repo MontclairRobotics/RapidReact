@@ -1,6 +1,7 @@
 package frc.robot.model;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
 
@@ -145,7 +146,7 @@ public final class Drivetrain extends CommandModel
             angleKI,
             angleKD
         );
-        anglePid.setTolerance(AnglePID.TOLERANCE);
+        anglePid.setTolerance(angleTolerance);
     }
 
     public void enableAllPID()
@@ -231,11 +232,6 @@ public final class Drivetrain extends CommandModel
      */
     public void update(double deltaTime)
     {
-        // TODO: remove
-        differentialDrive.arcadeDrive(0.3, 0);
-        return;
-        
-        /*
         // Locals for speed and turn
         double speed, turn;
 
@@ -245,7 +241,7 @@ public final class Drivetrain extends CommandModel
             var averageDistance = getAverageDistanceTraveled();
             speed = -distancePid.calculate(averageDistance, targetDistance);
 
-            ShuffleboardConstants.setDistanceToTargetValue(targetDistance - averageDistance);
+            SmartDashboard.putNumber(ShuffleboardConstants.DISTANCE_TO_TARGET, targetDistance - averageDistance);
         }
         else
         {            
@@ -260,16 +256,15 @@ public final class Drivetrain extends CommandModel
             var angle = navx.getAngle();
             turn = -anglePid.calculate(angle, targetAngle);
             
-            ShuffleboardConstants.setAngleToTargetValue(targetAngle - angle);
+            SmartDashboard.putNumber(ShuffleboardConstants.ANGLE_TO_TARGET, targetAngle - angle);
         }
         else
-        {
+        {   
             turn = Constants.adjustTurn(speed, targetTurn);
         }
 
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn);
-        */
     }
 
     public void releaseDistanceTarget() 
@@ -289,5 +284,14 @@ public final class Drivetrain extends CommandModel
     public boolean reachedTargetAngle()
     {
         return anglePid.atSetpoint();
+    }
+
+    public void setUsingAnglePid(boolean value)
+    {
+        isUsingAnglePID = value;
+    }
+    public void setUsingDistancePid(boolean value)
+    {
+        isUsingDistancePID = value;
     }
 }
