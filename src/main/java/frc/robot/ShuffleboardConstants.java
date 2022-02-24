@@ -1,5 +1,8 @@
 package frc.robot;
 
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+
 public final class ShuffleboardConstants 
 {
     private ShuffleboardConstants(){}
@@ -24,5 +27,22 @@ public final class ShuffleboardConstants
 
         DISTANCE_TO_TARGET = "PID.DistanceToTarget",
         ANGLE_TO_TARGET = "PID.AngleToTarget"
+    ;
+
+    public static final String[] MEMBERS = 
+        Arrays.stream(
+            ShuffleboardConstants.class
+            .getDeclaredFields()
+        )
+        .filter(f -> (f.getModifiers() & Modifier.STATIC) != 0)
+        .filter(f -> f.getType().equals(String.class))
+        .map(f -> {
+            try {
+                return (String)f.get(null);
+            } catch (Exception e) {
+                return null;
+            }
+        })
+        .toArray(String[]::new)
     ;
 }

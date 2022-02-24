@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.PIDDistanceCommand;
@@ -97,6 +98,12 @@ public final class RapidReachManager extends CommandManager {
             () -> navigator.calibrate()
         );
 
+        addStartupCommand(
+            () -> {
+                CameraServer.startAutomaticCapture("Intake Camera", 0);
+            }
+        );
+
         // Setup the drivetrain
         addStartupCommand(
             () -> {
@@ -162,7 +169,7 @@ public final class RapidReachManager extends CommandManager {
                     () -> operatorController.getDPad(DPad.UP),
                     () -> {
                         ballMover.startMoving();
-                        ballShooter.reverseShooting();
+                        ballShooter.startMovingBackwards();
                     }, 
                     () -> {
                         ballMover.stop();
@@ -184,7 +191,10 @@ public final class RapidReachManager extends CommandManager {
         final var shooterCommand = 
             Commands.series(
                 Commands.doWaitDo(
-                    () -> ballMover.startMovingBackwards(), 
+                    () -> {
+                        ballMover.startMovingBackwards();
+                        ballShooter.startMovingBackwards();
+                    }, 
                     0.5, 
                     () -> ballMover.stop()
                 ),
@@ -227,7 +237,7 @@ public final class RapidReachManager extends CommandManager {
             // Commands
             Commands.pollToggle(
                 () -> operatorController.getButton(RIGHT_BUMPER),
-                () -> ballShooter.reverseShooting(), 
+                () -> ballShooter.startMovingBackwards(), 
                 () -> ballShooter.stop()
             )
             .withOrder(Order.OUTPUT),
