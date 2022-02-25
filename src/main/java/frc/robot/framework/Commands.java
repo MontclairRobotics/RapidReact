@@ -1,468 +1,89 @@
 package frc.robot.framework;
 
-import java.util.Arrays;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
-import edu.wpi.first.util.function.BooleanConsumer;
-import frc.robot.framework.bases.ForeverCommand;
-import frc.robot.framework.bases.OnceCommand;
-import frc.robot.framework.bases.TimedCommand;
-import frc.robot.framework.bases.PollCommand;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.CommandGroupBase;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-/** 
- * A utility class which provides methods to create commands from lambdas.
- */
+import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
+
 public final class Commands 
 {
-    private Commands() {}
-    
-    // Static methods
-    public static Command untilSome(BooleanSupplier pred, Runnable runnable)
+    public static InstantCommand instant(Runnable r, Subsystem... requirements)
     {
-        return untilSome(pred, $ -> runnable.run());
-    }
-    public static Command untilSome(BooleanSupplier pred, CommandRunnable<Command> runnable)
-    {
-        return new Command()
-        {
-            @Override
-            public void execute() 
-            {
-                runnable.run(this);
-            }
-
-            @Override
-            public boolean finished() 
-            {
-                return pred.getAsBoolean();
-            }
-        };
+        return new InstantCommand(r, requirements);
     }
 
-    public static Command whileSome(BooleanSupplier pred, Runnable runnable)
+    public static RunCommand run(Runnable r, Subsystem... requirements)
     {
-        return whileSome(pred, $ -> runnable.run());
-    }
-    public static Command whileSome(BooleanSupplier pred, CommandRunnable<Command> runnable)
-    {
-        return untilSome(() -> !pred.getAsBoolean(), runnable);
+        return new RunCommand(r, requirements);
     }
 
-
-    public static ForeverCommand forever(Runnable runnable)
+    public static RunCommand block(Subsystem... requirements)
     {
-        return forever($ -> runnable.run());
-    }
-    public static ForeverCommand forever(CommandRunnable<ForeverCommand> runnable)
-    {
-        return new ForeverCommand()
-        {
-            @Override
-            public void execute()
-            {
-                runnable.run(this);
-            }
-        };
+        return new RunCommand(() -> {}, requirements);
     }
 
+    public static WaitCommand waitFor(double sec, Subsystem... requirements)
+    {
+        var wf = new WaitCommand(sec);
+        wf.addRequirements(requirements);
 
-    public static PollCommand pollActive(BooleanSupplier pred, Runnable onTrue)
-    {
-        return pollActive(pred, $ -> onTrue.run());
-    }
-    public static PollCommand pollActive(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue)
-    {
-        return pollActiveAndToggle(pred, onTrue, $ -> {}, $ -> {}, $ -> {});
+        return wf;
     }
 
-    public static PollCommand pollToggle(BooleanSupplier pred, Runnable onBecomeTrue)
+    public static WaitUntilCommand waitUntil(BooleanSupplier s, Subsystem... requirements)
     {
-        return pollToggle(pred, $ -> onBecomeTrue.run());
-    }
-    public static PollCommand pollToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onBecomeTrue)
-    {
-        return pollActiveAndToggle(pred, $ -> {}, $ -> {}, onBecomeTrue, $ -> {});
+        var wu = new WaitUntilCommand(s);
+        wu.addRequirements(requirements);
+
+        return wu;
     }
 
-    public static PollCommand pollActive(BooleanSupplier pred, Runnable onTrue, Runnable onFalse)
+    public static StartEndCommand startEnd(Runnable s, Runnable e, Subsystem... requirements)
     {
-        return pollActive(pred, $ -> onTrue.run(), $ -> onFalse.run());
-    }
-    public static PollCommand pollActive(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue, CommandRunnable<PollCommand> onFalse)
-    {
-        return pollActiveAndToggle(pred, onTrue, onFalse, $ -> {}, $ -> {});
-    }
-    
-    public static PollCommand pollToggle(BooleanSupplier pred, Runnable onBecomeTrue, Runnable onBecomeFalse)
-    {
-        return pollToggle(pred, $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
-    }
-    public static PollCommand pollToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onBecomeTrue, CommandRunnable<PollCommand> onBecomeFalse)
-    {
-        return pollActiveAndToggle(pred, $ -> {}, $ -> {}, onBecomeTrue, onBecomeFalse);
+        return new StartEndCommand(s, e, requirements);
     }
 
-    public static PollCommand pollActiveAndToggle(BooleanSupplier pred, Runnable onTrue, Runnable onFalse, Runnable onBecomeTrue, Runnable onBecomeFalse)
+    public static PrintCommand print(String s)
     {
-        return pollActiveAndToggle(pred, $ -> onTrue.run(), $ -> onFalse.run(), $ -> onBecomeTrue.run(), $ -> onBecomeFalse.run());
-    }
-    public static PollCommand pollActiveAndToggle(BooleanSupplier pred, CommandRunnable<PollCommand> onTrue, CommandRunnable<PollCommand> onFalse, CommandRunnable<PollCommand> onBecomeTrue, CommandRunnable<PollCommand> onBecomeFalse)
-    {
-        return new PollCommand()
-        {
-            @Override
-            public boolean predicate() 
-            {
-                return pred.getAsBoolean();
-            }
-
-            @Override
-            public void onTrue() 
-            {
-                onTrue.run(this);
-            }
-
-            @Override
-            public void onFalse() 
-            {
-                onFalse.run(this);
-            }
-
-            @Override
-            public void onBecomeTrue() 
-            {
-                onBecomeTrue.run(this);
-            }
-
-            @Override
-            public void onBecomeFalse() 
-            {
-                onBecomeFalse.run(this);
-            }
-        };
+        return new PrintCommand(s);
     }
 
-    public static OnceCommand once(Runnable runnable)
+    public static ConditionalCommand conditional(Command a, Command b, BooleanSupplier c)
     {
-        return once($ -> runnable.run());
-    }
-    public static OnceCommand once(CommandRunnable<OnceCommand> runnable)
-    {
-        return new OnceCommand()
-        {
-            @Override
-            public void execute() 
-            {
-                runnable.run(this);
-            }
-        };
+        return new ConditionalCommand(a, b, c);
     }
 
-    public static TimedCommand forTime(double targetTimeLength, Runnable runnable)
+    public static Command runForTime(double time, Runnable r, Subsystem... requirements)
     {
-        return forTime(targetTimeLength, $ -> runnable.run());
-    }
-    public static TimedCommand forTime(double targetTimeLength, CommandRunnable<TimedCommand> runnable)
-    {
-        return new TimedCommand(targetTimeLength)
-        {
-            @Override
-            public void execute() 
-            {
-                runnable.run(this);
-            }
-        };
-    }
-
-    public static TimedCommand forTime(double targetTimeLength, Runnable runnable, Runnable onEnd)
-    {
-        return forTime(targetTimeLength, $ -> runnable.run(), ($0, $1) -> onEnd.run());
-    }
-    public static TimedCommand forTime(double targetTimeLength, Runnable runnable, BooleanConsumer onEnd)
-    {
-        return forTime(targetTimeLength, $ -> runnable.run(), ($, wasCancelled) -> onEnd.accept(wasCancelled));
-    }
-    public static TimedCommand forTime(double targetTimeLength, CommandRunnable<TimedCommand> runnable, BiConsumer<TimedCommand, Boolean> onEnd)
-    {
-        return new TimedCommand(targetTimeLength)
-        {
-            @Override
-            public void execute() 
-            {
-                runnable.run(this);
-            }
-
-            @Override
-            public void onEnd(boolean wasCancelled) 
-            {
-                onEnd.accept(this, wasCancelled);
-            }
-        };
-    }
-
-
-    public static Command doWait(Runnable runnable, double targetTimeLength)
-    {
-        return series(
-            once(runnable),
-            waitForTime(targetTimeLength)
+        return deadline(
+            waitFor(time),
+            run(r, requirements)
         );
     }
-    public static Command doWaitDo(Runnable runnable, double targetTimeLength, Runnable end)
+    public static Command runForTime(double time, Command c)
     {
-        return series(
-            once(runnable),
-            waitForTime(targetTimeLength),
-            once(end)
+        return deadline(
+            waitFor(time),
+            c
         );
     }
-
-
-
-    public static Command start(Command command)
+    public static Command runUntil(BooleanSupplier s, Runnable r, Subsystem... requirements)
     {
-        return start(() -> command);
-    }
-    public static Command start(Supplier<Command> commandGetter)
-    {
-        return new OnceCommand()
-        {
-            @Override
-            public void execute() 
-            {
-                getManager().start(commandGetter.get());
-            }
-        };
-    }
-
-    public static Command stop(Command command)
-    {
-        return stop(() -> command);
-    }
-    public static Command stop(Supplier<Command> commandGetter)
-    {
-        return new OnceCommand()
-        {
-            @Override
-            public void execute() 
-            {
-                getManager().stop(commandGetter.get());
-            }
-        };
-    }
-
-    @SafeVarargs
-    public static Command series(Command... commands)
-    {
-        return new Command()
-        {
-            private int index = 0;
-
-            @Override
-            public void onInit() 
-            {
-                index = 0;
-                commands[0].init(getManager());
-            }
-
-            @Override
-            public void execute() 
-            {
-                if(index >= commands.length) 
-                    return;
-                
-                
-                commands[index].execute();
-
-                while(commands[index].finished())
-                {
-                    commands[index].onEnd(false);
-                    index++;
-
-                    if(index >= commands.length)
-                    {
-                        break;
-                    }
-
-                    commands[index].onInit();
-                    commands[index].execute();
-                }
-            }
-
-            @Override
-            public boolean finished() 
-            {
-                return index >= commands.length;
-            }
-
-            @Override
-            public boolean remainDuringStateChange(RobotState originalState, RobotState newState) 
-            {
-                return Arrays.stream(commands).allMatch(c -> c.remainDuringStateChange(originalState, newState));
-            }
-
-            @Override
-            public void onEnd(boolean wasCancelled) 
-            {
-                for(var cmd : commands)
-                {
-                    if(cmd.isRunning()) cmd.end(wasCancelled);
-                }
-            }
-        };
-    }
-
-    @SafeVarargs
-    public static Command group(Command... commands)
-    {
-        return new Command()
-        {
-            @Override
-            public void onInit() 
-            {
-                for(var cmd: commands)
-                {
-                    cmd.init(getManager());
-                }
-            }
-
-            @Override
-            public void execute() 
-            {
-                for(var cmd: commands)
-                {
-                    getManager().handleCommand(cmd);
-                }
-            }
-
-            @Override
-            public void onEnd(boolean wasCancelled) 
-            {   
-                for(var cmd: commands)
-                {
-                    if(cmd.isRunning())
-                    {
-                        cmd.end(wasCancelled);
-                    }
-                }
-            }
-
-            @Override
-            public boolean remainDuringStateChange(RobotState originalState, RobotState newState) 
-            {
-                return Arrays.stream(commands).allMatch(c -> c.remainDuringStateChange(originalState, newState));
-            }
-
-            @Override
-            public boolean finished() 
-            {
-                return Arrays.stream(commands).allMatch(c -> c.finished());
-            }
-        };
-    }
-
-    @SafeVarargs
-    public static Command raceGroup(Command... commands)
-    {
-        return new Command()
-        {
-            @Override
-            public void onInit() 
-            {
-                for(var cmd: commands)
-                {
-                    cmd.init(getManager());
-                }
-            }
-
-            @Override
-            public void execute() 
-            {
-                for(var cmd: commands)
-                {
-                    getManager().handleCommand(cmd);
-                }
-            }
-
-            @Override
-            public void onEnd(boolean wasCancelled) 
-            {   
-                for(var cmd: commands)
-                {
-                    if(cmd.isRunning())
-                    {
-                        cmd.end(wasCancelled);
-                    }
-                }
-            }
-
-            @Override
-            public boolean remainDuringStateChange(RobotState originalState, RobotState newState) 
-            {
-                return Arrays.stream(commands).allMatch(c -> c.remainDuringStateChange(originalState, newState));
-            }
-
-            @Override
-            public boolean finished() 
-            {
-                return Arrays.stream(commands).anyMatch(c -> c.finished());
-            }
-        };
-    }
-
-    public static Command select(Supplier<Command> splitter)
-    {
-        return new Command() 
-        {
-            private Command inner;
-
-            @Override
-            public void onInit() 
-            {
-                inner = splitter.get();
-                inner.onInit();
-            }
-
-            @Override
-            public void onEnd(boolean wasCancelled) 
-            {
-                inner.onEnd(wasCancelled);
-            }
-
-            @Override
-            public boolean finished() {
-                return inner.finished();
-            }
-
-            @Override
-            public boolean remainDuringStateChange(RobotState originalState, RobotState newState) {
-                return inner.remainDuringStateChange(originalState, newState);            
-            }
-
-            @Override
-            public void execute() {
-                inner.execute();
-            }
-        };
-    }
-
-    public static TimedCommand waitForTime(double time)
-    {
-        return forTime(time, () -> {});
-    }
-    public static Command waitUntil(BooleanSupplier pred)
-    {
-        return untilSome(pred, () -> {});
-    }
-
-    public static Command debug(String msg)
-    {
-        return once(man -> man.getManager().debug(msg));
-    }
-    public static Command debug(Supplier<String> msgGetter)
-    {
-        return once(man -> man.getManager().debug(msgGetter.get()));
+        return deadline(
+            waitUntil(s),
+            run(r, requirements)
+        );
     }
 }

@@ -3,7 +3,7 @@ package frc.robot.commands;
 import frc.robot.framework.Command;
 import frc.robot.model.Drivetrain;
 
-public class PIDDistanceCommand extends Command{
+public class PIDDistanceCommand extends Command {
     private final Drivetrain drivetrain;
     private double distance;
 

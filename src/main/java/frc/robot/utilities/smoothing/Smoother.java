@@ -36,6 +36,11 @@ public abstract class Smoother
         return current;
     }
 
+    public final void setDirect(double value)
+    {
+        current = value;
+    }
+
     public final Smoother update(double deltaTime, double target) 
     {
         updateInternal(deltaTime, target);

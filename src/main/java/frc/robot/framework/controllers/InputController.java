@@ -1,10 +1,10 @@
 package frc.robot.framework.controllers;
 
-import java.util.function.IntPredicate;
+import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public abstract class InputController 
 {
@@ -176,6 +176,19 @@ public abstract class InputController
 
     public abstract boolean getDPad(DPad type);
     public abstract Type getType();
+
+    public final Trigger getButtonTrigger(Button type) 
+    {
+        return new Trigger(() -> getButton(type));
+    }
+    public final Trigger getDPadTrigger(DPad type)
+    {
+        return new Trigger(() -> getDPad(type));
+    }
+    public final AnalogTrigger getAxisTrigger(Axis type)
+    {
+        return new AnalogTrigger(() -> getAxis(type));
+    }
 
     public static InputController xbox(int channel)
     {

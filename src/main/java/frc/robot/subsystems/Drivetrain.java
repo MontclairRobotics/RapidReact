@@ -2,6 +2,7 @@ package frc.robot.model;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.Arrays;
 
@@ -18,11 +19,10 @@ import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
 import frc.robot.ShuffleboardConstants;
-import frc.robot.framework.CommandManager;
-import frc.robot.framework.CommandModel;
+import frc.robot.framework.CommandRobot;
 import frc.robot.utilities.smoothing.Smoother;
 
-public final class Drivetrain extends CommandModel
+public final class Drivetrain extends SubsystemBase
 {
     ////////////////////////////////////////////////
     // Final fields
@@ -89,9 +89,6 @@ public final class Drivetrain extends CommandModel
     private boolean isUsingDistancePID = true;
     private boolean isUsingAnglePID = true;
 
-    private double targetSpeed = 0.0;
-    private double targetTurn  = 0.0;
-
     private AHRS navx;
 
     private boolean isTargetingADistance = false;
@@ -103,10 +100,8 @@ public final class Drivetrain extends CommandModel
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(Smoother defaultSmoother, AHRS navx, CommandManager manager) 
+    public Drivetrain(Smoother defaultSmoother, AHRS navx) 
     {
-        super(manager);
-
         speedSmoother = defaultSmoother;
 
         this.navx = navx;
@@ -166,17 +161,6 @@ public final class Drivetrain extends CommandModel
     }
 
     /**
-     * Drive this subsystem's motors
-     * @param speed The speed to drive at
-     * @param turn  The amount to turn
-     */
-    public void set(double speed, double turn)
-    {
-        targetSpeed = speed;
-        targetTurn = turn;
-    }
-
-    /**
      * Set the maximum output of this subsystem's motors
      * @param maxOutput The new maximum
      */
@@ -191,6 +175,8 @@ public final class Drivetrain extends CommandModel
     public void stop() 
     {
         differentialDrive.stopMotor();
+
+        speedSmoother.setDirect(0);
     }
 
     /**
@@ -230,7 +216,7 @@ public final class Drivetrain extends CommandModel
     /**
      * Update this subsystem
      */
-    public void update(double deltaTime)
+    public void drive(double targetSpeed, double targetTurn)
     {
         // Locals for speed and turn
         double speed, turn;
@@ -246,7 +232,7 @@ public final class Drivetrain extends CommandModel
         else
         {            
             // Update the speed with the smoother
-            speedSmoother.update(deltaTime, targetSpeed);
+            speedSmoother.update(CommandRobot.deltaTime(), targetSpeed);
             speed = speedSmoother.getCurrent();
         }
 
