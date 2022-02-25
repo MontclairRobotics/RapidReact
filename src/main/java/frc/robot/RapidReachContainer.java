@@ -25,7 +25,7 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
 
 import static frc.robot.Constants.*;
-import static frc.robot.ShuffleboardConstants.*;
+import static frc.robot.Data.*;
 
 import static frc.robot.framework.controllers.InputController.Button.*;
 import static frc.robot.rev.BlinkinLEDMode.*;
@@ -92,25 +92,13 @@ public final class RapidReachContainer extends CommandRobotContainer
         // Calibrate the navx
         navx.calibrate();
         navxTracker.calibrate();
+        navxTracker.setDefaultCommand(run(navxTracker::update, navxTracker));
 
         // Camera servers
         CameraServer.startAutomaticCapture("Intake Camera", 0);
 
-        // PID constants
-        drivetrain.setupPID(
-            // DISTANCE
-            SmartDashboard.getNumber(DISTANCE_KP, 0.1), 
-            SmartDashboard.getNumber(DISTANCE_KI, 0),
-            SmartDashboard.getNumber(DISTANCE_KD, 0), 
-            SmartDashboard.getNumber(DISTANCE_TOLERANCE, 0.1), 
-            // ANGLE
-            SmartDashboard.getNumber(ANGLE_KP, 0.01), 
-            SmartDashboard.getNumber(ANGLE_KI, 0),
-            SmartDashboard.getNumber(ANGLE_KD, 0), 
-            SmartDashboard.getNumber(ANGLE_TOLERANCE, 1)
-        );
-
-        // PIDS
+        // PID
+        drivetrain.setupPID();
         drivetrain.enableAllPID();
 
         // TEMP
@@ -231,13 +219,22 @@ public final class RapidReachContainer extends CommandRobotContainer
             .whenInactive(() -> drivetrain.releaseAngleTarget());
     }
 
+    /////////////////////////////////
+    /// AUTO
+    /////////////////////////////////
+    public static enum AutoCommand 
+    {
+        DRIVE_TEST,
+        MAIN
+    }
+
     @Override
     public Command getAutoCommand()
     {
-        var command = SmartDashboard.getString(AUTO_COMMAND, "cry about it");
+        var command = Data.getAutoCommand();
         switch (command)
         {
-            case AUTO_DRIVE_TEST:
+            case DRIVE_TEST:
                 return sequence(
                     instant(() -> drivetrain.disableAllPID()),
                     runForTime(
@@ -248,7 +245,7 @@ public final class RapidReachContainer extends CommandRobotContainer
                     instant(() -> drivetrain.stop())
                 );
 
-            case AUTO_MAIN:
+            case MAIN:
                 return sequence(
                     // drives backward for 2 seconds
                     runForTime(

@@ -1,4 +1,4 @@
-package frc.robot.model;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
-import frc.robot.ShuffleboardConstants;
+import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
 import frc.robot.utilities.smoothing.Smoother;
 
@@ -122,26 +122,23 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
-    public void setupPID(
-        double distanceKP, double distanceKI, double distanceKD, double distanceTolerance,
-        double angleKP, double angleKI, double angleKD, double angleTolerance
-    )
+    public void setupPID()
     {
         // Setup distance pid
         distancePid = new PIDController(
-            distanceKD,
-            distanceKI,
-            distanceKD
+            Data.getDistanceKP(),
+            Data.getDistanceKI(),
+            Data.getDistanceKD()
         );
-        distancePid.setTolerance(distanceTolerance);
+        distancePid.setTolerance(Data.getDistanceTolerance());
 
         // Setup angle pid
         anglePid = new PIDController(
-            angleKP,
-            angleKI,
-            angleKD
+            Data.getAngleKP(),
+            Data.getAngleKI(),
+            Data.getAngleKD()
         );
-        anglePid.setTolerance(angleTolerance);
+        anglePid.setTolerance(Data.getAngleTolerance());
     }
 
     public void enableAllPID()
@@ -227,7 +224,7 @@ public final class Drivetrain extends SubsystemBase
             var averageDistance = getAverageDistanceTraveled();
             speed = -distancePid.calculate(averageDistance, targetDistance);
 
-            SmartDashboard.putNumber(ShuffleboardConstants.DISTANCE_TO_TARGET, targetDistance - averageDistance);
+            Data.setDistanceToTarget(targetDistance - averageDistance);
         }
         else
         {            
@@ -242,7 +239,7 @@ public final class Drivetrain extends SubsystemBase
             var angle = navx.getAngle();
             turn = -anglePid.calculate(angle, targetAngle);
             
-            SmartDashboard.putNumber(ShuffleboardConstants.ANGLE_TO_TARGET, targetAngle - angle);
+            Data.setAngleToTarget(targetAngle - angle);
         }
         else
         {   

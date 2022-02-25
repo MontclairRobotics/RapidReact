@@ -19,6 +19,8 @@ import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 
 public final class Commands 
 {
+    private Commands() {}
+
     public static InstantCommand instant(Runnable r, Subsystem... requirements)
     {
         return new InstantCommand(r, requirements);

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
 
 public class AHRSTracker extends SubsystemBase 
@@ -41,5 +42,7 @@ public class AHRSTracker extends SubsystemBase
 
         angularVelocity = (angle - prevAngle) / CommandRobot.deltaTime();
         prevAngle = angle;
+
+        Data.setAngularVelocity(angularVelocity);
     }
 }
