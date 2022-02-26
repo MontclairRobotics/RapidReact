@@ -25,7 +25,6 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
 
 import static frc.robot.Constants.*;
-import static frc.robot.Data.*;
 
 import static frc.robot.framework.controllers.InputController.Button.*;
 import static frc.robot.rev.BlinkinLEDMode.*;
@@ -177,22 +176,22 @@ public final class RapidReachContainer extends CommandRobotContainer
                 drivetrain.setMaxOutput(ROBOT_SPEEDS[speedIndex]);
                 
                 // Display on smart dashboard
-                SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
+                Data.setCurrentMaxSpeed(ROBOT_SPEEDS[speedIndex]);
             });
 
         // Ease control command
         driverController.getAxisTrigger(LEFT_TRIGGER)
-            .whenGreaterThan(0.5)
+            .greaterThan(0.5)
             .whenActive(() -> {
                 // Display on smart dashboard
-                SmartDashboard.putString("Easing", "None");
+                Data.setCurrentEasing("None");
 
                 // Set smoother
                 drivetrain.setSmoother(DRIVE_NULL_SMOOTHER);
             })
             .whenInactive(() -> {
                 // Display on smart dashboard
-                SmartDashboard.putString("Easing", "Drive");
+                Data.setCurrentEasing("Drive");
                 
                 // Set smoother
                 drivetrain.setSmoother(DRIVE_SMOOTHER);
@@ -210,10 +209,12 @@ public final class RapidReachContainer extends CommandRobotContainer
 
         // PID straight angle command
         driverController.getAxisTrigger(RIGHT_X)
-            .whenInRadius(0, ANGLE_PID_DEADBAND)
+            .abs()
+            .lessThan(ANGLE_PID_DEADBAND)
             .and(
-                new AnalogTrigger(navxTracker::getAngularVelocity)
-                .whenInRadius(0, ANGLE_VELOCITY_DEADBAND)
+                AnalogTrigger.from(navxTracker::getAngularVelocity)
+                    .abs()
+                    .lessThan(ANGLE_VELOCITY_DEADBAND)
             )
             .whenActive(() -> drivetrain.setTargetAngle(0))
             .whenInactive(() -> drivetrain.releaseAngleTarget());
@@ -282,14 +283,9 @@ public final class RapidReachContainer extends CommandRobotContainer
                             //blinkinLEDDriver.set(HOT_PINK);
                         },
                         ballShooter
-                    )//,
+                    ),
                     // Pid backwards
-                    //new PIDDistanceCommand(drivetrain, 5.0)//,
-                    // Reset to default state 
-                    /*
-                    Commands.once(
-                        () -> blinkinLEDDriver.returnToDefault()
-                    ) */  
+                    PIDDistanceCommand.get(drivetrain, 5.0)
                 );
             
             default:

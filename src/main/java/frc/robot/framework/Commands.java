@@ -1,11 +1,13 @@
 package frc.robot.framework;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandGroupBase;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -57,6 +59,13 @@ public final class Commands
         return new StartEndCommand(s, e, requirements);
     }
 
+    public static Command startMidEnd(Runnable s, Runnable m, Runnable e, Subsystem... requirements)
+    {
+        return sequence(
+            instant(s, requirements), run(m, requirements), instant(e, requirements)
+        );
+    }
+
     public static PrintCommand print(String s)
     {
         return new PrintCommand(s);
@@ -81,11 +90,24 @@ public final class Commands
             c
         );
     }
+
     public static Command runUntil(BooleanSupplier s, Runnable r, Subsystem... requirements)
     {
         return deadline(
             waitUntil(s),
             run(r, requirements)
         );
+    }
+    public static Command runUntil(BooleanSupplier s, Command c)
+    {
+        return deadline(
+            waitUntil(s),
+            c
+        );
+    }
+
+    public static FunctionalCommand functional(Runnable init, Runnable exec, Consumer<Boolean> end, BooleanSupplier finished, Subsystem... requirements)
+    {
+        return new FunctionalCommand(init, exec, end, finished, requirements);
     }
 }

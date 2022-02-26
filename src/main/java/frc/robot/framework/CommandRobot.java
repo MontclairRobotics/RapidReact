@@ -10,10 +10,12 @@ public class CommandRobot extends TimedRobot
     public CommandRobot(CommandRobotContainer container)
     {
         CommandRobot.container = container;
+        CommandRobot.robot = this;
     }
 
     private static long lastTime;
     private static CommandRobotContainer container;
+    private static CommandRobot robot;
 
     public static double deltaTime()
     {
@@ -27,13 +29,15 @@ public class CommandRobot extends TimedRobot
     }
 
     @Override
-    public void robotPeriodic() {
+    public void robotPeriodic() 
+    {
         CommandScheduler.getInstance().run();
         lastTime = System.currentTimeMillis();
     }
 
     @Override
-    public void autonomousInit() {
+    public void autonomousInit() 
+    {
         CommandScheduler.getInstance().cancelAll();
         var autoComm = container.getAutoCommand();
 
@@ -44,7 +48,14 @@ public class CommandRobot extends TimedRobot
     }
 
     @Override
-    public void teleopInit() {
+    public void teleopInit() 
+    {
+        CommandScheduler.getInstance().cancelAll();
+    }
+
+    @Override
+    public void teleopExit() 
+    {
         CommandScheduler.getInstance().cancelAll();
     }
 

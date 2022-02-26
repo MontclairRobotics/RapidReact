@@ -127,10 +127,4 @@ public final class Constants
 
     public static final double ANGLE_PID_DEADBAND = 0.2;
     public static final double ANGLE_VELOCITY_DEADBAND = 0.1;
-
-    // Auto command types
-    public static final String
-        AUTO_DRIVE_TEST = "AUTO_DRIVE_TEST",
-        AUTO_MAIN = "AUTO_MAIN"
-    ;
 }

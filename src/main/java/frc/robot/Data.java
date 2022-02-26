@@ -3,9 +3,13 @@ package frc.robot;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RapidReachContainer.AutoCommand;
+import frc.robot.utilities.Sendables;
 
 public final class Data 
 {
@@ -39,14 +43,16 @@ public final class Data
         SmartDashboard.setDefaultNumber("PID.Angle.Tolerance", 1);
         SmartDashboard.setPersistent("PID.Angle.Tolerance");
 
-        autoChooser = new SendableChooser<>();
-        for (var cmd : AutoCommand.values()) 
-        {
-            autoChooser.addOption(cmd.name(), cmd);
-        }
-        autoChooser.setDefaultOption(AutoCommand.MAIN.name(), AutoCommand.MAIN);
-
+        autoChooser = Sendables.enumChooser(AutoCommand.MAIN, AutoCommand::values);
         SmartDashboard.putData("Auto.Command", autoChooser);
+
+        SmartDashboard.putNumber("PID.DistanceToTarget", 0);
+        SmartDashboard.putNumber("PID.AngleToTarget", 0);
+
+        SmartDashboard.putNumber("AngularVelocity", 0);
+
+        SmartDashboard.putNumber("CurrentMaxSpeed", 0);
+        SmartDashboard.putString("CurrentEasing", "None");
     }
 
     public static double getDistanceKP() {return SmartDashboard.getNumber("PID.Distance.KP", 0);}
@@ -64,4 +70,7 @@ public final class Data
     public static void setDistanceToTarget(double value) {SmartDashboard.putNumber("PID.DistanceToTarget", value);}
     public static void setAngleToTarget(double value) {SmartDashboard.putNumber("PID.AngleToTarget", value);}
     public static void setAngularVelocity(double value) {SmartDashboard.putNumber("AngularVelocity", value);}
+
+    public static void setCurrentMaxSpeed(double value) {SmartDashboard.putNumber("CurrentMaxSpeed", value);}
+    public static void setCurrentEasing(String value) {SmartDashboard.putString("CurrentEasing", value);}
 }

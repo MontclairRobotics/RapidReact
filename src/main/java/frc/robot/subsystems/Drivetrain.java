@@ -7,12 +7,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Arrays;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
