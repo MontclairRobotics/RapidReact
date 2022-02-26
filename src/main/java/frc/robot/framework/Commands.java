@@ -278,7 +278,7 @@ public final class Commands
 
                 while(commands[index].finished())
                 {
-                    commands[index].onEnd(false);
+                    commands[index].end(false);
                     index++;
 
                     if(index >= commands.length)
@@ -286,7 +286,7 @@ public final class Commands
                         break;
                     }
 
-                    commands[index].onInit();
+                    commands[index].init(getManager());
                     commands[index].execute();
                 }
             }
@@ -422,13 +422,14 @@ public final class Commands
             public void onInit() 
             {
                 inner = splitter.get();
-                inner.onInit();
+                inner.setOrder(getOrder());
+                inner.init(getManager());
             }
 
             @Override
             public void onEnd(boolean wasCancelled) 
             {
-                inner.onEnd(wasCancelled);
+                inner.end(wasCancelled);
             }
 
             @Override

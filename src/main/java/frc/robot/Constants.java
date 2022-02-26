@@ -88,7 +88,7 @@ public final class Constants
     public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
-    public static final double REVERSE_SHOOTER_SPEED = -0.2;
+    public static final double REVERSE_SHOOTER_SPEED = -0.4;
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.7;
@@ -125,8 +125,8 @@ public final class Constants
     //Button to activate shooter
     //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
 
-    public static final double ANGLE_PID_DEADBAND = 0.2;
-    public static final double ANGLE_VELOCITY_DEADBAND = 0.1;
+    public static final double ANGLE_PID_DEADBAND = 0.1;
+    public static final double ANGLE_VELOCITY_DEADBAND = 0.01;
 
     // Auto command types
     public static final String

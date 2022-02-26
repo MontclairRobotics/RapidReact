@@ -218,6 +218,14 @@ public final class Drivetrain extends CommandModel
     public void setTargetDistance(double td)
     {
         targetDistance = td;
+        for(var e : leftEncoders)
+        {
+            e.setPosition(0);
+        }
+        for(var e : rightEncoders)
+        {
+            e.setPosition(0);
+        }
         isTargetingADistance = true;
     }
     public void setTargetAngle(double ta)

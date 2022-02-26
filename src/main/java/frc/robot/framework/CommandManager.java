@@ -179,6 +179,7 @@ public abstract class CommandManager
      */
     public final void stop(Command command)
     {
+        debug("STOP");
         if(command.isRunning() && command.getManager() == this)
         {
             command.end(true);

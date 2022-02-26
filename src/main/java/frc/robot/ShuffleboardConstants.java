@@ -26,7 +26,8 @@ public final class ShuffleboardConstants
         AUTO_COMMAND = "Auto.Command",
 
         DISTANCE_TO_TARGET = "PID.DistanceToTarget",
-        ANGLE_TO_TARGET = "PID.AngleToTarget"
+        ANGLE_TO_TARGET = "PID.AngleToTarget",
+        ANGULAR_VELOCITY = "PID.AngularVelocity"
     ;
 
     public static final String[] MEMBERS = 

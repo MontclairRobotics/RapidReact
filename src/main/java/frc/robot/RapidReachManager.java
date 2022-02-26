@@ -63,7 +63,7 @@ public final class RapidReachManager extends CommandManager {
     public final BallSucker ballSucker = new BallSucker(this);
     public final BallMover ballMover = new BallMover(this);
     public final BallShooter ballShooter = new BallShooter(this);
-    public final Climber climber = new Climber(this);
+    //public final Climber climber = new Climber(this);
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -93,15 +93,12 @@ public final class RapidReachManager extends CommandManager {
         // TELEOP
         ///////////////////////////////////////////////////
 
+        CameraServer.startAutomaticCapture("Intake Camera", 0);
+        CameraServer.startAutomaticCapture("Shooter Camera", 1);
+        
         // Calibrate the navx
         addStartupCommand(
             () -> navigator.calibrate()
-        );
-
-        addStartupCommand(
-            () -> {
-                CameraServer.startAutomaticCapture("Intake Camera", 0);
-            }
         );
 
         // Setup the drivetrain
@@ -244,7 +241,8 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.TELEOP
         );
-
+        
+        /*
         //Climb Command
         addCommand(
             // Command
@@ -266,6 +264,7 @@ public final class RapidReachManager extends CommandManager {
             // State
             RobotState.TELEOP
         );
+        */
 
         // Max speed command
         addCommand(
@@ -431,18 +430,23 @@ public final class RapidReachManager extends CommandManager {
 
         // Update subsystems
         addAlwaysCommand(
-            cmd -> drivetrain.update(cmd.deltaTime()),
+            cmd -> {
+                drivetrain.update(cmd.deltaTime());
+            },
             Order.OUTPUT
         );
         addAlwaysCommand(
-            cmd -> navigator.update(cmd.deltaTime()),
+            cmd -> {
+                navigator.update(cmd.deltaTime());
+                SmartDashboard.putNumber(ANGULAR_VELOCITY, navigator.getAngularVelocity());
+            },
             Order.OUTPUT
         );
     }
 
     public Command getAutoCommand()
     {
-        var command = SmartDashboard.getString(AUTO_COMMAND, "cry about it");
+        var command = SmartDashboard.getString(AUTO_COMMAND, AUTO_MAIN);
         switch (command)
         {
             case AUTO_DRIVE_TEST:
@@ -455,25 +459,16 @@ public final class RapidReachManager extends CommandManager {
 
             case AUTO_MAIN:
                 return Commands.series(
-                    // drives backward for 2 seconds
-                    Commands.forTime(
-                        2.0,
-                        () -> {
-                            drivetrain.set(1, 0);
-                            //blinkinLEDDriver.set(YELLOW);
-                        } 
-                    ),
                     // stops driving and starts revving up shooter
                     Commands.once(
                         () -> {
-                            drivetrain.stop();
                             ballShooter.startShooting();
                             //blinkinLEDDriver.set(BPM_LAVA);
                         }
                     ),
                     // wait for shooter to rev
                     Commands.waitForTime(
-                        2.0
+                        0.555
                     ),
                     // start transport
                     Commands.once(
@@ -494,8 +489,15 @@ public final class RapidReachManager extends CommandManager {
                             //blinkinLEDDriver.set(HOT_PINK);
                         }
                     ),
+                    Commands.doWaitDo(
+                        () -> drivetrain.set(.5, 0),
+                        0.1,
+                        () -> drivetrain.stop()
+                    ),
+                    Commands.debug("hey i'm done stupid")
+
                     // Pid backwards
-                    new PIDDistanceCommand(drivetrain, 5.0)//,
+                   // new PIDDistanceCommand(drivetrain, 5.0)//,
                     // Reset to default state 
                     /*
                     Commands.once(
