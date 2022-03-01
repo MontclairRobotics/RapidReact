@@ -21,10 +21,15 @@ import static frc.robot.Constants.*;
 import frc.robot.Constants;
 import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
-import frc.robot.utilities.smoothing.Smoother;
+import frc.robot.framework.profiling.Profiler;
 
 public final class Drivetrain extends SubsystemBase
 {
+    public static final class Settings
+    {
+        
+    }
+
     ////////////////////////////////////////////////
     // Final fields
     ////////////////////////////////////////////////
@@ -83,14 +88,17 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Other fields
     ////////////////////////////////////////////////
-    private Smoother speedSmoother;
+    private Profiler speedSmoother;
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
 
     private boolean isUsingDistancePID = true;
     private boolean isUsingAnglePID = true;
 
-    private AHRS navx;
+    private double targetSpeed;
+    private double targetTurn;
+
+    private AHRSTracker navx;
 
     private boolean isTargetingADistance = false;
     private double targetDistance = 0.0;
@@ -101,7 +109,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(Smoother defaultSmoother, AHRS navx) 
+    public Drivetrain(Profiler defaultSmoother, AHRSTracker navx) 
     {
         speedSmoother = defaultSmoother;
 
@@ -109,7 +117,7 @@ public final class Drivetrain extends SubsystemBase
 
         leftMotorGroup.setInverted(LEFT_DRIVE_INVERSION);
         rightMotorGroup.setInverted(RIGHT_DRIVE_INVERSION);
-        
+
         for(var e : leftEncoders)
         {
             e.setPositionConversionFactor(CONVERSION_RATE);
@@ -153,7 +161,7 @@ public final class Drivetrain extends SubsystemBase
         isUsingDistancePID = false;
     }
     
-    public void setSmoother(Smoother speedSmoother) 
+    public void setSmoother(Profiler speedSmoother) 
     {
         this.speedSmoother = speedSmoother;
     }
@@ -173,8 +181,19 @@ public final class Drivetrain extends SubsystemBase
     public void stop() 
     {
         differentialDrive.stopMotor();
+        killMomentum();
+    }
 
-        speedSmoother.setDirect(0);
+    public void resetEncoders()
+    {
+        for(var e : leftEncoders)
+        {
+            e.setPosition(0);
+        }
+        for(var e : rightEncoders)
+        {
+            e.setPosition(0);
+        }
     }
 
     /**
@@ -202,19 +221,27 @@ public final class Drivetrain extends SubsystemBase
     public void setTargetDistance(double td)
     {
         targetDistance = td;
+        resetEncoders();
         isTargetingADistance = true;
     }
     public void setTargetAngle(double ta)
     {
-        targetAngle = ta;
         navx.zeroYaw();
+        targetAngle = ta;
         isTargetingAnAngle = true;
+    }
+
+    public void set(double targetSpeed, double targetTurn)
+    {
+        this.targetSpeed = targetSpeed;
+        this.targetTurn = targetTurn;
     }
 
     /**
      * Update this subsystem
      */
-    public void drive(double targetSpeed, double targetTurn)
+    @Override
+    public void periodic()
     {
         // Locals for speed and turn
         double speed, turn;
@@ -223,7 +250,10 @@ public final class Drivetrain extends SubsystemBase
         if(isUsingDistancePID && isTargetingADistance)
         {
             var averageDistance = getAverageDistanceTraveled();
-            speed = -distancePid.calculate(averageDistance, targetDistance);
+
+            System.out.println("Average distance: " + averageDistance);
+
+            speed = distancePid.calculate(averageDistance, targetDistance);
 
             Data.setDistanceToTarget(targetDistance - averageDistance);
         }
@@ -237,8 +267,10 @@ public final class Drivetrain extends SubsystemBase
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
         {
-            var angle = navx.getAngle();
+            var angle = navx.getYaw();
             turn = -anglePid.calculate(angle, targetAngle);
+
+            //System.out.println("!!!!!!!!!!!!!!");
             
             Data.setAngleToTarget(targetAngle - angle);
         }
@@ -277,5 +309,23 @@ public final class Drivetrain extends SubsystemBase
     public void setUsingDistancePid(boolean value)
     {
         isUsingDistancePID = value;
+    }
+
+    public void killMomentum() 
+    {
+        speedSmoother.setDirect(0);
+    }
+
+    public boolean isTargetingAnAngle()
+    {
+        return isTargetingAnAngle;
+    }
+    public boolean isTargetingADistance()
+    {
+        return isTargetingADistance;
+    }
+
+    public Object set(double d, int i) {
+        return null;
     }
 }

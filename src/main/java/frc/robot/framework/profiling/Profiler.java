@@ -1,13 +1,16 @@
-package frc.robot.utilities.smoothing;
+package frc.robot.framework.profiling;
 
-import frc.robot.utilities.Maths;
+import frc.robot.framework.maths.Maths;
 
-public abstract class Smoother 
+/**
+ * @apiNote was previously named Smoother
+ */
+public abstract class Profiler 
 {
     protected double current, target;
     private double minValue, maxValue;
 
-    public Smoother(double startValue, double minValue, double maxValue)
+    public Profiler(double startValue, double minValue, double maxValue)
     {
         current = startValue;
         target = startValue;
@@ -41,7 +44,7 @@ public abstract class Smoother
         current = value;
     }
 
-    public final Smoother update(double deltaTime, double target) 
+    public final Profiler update(double deltaTime, double target) 
     {
         updateInternal(deltaTime, target);
         current = Maths.clamp(current, minValue, maxValue);

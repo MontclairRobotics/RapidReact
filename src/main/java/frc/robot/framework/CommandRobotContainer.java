@@ -5,5 +5,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 public abstract class CommandRobotContainer 
 {
     public abstract Command getAutoCommand();
-    public abstract void init();
+    public abstract void initOnce();
+    public void init() {}
 }

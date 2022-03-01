@@ -1,4 +1,4 @@
-package frc.robot.utilities;
+package frc.robot.framework.wpilib.senables;
 
 import java.util.function.Supplier;
 

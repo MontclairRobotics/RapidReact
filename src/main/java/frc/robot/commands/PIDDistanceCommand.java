@@ -18,8 +18,9 @@ public final class PIDDistanceCommand
                 drivetrain.setTargetDistance(distance);
                 drivetrain.setTargetAngle(0);
             }),
-            runUntil(() -> drivetrain.reachedTargetDistance(), block(drivetrain)),
+            runUntil(() -> drivetrain.reachedTargetDistance(), run(() -> drivetrain.drive(0,0), drivetrain)),
             instant(() -> {
+                drivetrain.stop();
                 drivetrain.releaseDistanceTarget();
                 drivetrain.releaseAngleTarget();
             })

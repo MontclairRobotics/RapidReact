@@ -1,8 +1,8 @@
-package frc.robot.utilities.smoothing;
+package frc.robot.framework.profiling;
 
-public class NullSmoother extends Smoother
+public class NothingProfiler extends Profiler
 {
-    public NullSmoother(double startValue, double minValue, double maxValue) 
+    public NothingProfiler(double startValue, double minValue, double maxValue) 
     {
         super(startValue, minValue, maxValue);
     }

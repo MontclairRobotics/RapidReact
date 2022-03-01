@@ -4,10 +4,11 @@
 
 package frc.robot;
 
-import frc.robot.framework.controllers.InputController;
-import frc.robot.utilities.smoothing.LinearSmoother;
-import frc.robot.utilities.smoothing.NullSmoother;
-import frc.robot.utilities.smoothing.Smoother;
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.framework.profiling.LinearProfiler;
+import frc.robot.framework.profiling.NothingProfiler;
+import frc.robot.framework.profiling.Profiler;
+import frc.robot.framework.wpilib.controllers.InputController;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -30,7 +31,7 @@ public final class Constants
     public static final int RIGHT_MOTOR_3_PORT = 4;
 
     // Intake motor port number
-    public static final int INTAKE_MOTOR_PORT = 41;
+    public static final int INTAKE_MOTOR_PORT = 1;
 
     // Transport motor port number
     public static final int TRANSPORT_MOTOR_PORT = 40;
@@ -61,7 +62,7 @@ public final class Constants
     public static final double BALL_TRANSPORT_SPEED = 1; //idk
 
     //Shooter Speed
-    public static final double SHOOTER_SPEED = 0.7;
+    public static final double SHOOTER_SPEED = 1.0;
 
     //Climber Speed
     //256 ticks per rotation
@@ -88,7 +89,7 @@ public final class Constants
     public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
-    public static final double REVERSE_SHOOTER_SPEED = -0.2;
+    public static final double REVERSE_SHOOTER_SPEED = -0.4;
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.7;
@@ -97,10 +98,10 @@ public final class Constants
         1
     };
 
-    public static final Smoother DRIVE_SMOOTHER 
-        = new LinearSmoother(0, -1, 1, 0.02);
-    public static final NullSmoother DRIVE_NULL_SMOOTHER
-        = new NullSmoother(0, -1, 1);
+    public static final Profiler DRIVE_SMOOTHER 
+        = new LinearProfiler(0, -1, 1, 1.0 / 1.25, 1.0 / 1.25);
+    public static final NothingProfiler DRIVE_NULL_SMOOTHER
+        = new NothingProfiler(0, -1, 1);
 
     public static final double TURN_FACTOR = 0.6;
     public static final double TURN_DRIVE_FACTOR = 0.2;
@@ -113,18 +114,13 @@ public final class Constants
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change
     public static final double TICKS_PER_ROT = 42.0;
-    public static final double GEAR_RATIO = 10.86 / 1.0;
+    public static final double GEAR_RATIO_IN_TO_OUT = 10.86 / 1.0;
     public static final double WHEEL_DIAMETER = 6.0; //inches
-    public static final double INCHES_TO_FEET = 12.0; //feet
+    public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
 
     public static final double CONVERSION_RATE 
-        = TICKS_PER_ROT * GEAR_RATIO / WHEEL_DIAMETER * INCHES_TO_FEET;
+    = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
 
-
-
-    //Button to activate shooter
-    //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
-
-    public static final double ANGLE_PID_DEADBAND = 0.2;
-    public static final double ANGLE_VELOCITY_DEADBAND = 0.1;
+    public static final double ANGLE_PID_DEADBAND = 0.1;
+    public static final double ANGLE_VELOCITY_DEADBAND = 90.0 / 1.0;
 }

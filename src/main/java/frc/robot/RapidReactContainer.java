@@ -11,12 +11,15 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.PIDDistanceCommand;
+import frc.robot.framework.CommandRobot;
 import frc.robot.framework.CommandRobotContainer;
-import frc.robot.framework.controllers.AnalogTrigger;
-import frc.robot.framework.controllers.InputController;
-import frc.robot.framework.controllers.InputController.DPad;
-import frc.robot.rev.BlinkinLEDDriver;
+import frc.robot.framework.maths.Maths;
+import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
+import frc.robot.framework.wpilib.controllers.InputController;
+import frc.robot.framework.wpilib.controllers.InputController.DPad;
+import frc.robot.framework.wpilib.triggers.AnalogTrigger;
 import frc.robot.subsystems.AHRSTracker;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
@@ -25,9 +28,9 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
 
 import static frc.robot.Constants.*;
-
-import static frc.robot.framework.controllers.InputController.Button.*;
-import static frc.robot.rev.BlinkinLEDMode.*;
+import static frc.robot.framework.vendors.rev.BlinkinLEDMode.*;
+import static frc.robot.framework.wpilib.controllers.InputController.Axis.*;
+import static frc.robot.framework.wpilib.controllers.InputController.Button.*;
 
 import edu.wpi.first.wpilibj2.command.*;
 import static edu.wpi.first.wpilibj2.command.CommandBase.*;
@@ -35,8 +38,6 @@ import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static frc.robot.framework.Commands.*;
 
 import com.kauailabs.navx.frc.AHRS;
-
-import static frc.robot.framework.controllers.InputController.Axis.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -47,7 +48,7 @@ import static frc.robot.framework.controllers.InputController.Axis.*;
  * build.gradle file in the
  * project.
  */
-public final class RapidReachContainer extends CommandRobotContainer 
+public final class RapidReactContainer extends CommandRobotContainer 
 {
     ////////////////////////////////
     // CONTROLLERS
@@ -60,14 +61,14 @@ public final class RapidReachContainer extends CommandRobotContainer
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public final AHRS navx = new AHRS();
+    public static final AHRS navx = new AHRS();
 
-    public final AHRSTracker navxTracker = new AHRSTracker(navx);
-    public final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navx);
-    public final BallSucker ballSucker = new BallSucker();
-    public final BallMover ballMover = new BallMover();
-    public final BallShooter ballShooter = new BallShooter();
-    public final Climber climber = new Climber();
+    public static final AHRSTracker navxTracker = new AHRSTracker(navx);
+    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navxTracker);
+    public static final BallSucker ballSucker = new BallSucker();
+    public static final BallMover ballMover = new BallMover();
+    public static final BallShooter ballShooter = new BallShooter();
+    //public static final Climber climber = new Climber();
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -76,32 +77,36 @@ public final class RapidReachContainer extends CommandRobotContainer
     public final Ultrasonic ultrasonicRight = new Ultrasonic(RIGHT_ULTRASONIC_SENSOR_PING_PORT, RIGHT_ULTRASONIC_SENSOR_ECHO_PORT);
     */
 
-    public int speedIndex = 0;
+    public static int speedIndex = 0;
 
     ////////////////////////////////
     // INITIALIZATION
     ////////////////////////////////
     @Override
-    public void init()
+    public void init() 
     {
-        // Smart dashboard
-        SmartDashboard.putString("Easing", "Drive");
-        SmartDashboard.putNumber("Speed", ROBOT_SPEEDS[speedIndex]);
-
         // Calibrate the navx
-        navx.calibrate();
+        navxTracker.init();
         navxTracker.calibrate();
-        navxTracker.setDefaultCommand(run(navxTracker::update, navxTracker));
 
-        // Camera servers
-        CameraServer.startAutomaticCapture("Intake Camera", 0);
-
-        // PID
+        // PID setup
         drivetrain.setupPID();
         drivetrain.enableAllPID();
+        drivetrain.killMomentum();
 
         // TEMP
         //drivetrain.disableAllPID();
+    }
+
+    @Override
+    public void initOnce()
+    {
+        // Smart dashboard
+        Data.setup();
+
+        // Camera servers
+        CameraServer.startAutomaticCapture("Intake Camera", 0);
+        CameraServer.startAutomaticCapture("Shooter Camera", 1);
 
         // Intake
         operatorController.getButtonTrigger(B_CIRCLE)
@@ -135,12 +140,12 @@ public final class RapidReachContainer extends CommandRobotContainer
                         ballMover.startMovingBackwards();
                         ballShooter.reverseShooting();
                     }),
-                    runForTime(0.5, block(ballMover, ballShooter)),
+                    runForTime(0.3, block(ballMover, ballShooter)),
                     instant(() -> {
                         ballMover.stop();
                         ballShooter.startShooting();
                     }),
-                    runForTime(1.0, block(ballShooter)),
+                    runForTime(0.5, block(ballShooter)),
                     instant(() -> ballMover.startMoving()),
                     runForTime(2.5, block(ballMover, ballShooter)),
                     instant(() -> {
@@ -150,6 +155,13 @@ public final class RapidReachContainer extends CommandRobotContainer
                 )
             );
 
+        //  Direct shooter
+        operatorController.getAxisTrigger(LEFT_TRIGGER)
+            .when(Maths::greaterThan, 0.5)
+            .whenActive(ballShooter::startShooting)
+            .whenInactive(ballShooter::stop)
+            .whileActiveContinuous(block(ballShooter));
+
         // Reverse shooter
         operatorController.getButtonTrigger(RIGHT_BUMPER)
             .whenActive(ballShooter::reverseShooting)
@@ -157,6 +169,7 @@ public final class RapidReachContainer extends CommandRobotContainer
             .whileActiveContinuous(block(ballShooter));
 
         // Climb command
+        /*
         operatorController.getButtonTrigger(X_SQUARE)
             .whenActive(sequence(
                 instant(climber::startClimbing),
@@ -164,6 +177,7 @@ public final class RapidReachContainer extends CommandRobotContainer
                 instant(climber::stop)
             ))
             .whileActiveContinuous(block(climber));
+            */
 
         // Max speed command
         driverController.getButtonTrigger(A_CROSS)
@@ -181,7 +195,7 @@ public final class RapidReachContainer extends CommandRobotContainer
 
         // Ease control command
         driverController.getAxisTrigger(LEFT_TRIGGER)
-            .greaterThan(0.5)
+            .when(Maths::greaterThan, 0.5)
             .whenActive(() -> {
                 // Display on smart dashboard
                 Data.setCurrentEasing("None");
@@ -200,22 +214,33 @@ public final class RapidReachContainer extends CommandRobotContainer
         // Drive command
         drivetrain.setDefaultCommand(
             run(() -> {
-                drivetrain.drive(
+                drivetrain.set(
                     -driverController.getAxis(LEFT_Y), 
                     -driverController.getAxis(RIGHT_X)
                 );
-            })
+                //System.out.println(navxTracker.getAngularVelocity());
+            }, drivetrain)
         );
 
-        // PID straight angle command
-        driverController.getAxisTrigger(RIGHT_X)
-            .abs()
-            .lessThan(ANGLE_PID_DEADBAND)
+        // Turn the thing 90 degrees
+        driverController.getDPadTrigger(DPad.LEFT)
+            .whenActive(
+                sequence(
+                    instant(() -> drivetrain.setTargetAngle(90)),
+                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
+                    instant(drivetrain::releaseAngleTarget)
+                )
+            );
+
+        // PID straight angle command: TELEOP ONLY
+        driverController.getAxisTrigger(RIGHT_X).abs()
+            .when(Maths::lessThan, ANGLE_PID_DEADBAND)
             .and(
                 AnalogTrigger.from(navxTracker::getAngularVelocity)
                     .abs()
-                    .lessThan(ANGLE_VELOCITY_DEADBAND)
+                    .when(Maths::lessThan, ANGLE_VELOCITY_DEADBAND)
             )
+            .and(CommandRobot.whenTeleop())
             .whenActive(() -> drivetrain.setTargetAngle(0))
             .whenInactive(() -> drivetrain.releaseAngleTarget());
     }
@@ -226,7 +251,7 @@ public final class RapidReachContainer extends CommandRobotContainer
     public static enum AutoCommand 
     {
         DRIVE_TEST,
-        MAIN
+        MAIN, MAIN_BUT_WITHOUT_PID
     }
 
     @Override
@@ -240,7 +265,7 @@ public final class RapidReachContainer extends CommandRobotContainer
                     instant(() -> drivetrain.disableAllPID()),
                     runForTime(
                         2,
-                        () -> drivetrain.drive(0.5, 0),
+                        () -> drivetrain.set(0.5, 0),
                         drivetrain
                     ),
                     instant(() -> drivetrain.stop())
@@ -248,23 +273,15 @@ public final class RapidReachContainer extends CommandRobotContainer
 
             case MAIN:
                 return sequence(
-                    // drives backward for 2 seconds
-                    runForTime(
-                        2.0,
-                        () -> drivetrain.drive(1, 0),
-                        drivetrain
-                    ),
                     // stops driving and starts revving up shooter
                     instant(
                         () -> {
-                            drivetrain.stop();
-                            ballShooter.stop();
+                            ballShooter.startShooting();
                         },
-                        drivetrain,
                         ballShooter
                     ),
                     // wait for shooter to rev
-                    waitFor(2.0),
+                    waitFor(1.0),
                     // start transport
                     instant(
                         () -> {
@@ -285,8 +302,45 @@ public final class RapidReachContainer extends CommandRobotContainer
                         ballShooter
                     ),
                     // Pid backwards
-                    PIDDistanceCommand.get(drivetrain, 5.0)
+                    PIDDistanceCommand.get(drivetrain, 36.0)
                 );
+
+            case MAIN_BUT_WITHOUT_PID:
+                return sequence(
+                    // stops driving and starts revving up shooter
+                    instant(
+                        () -> {
+                            ballShooter.startShooting();
+                        },
+                        ballShooter
+                    ),
+                    // wait for shooter to rev
+                    waitFor(1.0),
+                    // start transport
+                    instant(
+                        () -> {
+                            ballMover.startMoving(); // fucking shit hell bitcoins
+                            //blinkinLEDDriver.set(CONFETTI);
+                        },
+                        ballMover
+                    ),
+                    // wait for ball to shoot
+                    waitFor(2.0),
+                    // stop shooter and stop transport
+                    instant(
+                        () -> {
+                            ballShooter.stop();
+                            ballMover.stop();
+                            //blinkinLEDDriver.set(HOT_PINK);
+                        },
+                        ballShooter
+                    ),
+                    runForTime(
+                        2,
+                        () -> drivetrain.set(0.5, 0),
+                        drivetrain
+                    )
+            );
             
             default:
                 throw new RuntimeException("Invalid auto command: " + command);

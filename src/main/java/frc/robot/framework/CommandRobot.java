@@ -3,7 +3,9 @@ package frc.robot.framework;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class CommandRobot extends TimedRobot
 {
@@ -16,6 +18,22 @@ public class CommandRobot extends TimedRobot
     private static long lastTime;
     private static CommandRobotContainer container;
     private static CommandRobot robot;
+    private static Command autoCommand;
+    private static RobotState state = RobotState.DISABLED;
+
+    public static RobotState getState() 
+    {
+        return state;
+    }
+    
+    public static Trigger whenAuto()
+    {
+        return new Trigger(() -> state.equals(RobotState.AUTO));
+    }
+    public static Trigger whenTeleop()
+    {
+        return new Trigger(() -> state.equals(RobotState.TELEOP));
+    }
 
     public static double deltaTime()
     {
@@ -25,7 +43,7 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotInit() 
     {
-        lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1000);
+        container.initOnce();
     }
 
     @Override
@@ -38,25 +56,52 @@ public class CommandRobot extends TimedRobot
     @Override
     public void autonomousInit() 
     {
-        CommandScheduler.getInstance().cancelAll();
-        var autoComm = container.getAutoCommand();
+        container.init();
+        state = RobotState.AUTO;
 
-        if(autoComm != null)
+        autoCommand = container.getAutoCommand();
+
+        if(autoCommand != null)
         {
-            CommandScheduler.getInstance().schedule(autoComm);
+            CommandScheduler.getInstance().schedule(autoCommand);
+        }
+
+        lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
+    }
+
+    @Override
+    public void autonomousExit() 
+    {
+        if(autoCommand != null)
+        {
+            CommandScheduler.getInstance().cancel(autoCommand);
         }
     }
 
     @Override
     public void teleopInit() 
     {
-        CommandScheduler.getInstance().cancelAll();
+        state = RobotState.TELEOP;
+
+        if(autoCommand != null)
+        {
+            CommandScheduler.getInstance().cancel(autoCommand);
+        }
+
+        container.init();
+        lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
     }
 
     @Override
-    public void teleopExit() 
+    public void testInit() 
     {
-        CommandScheduler.getInstance().cancelAll();
+        container.init();
+    }
+
+    @Override
+    public void disabledInit() 
+    {
+        state = RobotState.DISABLED;
     }
 
     public static Supplier<CommandRobot> from(Supplier<CommandRobotContainer> containerSupplier)

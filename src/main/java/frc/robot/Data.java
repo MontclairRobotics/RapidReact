@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RapidReachContainer.AutoCommand;
-import frc.robot.utilities.Sendables;
+import frc.robot.framework.wpilib.senables.Sendables;
 
 public final class Data 
 {
@@ -53,6 +53,8 @@ public final class Data
 
         SmartDashboard.putNumber("CurrentMaxSpeed", 0);
         SmartDashboard.putString("CurrentEasing", "None");
+
+        SmartDashboard.putNumber("NAVX.Tilt", 45);
     }
 
     public static double getDistanceKP() {return SmartDashboard.getNumber("PID.Distance.KP", 0);}
@@ -64,6 +66,8 @@ public final class Data
     public static double getAngleKI() {return SmartDashboard.getNumber("PID.Angle.KI", 0);}
     public static double getAngleKD() {return SmartDashboard.getNumber("PID.Angle.KD", 0);}
     public static double getAngleTolerance() {return SmartDashboard.getNumber("PID.Angle.Tolerance", 0);}
+
+    public static double getNAVXTilt() {return SmartDashboard.getNumber("NAVX.Tilt", 45);}
 
     public static AutoCommand getAutoCommand() {return autoChooser.getSelected();}
 
