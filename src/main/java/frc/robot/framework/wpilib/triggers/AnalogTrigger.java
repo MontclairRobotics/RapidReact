@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.framework.functions.DoubleDualPredicate;
 import frc.robot.framework.functions.DoublePredicate;
 import frc.robot.framework.functions.DoubleTriPredicate;
-import frc.robot.framework.maths.Maths;
+import frc.robot.framework.maths.MathUtils;
 
 public class AnalogTrigger
 {
@@ -32,106 +32,106 @@ public class AnalogTrigger
     //////////////////////////////////
     public AnalogTrigger plus(AnalogTrigger other)
     {
-        return against(other, Maths::add);
+        return against(other, MathUtils::add);
     }
     public AnalogTrigger plus(DoubleSupplier other)
     {
-        return against(other, Maths::add);
+        return against(other, MathUtils::add);
     }
     public AnalogTrigger plus(double other)
     {
-        return against(other, Maths::add);
+        return against(other, MathUtils::add);
     }
 
     public AnalogTrigger minus(AnalogTrigger other)
     {
-        return against(other, Maths::subtract);
+        return against(other, MathUtils::subtract);
     }
     public AnalogTrigger minus(DoubleSupplier other)
     {
-        return against(other, Maths::subtract);
+        return against(other, MathUtils::subtract);
     }
     public AnalogTrigger minus(double other)
     {
-        return against(other, Maths::subtract);
+        return against(other, MathUtils::subtract);
     }
 
     public AnalogTrigger times(AnalogTrigger other)
     {
-        return against(other, Maths::multiply);
+        return against(other, MathUtils::multiply);
     }
     public AnalogTrigger times(DoubleSupplier other)
     {
-        return against(other, Maths::multiply);
+        return against(other, MathUtils::multiply);
     }
     public AnalogTrigger times(double other)
     {
-        return against(other, Maths::multiply);
+        return against(other, MathUtils::multiply);
     }
 
     public AnalogTrigger over(AnalogTrigger other)
     {
-        return against(other, Maths::divide);
+        return against(other, MathUtils::divide);
     }
     public AnalogTrigger over(DoubleSupplier other)
     {
-        return against(other, Maths::divide);
+        return against(other, MathUtils::divide);
     }
     public AnalogTrigger over(double other)
     {
-        return against(other, Maths::divide);
+        return against(other, MathUtils::divide);
     }
 
     public AnalogTrigger raisedTo(AnalogTrigger other)
     {
-        return against(other, Maths::pow);
+        return against(other, MathUtils::pow);
     }
     public AnalogTrigger raisedTo(DoubleSupplier other)
     {
-        return against(other, Maths::pow);
+        return against(other, MathUtils::pow);
     }
     public AnalogTrigger raisedTo(double other)
     {
-        return against(other, Maths::pow);
+        return against(other, MathUtils::pow);
     }
 
     public AnalogTrigger modulo(AnalogTrigger other)
     {
-        return against(other, Maths::modulo);
+        return against(other, MathUtils::modulo);
     }
     public AnalogTrigger modulo(DoubleSupplier other)
     {
-        return against(other, Maths::modulo);
+        return against(other, MathUtils::modulo);
     }
     public AnalogTrigger modulo(double other)
     {
-        return against(other, Maths::modulo);
+        return against(other, MathUtils::modulo);
     }
 
     public AnalogTrigger min(AnalogTrigger other)
     {
-        return against(other, Maths::min);
+        return against(other, MathUtils::min);
     }
     public AnalogTrigger min(DoubleSupplier other)
     {
-        return against(other, Maths::min);
+        return against(other, MathUtils::min);
     }
     public AnalogTrigger min(double other)
     {
-        return against(other, Maths::min);
+        return against(other, MathUtils::min);
     }
 
     public AnalogTrigger max(AnalogTrigger other)
     {
-        return against(other, Maths::max);
+        return against(other, MathUtils::max);
     }
     public AnalogTrigger max(DoubleSupplier other)
     {
-        return against(other, Maths::max);
+        return against(other, MathUtils::max);
     }
     public AnalogTrigger max(double other)
     {
-        return against(other, Maths::max);
+        return against(other, MathUtils::max);
     }
 
     public AnalogTrigger against(AnalogTrigger other, DoubleBinaryOperator operator)
@@ -149,23 +149,23 @@ public class AnalogTrigger
 
     public AnalogTrigger squared()
     {
-        return applied(Maths::square);
+        return applied(MathUtils::square);
     }
     public AnalogTrigger sqrt()
     {
-        return applied(Maths::sqrt);
+        return applied(MathUtils::sqrt);
     }
     public AnalogTrigger inversed()
     {
-        return applied(Maths::inverse);
+        return applied(MathUtils::inverse);
     }
     public AnalogTrigger negated()
     {
-        return applied(Maths::negative);
+        return applied(MathUtils::negative);
     }
     public AnalogTrigger abs()
     {
-        return applied(Maths::abs);
+        return applied(MathUtils::abs);
     }
 
     public AnalogTrigger applied(DoubleUnaryOperator operator)

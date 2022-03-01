@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.PIDDistanceCommand;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.CommandRobotContainer;
-import frc.robot.framework.maths.Maths;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
@@ -157,7 +157,7 @@ public final class RapidReactContainer extends CommandRobotContainer
 
         //  Direct shooter
         operatorController.getAxisTrigger(LEFT_TRIGGER)
-            .when(Maths::greaterThan, 0.5)
+            .when(MathUtils::greaterThan, 0.5)
             .whenActive(ballShooter::startShooting)
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
@@ -195,7 +195,7 @@ public final class RapidReactContainer extends CommandRobotContainer
 
         // Ease control command
         driverController.getAxisTrigger(LEFT_TRIGGER)
-            .when(Maths::greaterThan, 0.5)
+            .when(MathUtils::greaterThan, 0.5)
             .whenActive(() -> {
                 // Display on smart dashboard
                 Data.setCurrentEasing("None");
@@ -234,11 +234,11 @@ public final class RapidReactContainer extends CommandRobotContainer
 
         // PID straight angle command: TELEOP ONLY
         driverController.getAxisTrigger(RIGHT_X).abs()
-            .when(Maths::lessThan, ANGLE_PID_DEADBAND)
+            .when(MathUtils::lessThan, ANGLE_PID_DEADBAND)
             .and(
                 AnalogTrigger.from(navxTracker::getAngularVelocity)
                     .abs()
-                    .when(Maths::lessThan, ANGLE_VELOCITY_DEADBAND)
+                    .when(MathUtils::lessThan, ANGLE_VELOCITY_DEADBAND)
             )
             .and(CommandRobot.whenTeleop())
             .whenActive(() -> drivetrain.setTargetAngle(0))

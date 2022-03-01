@@ -1,19 +1,19 @@
 package frc.robot.framework.profiling;
 
-import frc.robot.framework.maths.Maths;
+import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.maths.Updater;
 
 /**
  * @apiNote was previously named Smoother
  */
-public abstract class Profiler 
+public abstract class Profiler extends Updater<Double>
 {
-    protected double current, target;
     private double minValue, maxValue;
 
     public Profiler(double startValue, double minValue, double maxValue)
     {
-        current = startValue;
-        target = startValue;
+        super(startValue);
+
         this.minValue = minValue;
         this.maxValue = maxValue;
     }
@@ -22,36 +22,26 @@ public abstract class Profiler
         return maxValue;
     }
 
-    public final void setMaxValue(double maxValue) {
+    public final void setMaxValue(double maxValue) 
+    {
         this.maxValue = maxValue;
     }
 
-    public final double getMinValue() {
+    public final double getMinValue() 
+    {
         return minValue;
     }
 
-    public final void setMinValue(double minValue) {
+    public final void setMinValue(double minValue) 
+    {
         this.minValue = minValue;
     }
 
-    public final double getCurrent() 
+    @Override
+    protected final Double update(double deltaTime, Double current, Double target) 
     {
-        return current;
+        return update(deltaTime, current, target);
     }
-
-    public final void setDirect(double value)
-    {
-        current = value;
-    }
-
-    public final Profiler update(double deltaTime, double target) 
-    {
-        updateInternal(deltaTime, target);
-        current = Maths.clamp(current, minValue, maxValue);
-
-        return this;
-    }
-
-    protected abstract void updateInternal(double deltaTime, double target);
+    protected abstract double update(double deltaTime, double current, double target);
 }
 

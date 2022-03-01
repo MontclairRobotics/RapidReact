@@ -8,8 +8,8 @@ public class NothingProfiler extends Profiler
     }
 
     @Override
-    protected void updateInternal(double deltaTime, double target) 
+    protected double update(double deltaTime, double current, double target) 
     {
-        current = target;
+        return target;
     }
 }

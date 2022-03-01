@@ -261,7 +261,7 @@ public final class Drivetrain extends SubsystemBase
         {            
             // Update the speed with the smoother
             speedSmoother.update(CommandRobot.deltaTime(), targetSpeed);
-            speed = speedSmoother.getCurrent();
+            speed = speedSmoother.current();
         }
 
         // Pid the angle if the input turn is within the deadband

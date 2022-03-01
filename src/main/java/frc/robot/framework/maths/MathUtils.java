@@ -1,8 +1,8 @@
 package frc.robot.framework.maths;
 
-public final class Maths 
+public final class MathUtils
 {
-    private Maths() {}
+    private MathUtils() {}
 
     public static final double epsilon = 1E-7;
     
@@ -140,7 +140,7 @@ public final class Maths
         return x >= 0;
     }
 
-    public static boolean isNotNAN(double x)
+    public static boolean isNAN(double x)
     {
         return x != x;
     }

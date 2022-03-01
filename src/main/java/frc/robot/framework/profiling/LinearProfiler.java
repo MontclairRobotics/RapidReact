@@ -1,6 +1,6 @@
 package frc.robot.framework.profiling;
 
-import frc.robot.framework.maths.Maths;
+import frc.robot.framework.maths.MathUtils;
 
 public class LinearProfiler extends Profiler 
 {
@@ -29,19 +29,20 @@ public class LinearProfiler extends Profiler
     }
 
     @Override
-    protected void updateInternal(double deltaTime, double target) 
+    protected double update(double deltaTime, double current, double target) 
     {
         // Distance to target
         var delta /*velocity (unscaled)*/ = target - current;
         // Is the target and delta the same sign?
-        var isSpeedingUp = Maths.signsMatch(current, delta);
+        var isSpeedingUp = MathUtils.signsMatch(current, delta);
         // Select the right bound based on the above.
         var bound /*velocity (unclamped)*/ = (isSpeedingUp ? maxAccel : maxDecel);
         // Find the real bound (accounting for time).
-        var realBound /*velocity*/ = bound * Maths.clamp(deltaTime, 0, 1);
+        var realBound /*velocity*/ = bound * MathUtils.clamp(deltaTime, 0, 1);
         // Find the real change (bounded by realBound).
-        var realDelta /*velocity*/ = Maths.clamp(delta, -realBound, realBound);
+        var realDelta /*velocity*/ = MathUtils.clamp(delta, -realBound, realBound);
 
         current += realDelta;
+        return current;
     }
 }
