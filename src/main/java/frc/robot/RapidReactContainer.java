@@ -227,6 +227,24 @@ public final class RapidReactContainer extends CommandRobotContainer
             .whenActive(
                 sequence(
                     instant(() -> drivetrain.setTargetAngle(90)),
+                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
+                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                    instant(drivetrain::releaseAngleTarget)
+                )
+            );
+        driverController.getDPadTrigger(DPad.RIGHT)
+            .whenActive(
+                sequence(
+                    instant(() -> drivetrain.setTargetAngle(-90)),
+                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
+                    instant(drivetrain::releaseAngleTarget)
+                )
+            );
+        driverController.getDPadTrigger(DPad.UP)
+            .whenActive(
+                sequence(
+                    instant(() -> drivetrain.setTargetAngle(180)),
                     runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
                     instant(drivetrain::releaseAngleTarget)
                 )
@@ -302,7 +320,7 @@ public final class RapidReactContainer extends CommandRobotContainer
                         ballShooter
                     ),
                     // Pid backwards
-                    PIDDistanceCommand.get(drivetrain, 36.0)
+                    PIDDistanceCommand.get(drivetrain, 12.0)
                 );
 
             case MAIN_BUT_WITHOUT_PID:

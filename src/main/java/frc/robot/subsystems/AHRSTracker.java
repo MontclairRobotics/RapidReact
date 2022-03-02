@@ -39,7 +39,7 @@ public class AHRSTracker extends SubsystemBase
     public double getYawUnzeroed()
     {
         var yaw = ahrs.getAngle();
-        return yaw + navxTiltFactor * Math.sin(Math.toRadians(yaw));
+        return yaw - navxTiltFactor * Math.sin(Math.toRadians(yaw));
     }
     public double getYaw()
     {
@@ -48,8 +48,8 @@ public class AHRSTracker extends SubsystemBase
 
     public void zeroYaw() 
     {
-        yawZero = ahrs.getAngle();
-        prevAngle = 0;
+        yawZero = getYawUnzeroed();
+        prevAngle = yawZero;
     }
 
     public double getAngularVelocity()

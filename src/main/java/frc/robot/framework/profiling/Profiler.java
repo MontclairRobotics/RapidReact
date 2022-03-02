@@ -40,7 +40,7 @@ public abstract class Profiler extends Updater<Double>
     @Override
     protected final Double update(double deltaTime, Double current, Double target) 
     {
-        return update(deltaTime, current, target);
+        return update(deltaTime, current.doubleValue(), target.doubleValue());
     }
     protected abstract double update(double deltaTime, double current, double target);
 }

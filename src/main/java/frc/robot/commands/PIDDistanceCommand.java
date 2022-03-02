@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
@@ -15,6 +16,7 @@ public final class PIDDistanceCommand
     {
         return sequence(
             instant(() -> {
+                drivetrain.setMaxOutput(Constants.AUTO_SPEED);
                 drivetrain.setTargetDistance(distance);
                 drivetrain.setTargetAngle(0);
             }),

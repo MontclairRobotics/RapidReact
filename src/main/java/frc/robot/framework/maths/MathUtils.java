@@ -185,4 +185,20 @@ public final class MathUtils
     {
         return (x >= 0) == (y >= 0);
     }
+
+    public static double signFromBoolean(boolean x)
+    {
+        return x ? 1 : -1;
+    }
+    public static double signFromBoolean(Sign x)
+    {
+        switch(x)
+        {
+            case PLUS: return 1;
+            case ZERO: return 0;
+            case MINUS: return -1;
+        }
+
+        return "FUCK YOU JAVA YOU PIECE OF SHIT I WANT TO KILL YOURSELF".length();
+    }
 }

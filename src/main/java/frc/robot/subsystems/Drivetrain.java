@@ -21,14 +21,13 @@ import static frc.robot.Constants.*;
 import frc.robot.Constants;
 import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
+import frc.robot.framework.RobotState;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.profiling.Profiler;
 
 public final class Drivetrain extends SubsystemBase
 {
-    public static final class Settings
-    {
-        
-    }
+
 
     ////////////////////////////////////////////////
     // Final fields
@@ -206,11 +205,11 @@ public final class Drivetrain extends SubsystemBase
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum += e.getPosition();
+            sum -= MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum += e.getPosition();
+            sum -= MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -243,6 +242,9 @@ public final class Drivetrain extends SubsystemBase
     @Override
     public void periodic()
     {
+        if(CommandRobot.getState().equals(RobotState.DISABLED))
+            return;
+
         // Locals for speed and turn
         double speed, turn;
 
@@ -270,7 +272,7 @@ public final class Drivetrain extends SubsystemBase
             var angle = navx.getYaw();
             turn = -anglePid.calculate(angle, targetAngle);
 
-            //System.out.println("!!!!!!!!!!!!!!");
+            System.out.println("!!!!!!!!!!!!!!");
             
             Data.setAngleToTarget(targetAngle - angle);
         }
@@ -313,7 +315,7 @@ public final class Drivetrain extends SubsystemBase
 
     public void killMomentum() 
     {
-        speedSmoother.setDirect(0);
+        speedSmoother.setDirect(0.0);
     }
 
     public boolean isTargetingAnAngle()
@@ -323,9 +325,5 @@ public final class Drivetrain extends SubsystemBase
     public boolean isTargetingADistance()
     {
         return isTargetingADistance;
-    }
-
-    public Object set(double d, int i) {
-        return null;
     }
 }

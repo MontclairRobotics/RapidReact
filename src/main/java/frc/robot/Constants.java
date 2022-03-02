@@ -59,16 +59,14 @@ public final class Constants
     public static final double BALL_SUCKER_MOTOR_SPEED = 1;
 
     // Transport Motor Speed
-    public static final double BALL_TRANSPORT_SPEED = 1; //idk
+    public static final double BALL_TRANSPORT_SPEED = 1; 
 
     //Shooter Speed
     public static final double SHOOTER_SPEED = 1.0;
 
     //Climber Speed
-    //256 ticks per rotation
-    //20.25 to 1 ratio
-    public static final double CLIMBER_MOTOR_SPEED = .5; //idk
-    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -.25; //idk
+    public static final double CLIMBER_MOTOR_SPEED = .5; 
+    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -.25;
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = true;
@@ -86,13 +84,13 @@ public final class Constants
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
-    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
+    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.XBOX;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
     public static final double REVERSE_SHOOTER_SPEED = -0.4;
 
     // Speeds for the robot
-    public static final double AUTO_SPEED = 0.7;
+    public static final double AUTO_SPEED = 0.5;
     public static final double[] ROBOT_SPEEDS = {
         0.7,
         1
@@ -113,7 +111,7 @@ public final class Constants
 
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change
-    public static final double TICKS_PER_ROT = 42.0;
+    public static final double TICKS_PER_ROTATION = 42.0;
     public static final double GEAR_RATIO_IN_TO_OUT = 10.86 / 1.0;
     public static final double WHEEL_DIAMETER = 6.0; //inches
     public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
