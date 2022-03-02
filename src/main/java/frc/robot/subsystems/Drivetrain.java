@@ -88,6 +88,7 @@ public final class Drivetrain extends SubsystemBase
     // Other fields
     ////////////////////////////////////////////////
     private Profiler speedSmoother;
+    
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
 
@@ -97,7 +98,7 @@ public final class Drivetrain extends SubsystemBase
     private double targetSpeed;
     private double targetTurn;
 
-    private AHRSTracker navx;
+    private TrackedNavx navx;
 
     private boolean isTargetingADistance = false;
     private double targetDistance = 0.0;
@@ -108,7 +109,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(Profiler defaultSmoother, AHRSTracker navx) 
+    public Drivetrain(Profiler defaultSmoother, TrackedNavx navx) 
     {
         speedSmoother = defaultSmoother;
 
@@ -205,11 +206,11 @@ public final class Drivetrain extends SubsystemBase
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum -= MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum -= MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -269,7 +270,7 @@ public final class Drivetrain extends SubsystemBase
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
         {
-            var angle = navx.getYaw();
+            var angle = navx.getAngle();
             turn = -anglePid.calculate(angle, targetAngle);
 
             System.out.println("!!!!!!!!!!!!!!");
@@ -282,7 +283,7 @@ public final class Drivetrain extends SubsystemBase
         }
 
         // Set the drive
-        differentialDrive.arcadeDrive(speed, turn);
+        differentialDrive.arcadeDrive(speed, turn, !isTargetingADistance);
     }
 
     public void releaseDistanceTarget() 

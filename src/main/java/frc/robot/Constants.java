@@ -121,4 +121,5 @@ public final class Constants
 
     public static final double ANGLE_PID_DEADBAND = 0.1;
     public static final double ANGLE_VELOCITY_DEADBAND = 90.0 / 1.0;
+    //public static final String SIR_BREAKS_A_LOT = "GREAT!!!";
 }

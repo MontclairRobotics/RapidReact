@@ -7,19 +7,24 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
 
-public class AHRSTracker extends SubsystemBase 
+public class TrackedNavx extends SubsystemBase 
 {
     private AHRS ahrs;
 
-    public AHRSTracker(AHRS ahrs)
+    public TrackedNavx(AHRS ahrs)
     {
         this.ahrs = ahrs;
 
-        prevAngle = getYaw();
+        prevAngle = getAngle();
         angularVelocity = 0;
     }
 
-    private double yawZero = 0;
+    public TrackedNavx()
+    {
+        this(new AHRS());
+    }
+
+    private double angleZero = 0;
     private double navxTiltFactor = 0;
 
     private double prevAngle;
@@ -33,23 +38,23 @@ public class AHRSTracker extends SubsystemBase
     public void calibrate() 
     {
         ahrs.calibrate();
-        prevAngle = getYaw();
+        prevAngle = getAngleUnzeroed();
     }
     
-    public double getYawUnzeroed()
+    public double getAngleUnzeroed()
     {
         var yaw = ahrs.getAngle();
         return yaw - navxTiltFactor * Math.sin(Math.toRadians(yaw));
     }
-    public double getYaw()
+    public double getAngle()
     {
-        return getYawUnzeroed() - yawZero;
+        return getAngleUnzeroed() - angleZero;
     }
 
     public void zeroYaw() 
     {
-        yawZero = getYawUnzeroed();
-        prevAngle = yawZero;
+        angleZero = getAngleUnzeroed();
+        prevAngle = angleZero;
     }
 
     public double getAngularVelocity()
@@ -60,7 +65,7 @@ public class AHRSTracker extends SubsystemBase
     @Override
     public void periodic()
     {
-        var angle = getYawUnzeroed();
+        var angle = getAngleUnzeroed();
 
         angularVelocity = (angle - prevAngle) / CommandRobot.deltaTime();
         prevAngle = angle;

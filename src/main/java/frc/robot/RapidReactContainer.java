@@ -20,7 +20,7 @@ import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
 import frc.robot.framework.wpilib.triggers.AnalogTrigger;
-import frc.robot.subsystems.AHRSTracker;
+import frc.robot.subsystems.TrackedNavx;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.BallSucker;
@@ -61,14 +61,12 @@ public final class RapidReactContainer extends CommandRobotContainer
     ////////////////////////////////
     // MODELS
     ////////////////////////////////
-    public static final AHRS navx = new AHRS();
-
-    public static final AHRSTracker navxTracker = new AHRSTracker(navx);
-    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navxTracker);
+    public static final TrackedNavx navx = new TrackedNavx(new AHRS());
+    public static final Drivetrain drivetrain = new Drivetrain(DRIVE_SMOOTHER, navx);
     public static final BallSucker ballSucker = new BallSucker();
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
-    //public static final Climber climber = new Climber();
+    public static final Climber climber = new Climber();
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -86,8 +84,8 @@ public final class RapidReactContainer extends CommandRobotContainer
     public void init() 
     {
         // Calibrate the navx
-        navxTracker.init();
-        navxTracker.calibrate();
+        navx.init();
+        navx.calibrate();
 
         // PID setup
         drivetrain.setupPID();
@@ -169,15 +167,10 @@ public final class RapidReactContainer extends CommandRobotContainer
             .whileActiveContinuous(block(ballShooter));
 
         // Climb command
-        /*
         operatorController.getButtonTrigger(X_SQUARE)
-            .whenActive(sequence(
-                instant(climber::startClimbing),
-                runForTime(3.0, block(climber)),
-                instant(climber::stop)
-            ))
+            .whenActive(climber::startClimbing)
+            .whenInactive(climber::stop)
             .whileActiveContinuous(block(climber));
-            */
 
         // Max speed command
         driverController.getButtonTrigger(A_CROSS)
@@ -229,7 +222,7 @@ public final class RapidReactContainer extends CommandRobotContainer
                     instant(() -> drivetrain.setTargetAngle(90)),
                     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
                     runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                    print("AAAAAAAAA the second one"),
                     instant(drivetrain::releaseAngleTarget)
                 )
             );
@@ -254,7 +247,7 @@ public final class RapidReactContainer extends CommandRobotContainer
         driverController.getAxisTrigger(RIGHT_X).abs()
             .when(MathUtils::lessThan, ANGLE_PID_DEADBAND)
             .and(
-                AnalogTrigger.from(navxTracker::getAngularVelocity)
+                AnalogTrigger.from(navx::getAngularVelocity)
                     .abs()
                     .when(MathUtils::lessThan, ANGLE_VELOCITY_DEADBAND)
             )
@@ -268,9 +261,64 @@ public final class RapidReactContainer extends CommandRobotContainer
     /////////////////////////////////
     public static enum AutoCommand 
     {
-        DRIVE_TEST,
-        MAIN, MAIN_BUT_WITHOUT_PID
+        MAIN, // done!
+        DELAY_MAIN, //done!
+        NOTHING, // done!
+        SHOOT_NO_DRIVE, // done!
+        JUST_DRIVE, // done!
+        MAIN_BUT_WITHOUT_PID // done!
     }
+
+    private static final double AUTO_DRIVE_DISTANCE = 96.0;
+    private static final double AUTO_WAIT_TIME = 5;
+    private static final Command AUTO_SHOOT 
+        = sequence(
+            // stops driving and starts revving up shooter
+            instant(
+                () -> {
+                    ballShooter.startShooting();
+                },
+                ballShooter
+            ),
+            // wait for shooter to rev
+            waitFor(1.0),
+            // start transport
+            instant(
+                () -> {
+                    ballMover.startMoving(); // fucking shit hell bitcoins
+                    //blinkinLEDDriver.set(CONFETTI);
+                },
+                ballMover
+            ),
+            // wait for ball to shoot
+            waitFor(2.0),
+            // stop shooter and stop transport
+            instant(
+                () -> {
+                    ballShooter.stop();
+                    ballMover.stop();
+                    //blinkinLEDDriver.set(HOT_PINK);
+                },
+                ballShooter
+            )
+        );
+    private static final Command AUTO_MAIN = 
+        sequence(
+            AUTO_SHOOT,
+            // Pid backwards
+            PIDDistanceCommand.get(drivetrain, -AUTO_DRIVE_DISTANCE)
+        );
+    private static final Command AUTO_DELAY_COMMAND =
+        sequence(
+            waitFor(AUTO_WAIT_TIME),
+            AUTO_MAIN
+        );
+
+    private static final Command AUTO_DRIVE_BACKWARD =
+        PIDDistanceCommand.get(drivetrain, -AUTO_DRIVE_DISTANCE);
+
+    private static final Command NOTHING_COMMAND =
+        instant(() -> {});
 
     @Override
     public Command getAutoCommand()
@@ -278,87 +326,29 @@ public final class RapidReactContainer extends CommandRobotContainer
         var command = Data.getAutoCommand();
         switch (command)
         {
-            case DRIVE_TEST:
-                return sequence(
-                    instant(() -> drivetrain.disableAllPID()),
-                    runForTime(
-                        2,
-                        () -> drivetrain.set(0.5, 0),
-                        drivetrain
-                    ),
-                    instant(() -> drivetrain.stop())
-                );
+            case JUST_DRIVE:
+                return AUTO_DRIVE_BACKWARD;
 
             case MAIN:
                 return sequence(
-                    // stops driving and starts revving up shooter
-                    instant(
-                        () -> {
-                            ballShooter.startShooting();
-                        },
-                        ballShooter
-                    ),
-                    // wait for shooter to rev
-                    waitFor(1.0),
-                    // start transport
-                    instant(
-                        () -> {
-                            ballMover.startMoving(); // fucking shit hell bitcoins
-                            //blinkinLEDDriver.set(CONFETTI);
-                        },
-                        ballMover
-                    ),
-                    // wait for ball to shoot
-                    waitFor(2.0),
-                    // stop shooter and stop transport
-                    instant(
-                        () -> {
-                            ballShooter.stop();
-                            ballMover.stop();
-                            //blinkinLEDDriver.set(HOT_PINK);
-                        },
-                        ballShooter
-                    ),
+                    AUTO_SHOOT,
                     // Pid backwards
-                    PIDDistanceCommand.get(drivetrain, 12.0)
+                    PIDDistanceCommand.get(drivetrain, -AUTO_DRIVE_DISTANCE)
                 );
 
             case MAIN_BUT_WITHOUT_PID:
                 return sequence(
-                    // stops driving and starts revving up shooter
-                    instant(
-                        () -> {
-                            ballShooter.startShooting();
-                        },
-                        ballShooter
-                    ),
-                    // wait for shooter to rev
-                    waitFor(1.0),
-                    // start transport
-                    instant(
-                        () -> {
-                            ballMover.startMoving(); // fucking shit hell bitcoins
-                            //blinkinLEDDriver.set(CONFETTI);
-                        },
-                        ballMover
-                    ),
-                    // wait for ball to shoot
-                    waitFor(2.0),
-                    // stop shooter and stop transport
-                    instant(
-                        () -> {
-                            ballShooter.stop();
-                            ballMover.stop();
-                            //blinkinLEDDriver.set(HOT_PINK);
-                        },
-                        ballShooter
-                    ),
+                    AUTO_SHOOT,
                     runForTime(
                         2,
                         () -> drivetrain.set(0.5, 0),
                         drivetrain
                     )
-            );
+                );
+            case DELAY_MAIN:
+                return AUTO_DELAY_COMMAND;
+            case NOTHING:
+                return NOTHING_COMMAND;
             
             default:
                 throw new RuntimeException("Invalid auto command: " + command);
