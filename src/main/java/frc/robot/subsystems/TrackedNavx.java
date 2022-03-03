@@ -25,15 +25,8 @@ public class TrackedNavx extends SubsystemBase
     }
 
     private double angleZero = 0;
-    private double navxTiltFactor = 0;
-
     private double prevAngle;
     private double angularVelocity;
-
-    public void init()
-    {
-        navxTiltFactor = Math.sin(Math.toRadians(Data.getNAVXTilt()));
-    }
 
     public void calibrate() 
     {
@@ -43,8 +36,7 @@ public class TrackedNavx extends SubsystemBase
     
     public double getAngleUnzeroed()
     {
-        var yaw = ahrs.getAngle();
-        return yaw - navxTiltFactor * Math.sin(Math.toRadians(yaw));
+        return ahrs.getAngle();
     }
     public double getAngle()
     {

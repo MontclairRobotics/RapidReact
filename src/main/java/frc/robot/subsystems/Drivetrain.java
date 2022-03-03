@@ -271,9 +271,9 @@ public final class Drivetrain extends SubsystemBase
         if(isUsingAnglePID && isTargetingAnAngle)
         {
             var angle = navx.getAngle();
-            turn = -anglePid.calculate(angle, targetAngle);
+            turn = -anglePid.calculate(angle, targetAngle) * Constants.ANGLE_PID_SCALE;
 
-            System.out.println("!!!!!!!!!!!!!!");
+            System.out.println("Current angle: " + angle + "*");
             
             Data.setAngleToTarget(targetAngle - angle);
         }

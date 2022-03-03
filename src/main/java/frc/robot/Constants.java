@@ -41,8 +41,8 @@ public final class Constants
     public static final int RIGHT_SHOOTER_MOTOR_PORT = 5;
 
     // Climber Motor Ports
-    public static final int LEFT_CLIMBER_MOTOR_PORT = 0;
-    public static final int RIGHT_CLIMBER_MOTOR_PORT = 0;
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
 
     // BlinkinLEDDriver port
     public static final int BLINKIN_LED_DRIVER_PORT = 0;
@@ -65,8 +65,8 @@ public final class Constants
     public static final double SHOOTER_SPEED = 1.0;
 
     //Climber Speed
-    public static final double CLIMBER_MOTOR_SPEED = .5; 
-    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -.25;
+    public static final double CLIMBER_MOTOR_SPEED = 1; 
+    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = true;
@@ -78,13 +78,13 @@ public final class Constants
 
     // Motors inversion
     public static final boolean LEFT_CLIMBER_INVERTED = false;
-    public static final boolean RIGHT_CLIMBER_INVERTED = true;
+    public static final boolean RIGHT_CLIMBER_INVERTED = false;
 
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
-    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.XBOX;
+    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
     public static final double REVERSE_SHOOTER_SPEED = -0.4;
@@ -121,5 +121,6 @@ public final class Constants
 
     public static final double ANGLE_PID_DEADBAND = 0.1;
     public static final double ANGLE_VELOCITY_DEADBAND = 90.0 / 1.0;
-    //public static final String SIR_BREAKS_A_LOT = "GREAT!!!";
+
+	public static final double ANGLE_PID_SCALE = 0.7;
 }

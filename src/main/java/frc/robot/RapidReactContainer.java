@@ -84,7 +84,6 @@ public final class RapidReactContainer extends CommandRobotContainer
     public void init() 
     {
         // Calibrate the navx
-        navx.init();
         navx.calibrate();
 
         // PID setup
@@ -166,9 +165,15 @@ public final class RapidReactContainer extends CommandRobotContainer
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
 
-        // Climb command
-        operatorController.getButtonTrigger(X_SQUARE)
+        // Climb up command
+        operatorController.getButtonTrigger(Y_TRIANGLE)
             .whenActive(climber::startClimbing)
+            .whenInactive(climber::stop)
+            .whileActiveContinuous(block(climber));
+
+        // Climb down command
+        operatorController.getButtonTrigger(X_SQUARE)
+            .whenActive(climber::startReverseClimbing)
             .whenInactive(climber::stop)
             .whileActiveContinuous(block(climber));
 

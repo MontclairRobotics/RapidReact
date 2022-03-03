@@ -53,8 +53,6 @@ public final class Data
 
         SmartDashboard.putNumber("CurrentMaxSpeed", 0);
         SmartDashboard.putString("CurrentEasing", "None");
-
-        SmartDashboard.putNumber("NAVX.Tilt", 45);
     }
 
     public static double getDistanceKP() {return SmartDashboard.getNumber("PID.Distance.KP", 0);}
@@ -66,8 +64,6 @@ public final class Data
     public static double getAngleKI() {return SmartDashboard.getNumber("PID.Angle.KI", 0);}
     public static double getAngleKD() {return SmartDashboard.getNumber("PID.Angle.KD", 0);}
     public static double getAngleTolerance() {return SmartDashboard.getNumber("PID.Angle.Tolerance", 0);}
-
-    public static double getNAVXTilt() {return SmartDashboard.getNumber("NAVX.Tilt", 45);}
 
     public static AutoCommand getAutoCommand() {return autoChooser.getSelected();}
 

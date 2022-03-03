@@ -56,8 +56,8 @@ public class CommandRobot extends TimedRobot
     @Override
     public void autonomousInit() 
     {
-        container.init();
         state = RobotState.AUTO;
+        container.init();
 
         autoCommand = container.getAutoCommand();
 
