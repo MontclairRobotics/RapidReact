@@ -8,8 +8,8 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.RapidReachContainer.AutoCommand;
-import frc.robot.utilities.Sendables;
+import frc.robot.RapidReactContainer.AutoCommand;
+import frc.robot.framework.wpilib.senables.Sendables;
 
 public final class Data 
 {

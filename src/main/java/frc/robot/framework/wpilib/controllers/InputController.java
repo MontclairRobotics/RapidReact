@@ -1,10 +1,11 @@
-package frc.robot.framework.controllers;
+package frc.robot.framework.wpilib.controllers;
 
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.framework.wpilib.triggers.AnalogTrigger;
 
 public abstract class InputController 
 {

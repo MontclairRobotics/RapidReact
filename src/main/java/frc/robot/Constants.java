@@ -4,10 +4,11 @@
 
 package frc.robot;
 
-import frc.robot.framework.controllers.InputController;
-import frc.robot.utilities.smoothing.LinearSmoother;
-import frc.robot.utilities.smoothing.NullSmoother;
-import frc.robot.utilities.smoothing.Smoother;
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.framework.profiling.LinearProfiler;
+import frc.robot.framework.profiling.NothingProfiler;
+import frc.robot.framework.profiling.Profiler;
+import frc.robot.framework.wpilib.controllers.InputController;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -20,17 +21,17 @@ import frc.robot.utilities.smoothing.Smoother;
 public final class Constants 
 {
     // Left motor port numbers
-    public static final int LEFT_MOTOR_1_PORT = 9;
-    public static final int LEFT_MOTOR_2_PORT = 10;
-    public static final int LEFT_MOTOR_3_PORT = 11;
+    public static final int LEFT_MOTOR_1_PORT = 2; 
+    public static final int LEFT_MOTOR_2_PORT = 4;
+    public static final int LEFT_MOTOR_3_PORT = 3; // this motor has ben commented out
 
     // Right motor port numbers
-    public static final int RIGHT_MOTOR_1_PORT = 2;
-    public static final int RIGHT_MOTOR_2_PORT = 3;
-    public static final int RIGHT_MOTOR_3_PORT = 4;
+    public static final int RIGHT_MOTOR_1_PORT = 9; //2;
+    public static final int RIGHT_MOTOR_2_PORT = 10; //3;
+    public static final int RIGHT_MOTOR_3_PORT = 11; //4; this motor has been commented out
 
     // Intake motor port number
-    public static final int INTAKE_MOTOR_PORT = 41;
+    public static final int INTAKE_MOTOR_PORT = 1;
 
     // Transport motor port number
     public static final int TRANSPORT_MOTOR_PORT = 40;
@@ -40,8 +41,8 @@ public final class Constants
     public static final int RIGHT_SHOOTER_MOTOR_PORT = 5;
 
     // Climber Motor Ports
-    public static final int LEFT_CLIMBER_MOTOR_PORT = 0;
-    public static final int RIGHT_CLIMBER_MOTOR_PORT = 0;
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
 
     // BlinkinLEDDriver port
     public static final int BLINKIN_LED_DRIVER_PORT = 0;
@@ -58,20 +59,18 @@ public final class Constants
     public static final double BALL_SUCKER_MOTOR_SPEED = 1;
 
     // Transport Motor Speed
-    public static final double BALL_TRANSPORT_SPEED = 1; //idk
+    public static final double BALL_TRANSPORT_SPEED = 1; 
 
     //Shooter Speed
     public static final double SHOOTER_SPEED = 0.7;
 
     //Climber Speed
-    //256 ticks per rotation
-    //20.25 to 1 ratio
-    public static final double CLIMBER_MOTOR_SPEED = .5; //idk
-    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -.25; //idk
+    public static final double CLIMBER_MOTOR_SPEED =  1; 
+    public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
 
     // Drivetrain Inversion
-    public static final boolean LEFT_DRIVE_INVERSION = true;
-    public static final boolean RIGHT_DRIVE_INVERSION = false;
+    public static final boolean LEFT_DRIVE_INVERSION = false;
+    public static final boolean RIGHT_DRIVE_INVERSION = true;
 
     // Shooter Inversion
     public static final boolean SHOOTER_LEFT_INVERSION = true;
@@ -79,7 +78,7 @@ public final class Constants
 
     // Motors inversion
     public static final boolean LEFT_CLIMBER_INVERTED = false;
-    public static final boolean RIGHT_CLIMBER_INVERTED = true;
+    public static final boolean RIGHT_CLIMBER_INVERTED = false;
 
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
@@ -88,21 +87,21 @@ public final class Constants
     public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
-    public static final double REVERSE_SHOOTER_SPEED = -0.2;
+    public static final double REVERSE_SHOOTER_SPEED = -0.4;
 
     // Speeds for the robot
-    public static final double AUTO_SPEED = 0.7;
+    public static final double AUTO_SPEED = 0.5;
     public static final double[] ROBOT_SPEEDS = {
-        0.7,
-        1
+        1,
+        0.5
     };
 
-    public static final Smoother DRIVE_SMOOTHER 
-        = new LinearSmoother(0, -1, 1, 0.02);
-    public static final NullSmoother DRIVE_NULL_SMOOTHER
-        = new NullSmoother(0, -1, 1);
+    public static final Profiler DRIVE_PROFILER 
+        = new LinearProfiler(0, -1, 1, 1.0 / 1.0, 1.0 / 1.25, "DRIVE-1");
+    public static final NothingProfiler NOTHING_PROFILER
+        = new NothingProfiler(0, -1, 1, "NOTHING-1");
 
-    public static final double TURN_FACTOR = 0.6;
+    public static final double TURN_FACTOR = 0.5;
     public static final double TURN_DRIVE_FACTOR = 0.2;
 
     public static double adjustTurn(double speed, double targetTurn)
@@ -112,19 +111,16 @@ public final class Constants
 
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change
-    public static final double TICKS_PER_ROT = 42.0;
-    public static final double GEAR_RATIO = 10.86 / 1.0;
+    public static final double TICKS_PER_ROTATION = 42.0;
+    public static final double GEAR_RATIO_IN_TO_OUT = 10.86 / 1.0;
     public static final double WHEEL_DIAMETER = 6.0; //inches
-    public static final double INCHES_TO_FEET = 12.0; //feet
+    public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
 
     public static final double CONVERSION_RATE 
-        = TICKS_PER_ROT * GEAR_RATIO / WHEEL_DIAMETER * INCHES_TO_FEET;
+    = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
 
+    public static final double ANGLE_PID_DEADBAND = 0.1;
+    public static final double ANGLE_VELOCITY_DEADBAND = 30.0 / 1.0;
 
-
-    //Button to activate shooter
-    //public static final InputController SHOOTER_BUTTON = InputController.Button.A_CROSS;
-
-    public static final double ANGLE_PID_DEADBAND = 0.2;
-    public static final double ANGLE_VELOCITY_DEADBAND = 0.1;
+	public static final double ANGLE_PID_SCALE = 0.7;
 }

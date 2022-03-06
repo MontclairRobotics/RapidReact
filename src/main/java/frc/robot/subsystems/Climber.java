@@ -23,8 +23,7 @@ public class Climber extends SubsystemBase
         talonRight.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
     }
 
-    //Delete Function?
-    public void reverseClimbing()
+    public void startReverseClimbing()
     {
         talonLeft.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);
         talonRight.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);

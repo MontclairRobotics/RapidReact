@@ -1,4 +1,4 @@
-package frc.robot.rev;
+package frc.robot.framework.vendors.rev;
 
 public enum BlinkinLEDMode 
 {
@@ -132,7 +132,6 @@ public enum BlinkinLEDMode
 
     ;
 
-    //#region Internals
     private double sparkValue;
     public double getSparkValue() 
     {
@@ -143,5 +142,4 @@ public enum BlinkinLEDMode
     {
         this.sparkValue = sparkValue;
     }
-    //#endregion
 }
