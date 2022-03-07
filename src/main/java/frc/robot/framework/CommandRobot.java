@@ -54,7 +54,7 @@ public class CommandRobot extends TimedRobot
     @Override
     public void autonomousInit() 
     {
-        System.out.println("!!!!!!!!!!%%%%%%%%%%%%@#(%*U#@)(*#U$)(#$@JO#$@KIJI");
+        //System.out.println("Auto Init");
 
         state = RobotState.AUTO;
         container.init();

@@ -19,6 +19,7 @@ public final class Data
 
     public static void setup()
     {
+        /*
         SmartDashboard.setDefaultNumber("PID.Distance.KP", 0.1);
         SmartDashboard.setPersistent("PID.Distance.KP");
 
@@ -42,6 +43,7 @@ public final class Data
 
         SmartDashboard.setDefaultNumber("PID.Angle.Tolerance", 1);
         SmartDashboard.setPersistent("PID.Angle.Tolerance");
+        //*/
 
         autoChooser = Sendables.enumChooser(AutoCommand.MAIN, AutoCommand::values);
         SmartDashboard.putData("Auto.Command", autoChooser);
@@ -55,17 +57,22 @@ public final class Data
         SmartDashboard.putString("CurrentEasing", "None");
     }
 
-    public static double getDistanceKP() {return SmartDashboard.getNumber("PID.Distance.KP", 0);}
-    public static double getDistanceKI() {return SmartDashboard.getNumber("PID.Distance.KI", 0);}
-    public static double getDistanceKD() {return SmartDashboard.getNumber("PID.Distance.KD", 0);}
-    public static double getDistanceTolerance() {return SmartDashboard.getNumber("PID.Distance.Tolerance", 0);}
+    public static double getDistanceKP() {return 0.1;/*SmartDashboard.getNumber("PID.Distance.KP", 0);*/}
+    public static double getDistanceKI() {return 0.0;/*SmartDashboard.getNumber("PID.Distance.KI", 0);*/}
+    public static double getDistanceKD() {return 0.0;/*SmartDashboard.getNumber("PID.Distance.KD", 0);*/}
+    public static double getDistanceTolerance() {return 0.1;/*SmartDashboard.getNumber("PID.Distance.Tolerance", 0);*/}
 
-    public static double getAngleKP() {return SmartDashboard.getNumber("PID.Angle.KP", 0);}
-    public static double getAngleKI() {return SmartDashboard.getNumber("PID.Angle.KI", 0);}
-    public static double getAngleKD() {return SmartDashboard.getNumber("PID.Angle.KD", 0);}
-    public static double getAngleTolerance() {return SmartDashboard.getNumber("PID.Angle.Tolerance", 0);}
+    public static double getAngleKP() {return 0.005;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
+    public static double getAngleKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
+    public static double getAngleKD() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
+    public static double getAngleTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
 
-    public static AutoCommand getAutoCommand() {return autoChooser.getSelected();}
+    public static AutoCommand getAutoCommand() 
+    {
+        var c = autoChooser.getSelected();
+        if(c == null) return AutoCommand.MAIN;
+        return c;
+    }
 
     public static void setDistanceToTarget(double value) {SmartDashboard.putNumber("PID.DistanceToTarget", value);}
     public static void setAngleToTarget(double value) {SmartDashboard.putNumber("PID.AngleToTarget", value);}

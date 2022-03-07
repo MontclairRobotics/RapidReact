@@ -284,7 +284,7 @@ public final class Drivetrain extends SubsystemBase
             Constants.ANGLE_PID_SCALE
         );
 
-        System.out.println("Current angle: " + angle + "*");
+        //System.out.println("Current angle: " + angle + "*");
         //System.out.println("Current turn: " + turn);
         
         Data.setAngleToTarget(target - angle);
@@ -306,7 +306,7 @@ public final class Drivetrain extends SubsystemBase
         {
             var averageDistance = getAverageDistanceTraveled();
 
-            System.out.println("Average distance: " + averageDistance);
+            //System.out.println("Average distance: " + averageDistance);
 
             speed = -distancePid.calculate(averageDistance, targetDistance) * maxOutput;
 
@@ -321,7 +321,7 @@ public final class Drivetrain extends SubsystemBase
             speedProfiler.update(CommandRobot.deltaTime(), targetSpeed * maxOutput);
             speed = speedProfiler.current();
 
-            //System.out.println("im fucking driving");
+            //System.out.println("Robot driving");
         }
 
         // Pid the angle if the input turn is within the deadband
