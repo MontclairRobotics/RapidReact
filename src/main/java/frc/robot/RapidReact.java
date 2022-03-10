@@ -16,10 +16,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.PIDDistanceCommand;
 import frc.robot.framework.CommandRobot;
-import frc.robot.framework.CommandRobotContainer;
+import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
 import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
+import frc.robot.framework.wpilib.AutoCommands;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
 import frc.robot.framework.wpilib.triggers.AnalogTrigger;
@@ -43,6 +44,7 @@ import static edu.wpi.first.wpilibj2.command.CommandBase.*;
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static frc.robot.framework.Commands.*;
 
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.kauailabs.navx.frc.AHRS;
 
 /**
@@ -54,7 +56,7 @@ import com.kauailabs.navx.frc.AHRS;
  * build.gradle file in the
  * project.
  */
-public final class RapidReactContainer extends CommandRobotContainer 
+public final class RapidReact extends RobotContainer 
 {
     ////////////////////////////////
     // CONTROLLERS
@@ -90,7 +92,7 @@ public final class RapidReactContainer extends CommandRobotContainer
     // INITIALIZATION
     ////////////////////////////////
     @Override
-    public void init() 
+    public void reset() 
     {
         // Calibrate the navx
         navx.calibrate();
@@ -106,7 +108,7 @@ public final class RapidReactContainer extends CommandRobotContainer
     }
 
     @Override
-    public void initOnce()
+    public void initialize()
     {
         // Smart dashboard
         Data.setup();
@@ -119,6 +121,12 @@ public final class RapidReactContainer extends CommandRobotContainer
         shooterCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
 
         // Intake
+        operatorController.getButtonTrigger(X_SQUARE)
+            .whenActive(ballSucker::startSucking)
+            .whenInactive(ballSucker::stop)
+            .whileActiveContinuous(block(ballSucker));
+
+        // Reverse Intake
         operatorController.getButtonTrigger(B_CIRCLE)
             .whenActive(ballSucker::startSucking)
             .whenInactive(ballSucker::stop)
@@ -203,8 +211,8 @@ public final class RapidReactContainer extends CommandRobotContainer
 
         // Ease control command
         driverController.getButtonTrigger(Y_TRIANGLE)
-            .whenActive(() -> drivetrain.setProfiler(DRIVE_PROFILER))
-            .whenInactive(() -> drivetrain.setProfiler(NOTHING_PROFILER));
+            .whenActive(() -> drivetrain.setProfiler(NOTHING_PROFILER))
+            .whenInactive(() -> drivetrain.setProfiler(DRIVE_PROFILER));
 
         // Drive command
         drivetrain.setDefaultCommand(
@@ -245,22 +253,24 @@ public final class RapidReactContainer extends CommandRobotContainer
 
         // CLIMBER BACKUPS
         ///*
-        driverController.getAxisTrigger(LEFT_TRIGGER)
+        operatorController.getAxisTrigger(LEFT_Y)
         .when(MathUtils::greaterThan, 0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
-        driverController.getButtonTrigger(LEFT_BUMPER)
+        operatorController.getAxisTrigger(LEFT_Y)
+        .when(MathUtils::lessThan, -0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
         
-        driverController.getAxisTrigger(RIGHT_TRIGGER)
-            .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxisTrigger(RIGHT_Y)
+        .when(MathUtils::greaterThan, 0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        driverController.getButtonTrigger(RIGHT_BUMPER)
+        operatorController.getAxisTrigger(RIGHT_Y)
+        .when(MathUtils::lessThan, -0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
@@ -279,11 +289,12 @@ public final class RapidReactContainer extends CommandRobotContainer
             .and(CommandRobot.whenTeleop())
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
+                print("AAAAAAAAAAAAAAAAAAAAAA"),
                 waitUntil(() ->
                     Math.abs(driverController.getAxis(RIGHT_X)) >= ANGLE_PID_DEADBAND
                     || drivetrain.isTargetingAnAngle()
                 ),
-                //print("AAAAAAAAAAAAAAAAAAAAAA"),
+                print("AAAAAAAAAAAAAAAAAAAAAA"),
                 instant(drivetrain::stopStraightPidding)
             ));
     }
@@ -294,17 +305,22 @@ public final class RapidReactContainer extends CommandRobotContainer
     private static final double AUTO_DRIVE_DISTANCE = 96.0;
     private static final double AUTO_WAIT_TIME = 5;
 
-    public static enum AutoCommand 
+    @Override
+    public AutoCommands getAutoCommands()
     {
-        DRIVE(
+        var commands = new AutoCommands();
+        
+        commands.add(
+            "Drive", 
             () -> sequence(
                 instant(() -> drivetrain.startStraightPidding()),
                 runForTime(2.5, () -> drivetrain.set(0.5, 0), drivetrain),
                 instant(() -> drivetrain.set(0, 0)),
                 instant(() -> drivetrain.stopStraightPidding())
             )
-        ),
-        SHOOT(
+        );
+        commands.add(
+            "Shoot",
             () -> sequence(
                 // stops driving and starts revving up shooter and intake
                 instant(
@@ -339,80 +355,63 @@ public final class RapidReactContainer extends CommandRobotContainer
                     ballSucker
                 )
             )
-        ),
-        MAIN(
-            () -> sequence(SHOOT.get(), DRIVE.get())
-        ),
-        DELAY_MAIN(
-            () -> sequence(waitFor(AUTO_WAIT_TIME), MAIN.get())
-        ),
-        NOTHING(
+        );
+        commands.add(
+            "Main",
+            () -> sequence(commands.get("Shoot"), commands.get("Drive"))
+        );
+        commands.add(
+            "Delay Main",
+            () -> sequence(waitFor(AUTO_WAIT_TIME), commands.get("Main"))
+        );
+        commands.add(
+            "Nothing",
             () -> instant(() -> {})
-        ),
+        );
 
         // EXPIREMENTAL AUTOS
-        DRIVE_INTAKE(
+        commands.add(
+            "Drive Intake",
             () -> sequence(
                 instant(() -> ballSucker.startSucking()),
-                DRIVE.get(),
+                commands.get("Drive"),
                 instant(() -> ballSucker.stop())
             )
-        ),
-        DRIVE_RETURN(
+        );
+        commands.add(
+            "Drive Return",
             () -> sequence(
                 instant(() -> drivetrain.startStraightPidding()),
                 runForTime(2.5, () -> drivetrain.set(-0.5, 0), drivetrain),
                 instant(() -> drivetrain.set(0, 0)),
                 instant(() -> drivetrain.stopStraightPidding())    
             )
-        ),
-        MAIN_TAXI_INTAKE(
+        );
+        commands.add(
+            "Main Taxi Intake",
             () -> sequence(
-                SHOOT.get(),
-                DRIVE_INTAKE.get()
+                commands.get("Shoot"),
+                commands.get("Drive Intake")
             )
-        ),
-        MAIN_TWO_BALL(
+        );
+        commands.add(
+            "Main Two Ball",
             () -> sequence(
-                SHOOT.get(),
-                DRIVE_INTAKE.get(),
-                DRIVE_RETURN.get(),
-                SHOOT.get(),
-                DRIVE.get()
+                commands.get("Shoot"),
+                commands.get("Drive Intake"),
+                commands.get("Drive Return"),
+                commands.get("Shoot"),
+                commands.get("Drive")
             )
-        )
-        ; 
+        ); 
 
-        private AutoCommand(Supplier<Command> command)
-        {
-            this.command = command;
-        }
-
-        private final Supplier<Command> command;
-
-        public final Command get()
-        {
-            return command.get();
-        }
+        return commands;
     }
 
     @Override
-    public Command getAutoCommand()
+    public String defaultAutoCommand() 
     {
-        // TODO: REMOVE
-        /*
-        return AUTO_DRIVE_COMMAND;
-        ///////////////*/
-
-        //*
-        var command = Data.getAutoCommand();
-
-        System.out.println(",-------------------");
-        System.out.println("| " + command);
-        System.out.println("`-------------------");
-
-        return command.get();
-        //*/
+        return "Main Two Ball";
     }
 }
 

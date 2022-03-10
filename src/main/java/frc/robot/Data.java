@@ -8,15 +8,12 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.RapidReactContainer.AutoCommand;
 import frc.robot.framework.wpilib.senables.Sendables;
 
 public final class Data 
 {
     private Data(){}
-
-    private static SendableChooser<AutoCommand> autoChooser;
-
+//fucky wucky
     public static void setup()
     {
         /*
@@ -45,9 +42,6 @@ public final class Data
         SmartDashboard.setPersistent("PID.Angle.Tolerance");
         //*/
 
-        autoChooser = Sendables.enumChooser(AutoCommand.MAIN, AutoCommand::values);
-        SmartDashboard.putData("Auto.Command", autoChooser);
-
         SmartDashboard.putNumber("PID.DistanceToTarget", 0);
         SmartDashboard.putNumber("PID.AngleToTarget", 0);
 
@@ -66,13 +60,6 @@ public final class Data
     public static double getAngleKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
     public static double getAngleKD() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
     public static double getAngleTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
-
-    public static AutoCommand getAutoCommand() 
-    {
-        var c = autoChooser.getSelected();
-        if(c == null) return AutoCommand.MAIN;
-        return c;
-    }
 
     public static void setDistanceToTarget(double value) {SmartDashboard.putNumber("PID.DistanceToTarget", value);}
     public static void setAngleToTarget(double value) {SmartDashboard.putNumber("PID.AngleToTarget", value);}

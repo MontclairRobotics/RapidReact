@@ -8,6 +8,7 @@ import frc.robot.Constants;
 
 public class Climber extends SubsystemBase
 {
+ 
     public static enum ClimberSide
     {
         LEFT,
@@ -27,22 +28,35 @@ public class Climber extends SubsystemBase
 
     private TalonFX talonLeft = new TalonFX(Constants.LEFT_CLIMBER_MOTOR_PORT);
     private TalonFX talonRight = new TalonFX(Constants.RIGHT_CLIMBER_MOTOR_PORT);
+
+    private double left;
+    private double right;
     
     public Climber()
     {
         talonLeft.setInverted(Constants.LEFT_CLIMBER_INVERTED);
         talonRight.setInverted(Constants.RIGHT_CLIMBER_INVERTED);
+
+        talonLeft.setSelectedSensorPosition(0);
+        talonRight.setSelectedSensorPosition(0);
+
+        
+        left = 0;
+        right = 0;
+        
+        
     }
     
     public void startClimbing(ClimberSide side)
     {
+
         if(side.isLeft())
         {
-            talonLeft.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
+            left = Constants.CLIMBER_MOTOR_SPEED;
         }
         if(side.isRight())
         {
-            talonRight.set(ControlMode.PercentOutput, Constants.CLIMBER_MOTOR_SPEED);
+            right = Constants.CLIMBER_MOTOR_SPEED;
         }
     }
 
@@ -50,11 +64,11 @@ public class Climber extends SubsystemBase
     {
         if(side.isLeft())
         {
-            talonLeft.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);
+            left = Constants.REVERSE_CLIMBER_MOTOR_SPEED;
         }
         if(side.isRight())
         {
-            talonRight.set(ControlMode.PercentOutput, Constants.REVERSE_CLIMBER_MOTOR_SPEED);
+            right = Constants.REVERSE_CLIMBER_MOTOR_SPEED;
         }
     }
 
@@ -62,11 +76,51 @@ public class Climber extends SubsystemBase
     {
         if(side.isLeft())
         {
-            talonLeft.set(ControlMode.PercentOutput, 0);
+            left = 0;
         }
         if(side.isRight())
         {
-            talonRight.set(ControlMode.PercentOutput, 0);
+            right = 0;
         }
+    }
+    @Override
+    public void periodic()
+    {
+        
+        if(left>0)
+        {
+            if(talonLeft.getSelectedSensorPosition() >= Constants.CLIMBER_UPPER_LIMIT)
+            {
+                left = 0;
+            }
+        
+        }
+        if(right>0)
+        {
+            if(talonRight.getSelectedSensorPosition() >= Constants.CLIMBER_UPPER_LIMIT)
+            {
+                right = 0;
+            }
+        }
+
+        if(left<0)
+        {
+            if(talonLeft.getSelectedSensorPosition() <= 0)
+            {
+                left = 0;
+            }
+        }
+
+        if(right<0)
+        {
+            if(talonRight.getSelectedSensorPosition() <= 0)
+            {
+                right = 0;
+            } 
+        }
+            
+        talonLeft.set(ControlMode.PercentOutput, left);
+        talonRight.set(ControlMode.PercentOutput, right);
+        
     }
 }

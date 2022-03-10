@@ -67,6 +67,7 @@ public final class Constants
     //Climber Speed
     public static final double CLIMBER_MOTOR_SPEED =  1; 
     public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
+    public static final double CLIMBER_UPPER_LIMIT = 1; //TODO: Figure out actual limit
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = false;

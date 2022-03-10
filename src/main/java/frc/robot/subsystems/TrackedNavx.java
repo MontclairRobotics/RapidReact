@@ -32,7 +32,7 @@ public class TrackedNavx extends SubsystemBase
     {
         ahrs.calibrate();
         prevAngle = getAngleUnzeroed();
-    }
+    }    
     
     public double getAngleUnzeroed()
     {
