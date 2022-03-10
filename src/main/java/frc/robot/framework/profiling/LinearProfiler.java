@@ -12,9 +12,10 @@ public class LinearProfiler extends Profiler
         double minValue, 
         double maxValue,
         double maxAccel,
-        double maxDecel) 
+        double maxDecel,
+        String name) 
     {
-        super(startValue, minValue, maxValue);
+        super(startValue, minValue, maxValue, name);
         this.maxAccel = maxAccel;
         this.maxDecel = maxDecel;
     }
@@ -23,9 +24,10 @@ public class LinearProfiler extends Profiler
         double startValue, 
         double minValue, 
         double maxValue,
-        double maxAccel) 
+        double maxAccel,
+        String name) 
     {
-        this(startValue, minValue, maxValue, maxAccel, maxAccel);
+        this(startValue, minValue, maxValue, maxAccel, maxAccel, name);
     }
 
     @Override

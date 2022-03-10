@@ -2,9 +2,9 @@ package frc.robot.framework.profiling;
 
 public class NothingProfiler extends Profiler
 {
-    public NothingProfiler(double startValue, double minValue, double maxValue) 
+    public NothingProfiler(double startValue, double minValue, double maxValue, String name) 
     {
-        super(startValue, minValue, maxValue);
+        super(startValue, minValue, maxValue, name);
     }
 
     @Override

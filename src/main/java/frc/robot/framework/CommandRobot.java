@@ -3,22 +3,22 @@ package frc.robot.framework;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class CommandRobot extends TimedRobot
 {
-    public CommandRobot(CommandRobotContainer container)
+    public CommandRobot(RobotContainer container)
     {
         CommandRobot.container = container;
-        CommandRobot.robot = this;
     }
 
     private static long lastTime;
-    private static CommandRobotContainer container;
-    private static CommandRobot robot;
+    private static RobotContainer container;
     private static Command autoCommand;
+    private static SendableChooser<Command> autoChooser;
     private static RobotState state = RobotState.DISABLED;
 
     public static RobotState getState() 
@@ -43,7 +43,9 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotInit() 
     {
-        container.initOnce();
+        autoChooser = container.getAutoCommands().chooser(container.defaultAutoCommand());
+        container.autoCommandInitializer().accept(container.autoNetworkTableName(), autoChooser);
+        container.initialize();
     }
 
     @Override
@@ -56,10 +58,13 @@ public class CommandRobot extends TimedRobot
     @Override
     public void autonomousInit() 
     {
-        state = RobotState.AUTO;
-        container.init();
+        //System.out.println("Auto Init");
 
-        autoCommand = container.getAutoCommand();
+        state = RobotState.AUTO;
+        container.reset();
+
+        autoCommand = autoChooser.getSelected();
+        //System.out.println(autoCommand == null);
 
         if(autoCommand != null)
         {
@@ -88,23 +93,27 @@ public class CommandRobot extends TimedRobot
             CommandScheduler.getInstance().cancel(autoCommand);
         }
 
-        container.init();
+        container.reset();
         lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
     }
 
     @Override
     public void testInit() 
     {
-        container.init();
+        container.reset();
     }
 
     @Override
     public void disabledInit() 
     {
         state = RobotState.DISABLED;
+        if(autoCommand != null)
+        {
+            CommandScheduler.getInstance().cancel(autoCommand);
+        }
     }
 
-    public static Supplier<CommandRobot> from(Supplier<CommandRobotContainer> containerSupplier)
+    public static Supplier<CommandRobot> from(Supplier<RobotContainer> containerSupplier)
     {
         return () -> new CommandRobot(containerSupplier.get());
     }

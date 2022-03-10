@@ -17,6 +17,11 @@ public class BallSucker extends SubsystemBase
         motor.set(Constants.BALL_SUCKER_MOTOR_SPEED);
     }
 
+    public void startReverseSucking() 
+    {
+        motor.set(-Constants.BALL_SUCKER_MOTOR_SPEED);
+    }
+
     public void stop() 
     {
         motor.set(0);

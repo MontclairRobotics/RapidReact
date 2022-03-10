@@ -9,13 +9,15 @@ import frc.robot.framework.maths.Updater;
 public abstract class Profiler extends Updater<Double>
 {
     private double minValue, maxValue;
+    private String name;
 
-    public Profiler(double startValue, double minValue, double maxValue)
+    public Profiler(double startValue, double minValue, double maxValue, String name)
     {
         super(startValue);
 
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.name = name;
     }
 
     public final double getMaxValue() {
@@ -35,6 +37,11 @@ public abstract class Profiler extends Updater<Double>
     public final void setMinValue(double minValue) 
     {
         this.minValue = minValue;
+    }
+
+    public final String getName()
+    {
+        return name;
     }
 
     @Override

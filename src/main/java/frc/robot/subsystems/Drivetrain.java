@@ -35,32 +35,32 @@ public final class Drivetrain extends SubsystemBase
     private final CANSparkMax 
         leftMotor1 = new CANSparkMax(LEFT_MOTOR_1_PORT, MotorType.kBrushless),
         leftMotor2 = new CANSparkMax(LEFT_MOTOR_2_PORT, MotorType.kBrushless),
-        leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
+        //leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
         rightMotor1 = new CANSparkMax(RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
-        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
-        rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
+        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless)//,
+        //rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
     ;
     
     private final CANSparkMax[]
         leftMotors = {
             leftMotor1,
             leftMotor2,
-            leftMotor3
+            //leftMotor3
         },
         rightMotors = {
             rightMotor1, 
             rightMotor2,
-            rightMotor3
+            //rightMotor3
         }
     ;
 
     private final RelativeEncoder 
         leftEncoder1 = leftMotor1.getEncoder(),
         leftEncoder2 = leftMotor2.getEncoder(),
-        leftEncoder3 = leftMotor3.getEncoder(),
+        //leftEncoder3 = leftMotor3.getEncoder(),
         rightEncoder1 = rightMotor1.getEncoder(),
-        rightEncoder2 = rightMotor2.getEncoder(),
-        rightEncoder3 = rightMotor3.getEncoder()
+        rightEncoder2 = rightMotor2.getEncoder()//,
+        //rightEncoder3 = rightMotor3.getEncoder()
     ;
 
 
@@ -68,12 +68,12 @@ public final class Drivetrain extends SubsystemBase
         leftEncoders = {
             leftEncoder1,
             leftEncoder2,
-            leftEncoder3
+            //leftEncoder3
         },
         rightEncoders = {
             rightEncoder1, 
             rightEncoder2,
-            rightEncoder3
+            //rightEncoder3
         }
     ;
 
@@ -87,7 +87,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Other fields
     ////////////////////////////////////////////////
-    private Profiler speedSmoother;
+    private Profiler speedProfiler;
     
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
@@ -105,18 +105,27 @@ public final class Drivetrain extends SubsystemBase
     private boolean isTargetingAnAngle = false;
     private double targetAngle = 0.0;
 
+    private double maxOutput = 0.0;
+
+    private boolean isStraightPidding = false;
     
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(Profiler defaultSmoother, TrackedNavx navx) 
+    public Drivetrain(TrackedNavx navx) 
     {
-        speedSmoother = defaultSmoother;
+        this.speedProfiler = Constants.DRIVE_PROFILER;
 
         this.navx = navx;
 
-        leftMotorGroup.setInverted(LEFT_DRIVE_INVERSION);
-        rightMotorGroup.setInverted(RIGHT_DRIVE_INVERSION);
+        for(var m : leftMotors)
+        {
+            m.setInverted(LEFT_DRIVE_INVERSION);
+        }
+        for(var m : rightMotors)
+        {
+            m.setInverted(RIGHT_DRIVE_INVERSION);
+        }
 
         for(var e : leftEncoders)
         {
@@ -131,7 +140,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
-    public void setupPID()
+    public void setup()
     {
         // Setup distance pid
         distancePid = new PIDController(
@@ -148,6 +157,31 @@ public final class Drivetrain extends SubsystemBase
             Data.getAngleKD()
         );
         anglePid.setTolerance(Data.getAngleTolerance());
+
+        //System.out.println("akp " + anglePid.getP());
+
+        // Setup max output
+        setProfiler(Constants.DRIVE_PROFILER);
+        setMaxOutput(Constants.ROBOT_SPEEDS[0]);
+
+        // Release all targets
+        releaseAngleTarget();
+        releaseDistanceTarget();
+        stopStraightPidding();
+    }
+
+    public void startStraightPidding()
+    {
+        isStraightPidding = true;
+        navx.zeroYaw();
+    }
+    public void stopStraightPidding()
+    {
+        isStraightPidding = false;
+    }
+    public boolean isStraightPidding()
+    {
+        return isStraightPidding;
     }
 
     public void enableAllPID()
@@ -161,9 +195,10 @@ public final class Drivetrain extends SubsystemBase
         isUsingDistancePID = false;
     }
     
-    public void setSmoother(Profiler speedSmoother) 
+    public void setProfiler(Profiler speedProfiler) 
     {
-        this.speedSmoother = speedSmoother;
+        this.speedProfiler = speedProfiler;
+        Data.setCurrentEasing(speedProfiler.getName());
     }
 
     /**
@@ -172,7 +207,12 @@ public final class Drivetrain extends SubsystemBase
      */
     public void setMaxOutput(double maxOutput) 
     {
-        differentialDrive.setMaxOutput(maxOutput);
+        this.maxOutput = maxOutput;
+        
+        speedProfiler.setMinValue(-maxOutput);
+        speedProfiler.setMaxValue(maxOutput);
+
+        Data.setCurrentMaxSpeed(maxOutput);
     }
 
     /**
@@ -237,6 +277,23 @@ public final class Drivetrain extends SubsystemBase
         this.targetTurn = targetTurn;
     }
 
+    private double calculateAnglePID(double target)
+    {
+        var angle = navx.getAngle();
+        var turn = MathUtils.clamp(
+            anglePid.calculate(angle, target) * Constants.ANGLE_PID_SCALE, 
+            -Constants.ANGLE_PID_SCALE, 
+            Constants.ANGLE_PID_SCALE
+        );
+
+        //System.out.println("Current angle: " + angle + "*");
+        //System.out.println("Current turn: " + turn);
+        
+        Data.setAngleToTarget(target - angle);
+
+        return turn;
+    }
+
     /**
      * Update this subsystem
      */
@@ -254,36 +311,43 @@ public final class Drivetrain extends SubsystemBase
         {
             var averageDistance = getAverageDistanceTraveled();
 
-            System.out.println("Average distance: " + averageDistance);
+            //System.out.println("Average distance: " + averageDistance);
 
-            speed = distancePid.calculate(averageDistance, targetDistance);
+            speed = -distancePid.calculate(averageDistance, targetDistance) * maxOutput;
 
             Data.setDistanceToTarget(targetDistance - averageDistance);
         }
         else
-        {            
+        {
+            // Square input
+            targetSpeed = MathUtils.signum(targetSpeed).get() * targetSpeed * targetSpeed;
+
             // Update the speed with the smoother
-            speedSmoother.update(CommandRobot.deltaTime(), targetSpeed);
-            speed = speedSmoother.current();
+            speedProfiler.update(CommandRobot.deltaTime(), targetSpeed * maxOutput);
+            speed = speedProfiler.current();
+
+            //System.out.println("Robot driving");
         }
 
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
         {
-            var angle = navx.getAngle();
-            turn = -anglePid.calculate(angle, targetAngle) * Constants.ANGLE_PID_SCALE;
-
-            System.out.println("Current angle: " + angle + "*");
-            
-            Data.setAngleToTarget(targetAngle - angle);
+            turn = calculateAnglePID(targetAngle);
+        }
+        else if(isUsingAnglePID && isStraightPidding)
+        {
+            turn = calculateAnglePID(0);
         }
         else
         {   
             turn = Constants.adjustTurn(speed, targetTurn);
         }
 
+        // Clamp speed
+        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
+
         // Set the drive
-        differentialDrive.arcadeDrive(speed, turn, !isTargetingADistance);
+        differentialDrive.arcadeDrive(speed, turn, false);
     }
 
     public void releaseDistanceTarget() 
@@ -316,7 +380,7 @@ public final class Drivetrain extends SubsystemBase
 
     public void killMomentum() 
     {
-        speedSmoother.setDirect(0.0);
+        speedProfiler.setDirect(0.0);
     }
 
     public boolean isTargetingAnAngle()

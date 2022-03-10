@@ -32,7 +32,7 @@ public class TrackedNavx extends SubsystemBase
     {
         ahrs.calibrate();
         prevAngle = getAngleUnzeroed();
-    }
+    }    
     
     public double getAngleUnzeroed()
     {
@@ -47,6 +47,8 @@ public class TrackedNavx extends SubsystemBase
     {
         angleZero = getAngleUnzeroed();
         prevAngle = angleZero;
+
+        System.out.println("!!! RESET YAW !!!");
     }
 
     public double getAngularVelocity()

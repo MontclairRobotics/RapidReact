@@ -18,13 +18,13 @@ public final class PIDDistanceCommand
             instant(() -> {
                 drivetrain.setMaxOutput(Constants.AUTO_SPEED);
                 drivetrain.setTargetDistance(distance);
-                drivetrain.setTargetAngle(0);
+                drivetrain.startStraightPidding();
             }),
             runUntil(() -> drivetrain.reachedTargetDistance(), block(drivetrain)),
             instant(() -> {
                 drivetrain.stop();
                 drivetrain.releaseDistanceTarget();
-                drivetrain.releaseAngleTarget();
+                drivetrain.stopStraightPidding();
             })
         );
     }
