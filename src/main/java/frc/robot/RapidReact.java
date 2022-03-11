@@ -17,12 +17,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.maths.MathDouble;
 import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
 import frc.robot.framework.wpilib.AutoCommands;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
-import frc.robot.framework.wpilib.triggers.AnalogTrigger;
+import frc.robot.framework.wpilib.triggers.AnalogValue;
+import frc.robot.managers.VisionManager;
 import frc.robot.subsystems.TrackedNavx;
 import frc.robot.subsystems.Climber.ClimberSide;
 import frc.robot.subsystems.BallMover;
@@ -30,6 +31,7 @@ import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.BallSucker;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.RotationalClimber;
 
 import static frc.robot.Constants.*;
 import static frc.robot.framework.vendors.rev.BlinkinLEDMode.*;
@@ -66,7 +68,7 @@ public final class RapidReact extends RobotContainer
             OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
-    // MODELS
+    // SUBSYSTEMS / MANAGERS
     ////////////////////////////////
     public static final TrackedNavx navx = new TrackedNavx(new AHRS());
     public static final Drivetrain drivetrain = new Drivetrain(navx);
@@ -74,6 +76,9 @@ public final class RapidReact extends RobotContainer
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
     public static final Climber climber = new Climber();
+    public static final RotationalClimber rotationalClimber = new RotationalClimber();
+
+    public static final VisionManager vision = new VisionManager();
 
     private static UsbCamera intakeCamera;
     private static UsbCamera shooterCamera;
@@ -84,8 +89,6 @@ public final class RapidReact extends RobotContainer
     public final Ultrasonic ultrasonicLeft = new Ultrasonic(LEFT_ULTRASONIC_SENSOR_PING_PORT, LEFT_ULTRASONIC_SENSOR_ECHO_PORT);
     public final Ultrasonic ultrasonicRight = new Ultrasonic(RIGHT_ULTRASONIC_SENSOR_PING_PORT, RIGHT_ULTRASONIC_SENSOR_ECHO_PORT);
     //*/
-
-    public static int speedIndex = 0;
 
     ////////////////////////////////
     // INITIALIZATION
@@ -98,9 +101,8 @@ public final class RapidReact extends RobotContainer
         navx.zeroYaw();
 
         // PID setup
-        drivetrain.setup();
+        drivetrain.reset();
         drivetrain.enableAllPID();
-        drivetrain.killMomentum();
 
         // TEMP
         //drivetrain.disableAllPID();
@@ -120,19 +122,18 @@ public final class RapidReact extends RobotContainer
         shooterCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
 
         // Intake
-        operatorController.getButtonTrigger(X_SQUARE)
+        operatorController.getButton(X_SQUARE)
             .whenActive(ballSucker::startSucking)
             .whenInactive(ballSucker::stop)
             .whileActiveContinuous(block(ballSucker));
-
         // Reverse Intake
-        operatorController.getButtonTrigger(B_CIRCLE)
+        operatorController.getButton(B_CIRCLE)
             .whenActive(ballSucker::startSucking)
             .whenInactive(ballSucker::stop)
             .whileActiveContinuous(block(ballSucker));
 
         // Transport up
-        operatorController.getDPadTrigger(DPad.UP)
+        operatorController.getDPad(DPad.UP)
             .whenActive(() -> {
                 ballMover.startMoving();
                 ballShooter.reverseShooting();
@@ -144,53 +145,56 @@ public final class RapidReact extends RobotContainer
             .whileActiveContinuous(block(ballMover, ballShooter));
         
         // Transport down
-        operatorController.getDPadTrigger(DPad.DOWN)
+        operatorController.getDPad(DPad.DOWN)
             .whenActive(ballMover::startMovingBackwards)
             .whenInactive(ballMover::stop)
             .whileActiveContinuous(block(ballMover));
         
         // Shooter command
-        operatorController.getButtonTrigger(LEFT_BUMPER)
+        operatorController.getButton(LEFT_BUMPER)
             .toggleWhenActive(RapidReactCommands.shootSequence());
 
         //  Direct shooter
-        operatorController.getAxisTrigger(LEFT_TRIGGER)
-            .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxis(LEFT_TRIGGER)
+            .when(MathDouble::greaterThan, 0.5)
             .whenActive(ballShooter::startShooting)
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
 
         // Reverse shooter
-        operatorController.getButtonTrigger(RIGHT_BUMPER)
+        operatorController.getButton(RIGHT_BUMPER)
             .whenActive(ballShooter::reverseShooting)
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
 
         // Climb up command
-        operatorController.getButtonTrigger(Y_TRIANGLE)
+        operatorController.getButton(Y_TRIANGLE)
             .whenActive(() -> climber.startClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
-
         // Climb down command
-        operatorController.getButtonTrigger(A_CROSS)
+        operatorController.getButton(A_CROSS)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
 
-        // Max speed command
-        driverController.getButtonTrigger(A_CROSS)
-            .whenActive(() -> {
-                // Loop through speeds
-                speedIndex++;
-                speedIndex %= ROBOT_SPEEDS.length;
+        // Rotational climber forward command
+        operatorController.getDPad(DPad.LEFT)
+            .whenActive(rotationalClimber::rotateForward)
+            .whileActiveContinuous(block(rotationalClimber))
+            .whenInactive(rotationalClimber::stop);
+        // Rotational climber backward command
+        operatorController.getDPad(DPad.RIGHT)
+            .whenActive(rotationalClimber::rotateBackward)
+            .whileActiveContinuous(block(rotationalClimber))
+            .whenInactive(rotationalClimber::stop);
 
-                // Set speed
-                drivetrain.setMaxOutput(ROBOT_SPEEDS[speedIndex]);
-            });
+        // Max speed command
+        driverController.getButton(A_CROSS)
+            .whenActive(drivetrain::nextDriveSpeed);
 
         // Ease control command
-        driverController.getButtonTrigger(Y_TRIANGLE)
+        driverController.getButton(Y_TRIANGLE)
             .whenActive(() -> drivetrain.setProfiler(NOTHING_PROFILER))
             .whenInactive(() -> drivetrain.setProfiler(DRIVE_PROFILER));
 
@@ -198,49 +202,49 @@ public final class RapidReact extends RobotContainer
         drivetrain.setDefaultCommand(
             run(() -> {
                 drivetrain.set(
-                    -driverController.getAxis(LEFT_Y), 
-                    driverController.getAxis(RIGHT_X)
+                    -driverController.getAxisValue(LEFT_Y), 
+                    driverController.getAxisValue(RIGHT_X)
                 );
                 //System.out.println(navxTracker.getAngularVelocity());
             }, drivetrain)
         );
 
         // Turn commands
-        driverController.getDPadTrigger(DPad.LEFT)
+        driverController.getDPad(DPad.LEFT)
             .whenActive(RapidReactCommands.turn(90));
-        driverController.getDPadTrigger(DPad.RIGHT)
+        driverController.getDPad(DPad.RIGHT)
             .whenActive(RapidReactCommands.turn(-90));
-        driverController.getDPadTrigger(DPad.UP)
+        driverController.getDPad(DPad.UP)
             .whenActive(RapidReactCommands.turn(180));
-        driverController.getDPadTrigger(DPad.DOWN)
+        driverController.getDPad(DPad.DOWN)
             .whenActive(RapidReactCommands.turn(-180));
 
         // CLIMBER BACKUPS
         ///*
-        operatorController.getAxisTrigger(LEFT_Y).whenGreaterThan(0.5)
+        operatorController.getAxis(LEFT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
-        operatorController.getAxisTrigger(LEFT_Y).whenLessThan(-0.5)
+        operatorController.getAxis(LEFT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
         
-        operatorController.getAxisTrigger(RIGHT_Y).whenGreaterThan(0.5)
+        operatorController.getAxis(RIGHT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        operatorController.getAxisTrigger(RIGHT_Y).whenLessThan(-0.5)
+        operatorController.getAxis(RIGHT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
         //*/    
 
         // PID straight angle command: TELEOP ONLY
-        driverController.getAxisTrigger(RIGHT_X).abs()
+        driverController.getAxis(RIGHT_X).abs()
             .whenLessThan(ANGLE_PID_DEADBAND)
             .and(
-                AnalogTrigger.from(navx::getAngularVelocity).abs()
+                AnalogValue.from(navx::getAngularVelocity).abs()
                     .whenLessThan(ANGLE_VELOCITY_DEADBAND)
             )
             .and(new Trigger(drivetrain::isTargetingAnAngle).negate())
@@ -248,12 +252,12 @@ public final class RapidReact extends RobotContainer
             .and(CommandRobot.whenTeleop())
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
-                print("AAAAAAAAAAAAAAAAAAAAAA"),
+                //print("AAAAAAAAAAAAAAAAAAAAAA"),
                 waitUntil(() ->
-                    Math.abs(driverController.getAxis(RIGHT_X)) >= ANGLE_PID_DEADBAND
+                    Math.abs(driverController.getAxisValue(RIGHT_X)) >= ANGLE_PID_DEADBAND
                     || drivetrain.isTargetingAnAngle()
                 ),
-                print("AAAAAAAAAAAAAAAAAAAAAA"),
+                //print("AAAAAAAAAAAAAAAAAAAAAA"),
                 instant(drivetrain::stopStraightPidding)
             ));
         

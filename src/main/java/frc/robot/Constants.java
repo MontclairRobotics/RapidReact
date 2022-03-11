@@ -44,6 +44,10 @@ public final class Constants
     public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
     public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
 
+    // Rotational Climber Motor Ports
+    public static final int LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT = 43;
+    public static final int RIGHT_ROTATIONAL_CLIMBER_MOTOR_PORT = 44;
+
     // BlinkinLEDDriver port
     public static final int BLINKIN_LED_DRIVER_PORT = 0;
 
@@ -67,7 +71,7 @@ public final class Constants
     //Climber Speed
     public static final double CLIMBER_MOTOR_SPEED =  1; 
     public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
-    public static final double CLIMBER_UPPER_LIMIT = 1; //TODO: Figure out actual limit
+    public static final double CLIMBER_UPPER_LIMIT = Double.POSITIVE_INFINITY; //TODO: Figure out actual limit
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = false;
@@ -77,9 +81,13 @@ public final class Constants
     public static final boolean SHOOTER_LEFT_INVERSION = true;
     public static final boolean SHOOTER_RIGHT_INVERSION = false;
 
-    // Motors inversion
+    // Climber inversion
     public static final boolean LEFT_CLIMBER_INVERTED = false;
     public static final boolean RIGHT_CLIMBER_INVERTED = false;
+
+    // Rotational Climber Inversion
+    public static final boolean LEFT_ROTATIONAL_CLIMBER_INVERTED = false;
+    public static final boolean RIGHT_ROTATIONAL_CLIMBER_INVERTED = false;
 
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
@@ -92,15 +100,20 @@ public final class Constants
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.5;
-    public static final double[] ROBOT_SPEEDS = {
+    public static final double[] DRIVE_SPEEDS = {
         1,
         0.5
     };
 
     public static final Profiler DRIVE_PROFILER 
         = new LinearProfiler(0, -1, 1, 1.0 / 1.0, 1.0 / 1.25, "DRIVE-1");
-    public static final NothingProfiler NOTHING_PROFILER
+    public static final Profiler NOTHING_PROFILER
         = new NothingProfiler(0, -1, 1, "NOTHING-1");
+
+    public static final Profiler[] PROFILERS = {
+        DRIVE_PROFILER,
+        NOTHING_PROFILER
+    };
 
     public static final double TURN_FACTOR = 0.5;
     public static final double TURN_DRIVE_FACTOR = 0.2;
@@ -109,6 +122,10 @@ public final class Constants
     {
         return (1 - Math.abs(TURN_DRIVE_FACTOR * speed)) * targetTurn * TURN_FACTOR;
     }
+
+    // Rotational Climber Speed
+    public static final double ROTATIONAL_CLIMBER_MOTOR_SPEED = 1;
+    public static final double REVERSE_ROTATIONAL_CLIMBER_MOTOR_SPEED = -1;
 
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change

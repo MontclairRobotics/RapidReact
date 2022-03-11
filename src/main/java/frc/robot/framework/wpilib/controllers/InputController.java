@@ -5,7 +5,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.framework.wpilib.triggers.AnalogTrigger;
+import frc.robot.framework.wpilib.triggers.AnalogValue;
 
 public abstract class InputController 
 {
@@ -169,31 +169,31 @@ public abstract class InputController
         PS4,
     }
     
-    public abstract boolean getButton(Button type);
+    public abstract boolean getButtonValue(Button type);
     public abstract boolean getButtonPressed(Button type);
     public abstract boolean getButtonReleased(Button type);
     
-    public abstract double getAxis(Axis type);
-    public abstract double getPOV();
+    public abstract double getAxisValue(Axis type);
+    public abstract double getPOVValue();
 
-    public abstract boolean getDPad(DPad type);
+    public abstract boolean getDPadRaw(DPad type);
     public abstract Type getType();
 
-    public final Trigger getButtonTrigger(Button type) 
+    public final Trigger getButton(Button type) 
     {
-        return new Trigger(() -> getButton(type));
+        return new Trigger(() -> getButtonValue(type));
     }
-    public final Trigger getDPadTrigger(DPad type)
+    public final Trigger getDPad(DPad type)
     {
-        return new Trigger(() -> getDPad(type));
+        return new Trigger(() -> getDPadRaw(type));
     }
-    public final AnalogTrigger getAxisTrigger(Axis type)
+    public final AnalogValue getAxis(Axis type)
     {
-        return new AnalogTrigger(() -> getAxis(type));
+        return new AnalogValue(() -> getAxisValue(type));
     }
-    public final AnalogTrigger getPOVTrigger()
+    public final AnalogValue getPOV()
     {
-        return new AnalogTrigger(() -> getPOV());
+        return new AnalogValue(() -> getPOVValue());
     }
 
     public static InputController xbox(int channel)
@@ -203,12 +203,12 @@ public abstract class InputController
             private XboxController innerCont = new XboxController(channel);
 
             @Override
-            public boolean getButton(Button type) {
+            public boolean getButtonValue(Button type) {
                 return innerCont.getRawButton(toXbox(type).value);
             }
 
             @Override
-            public boolean getDPad(DPad type)
+            public boolean getDPadRaw(DPad type)
             {
                 return DPad.get(type, innerCont.getPOV());
             }
@@ -224,7 +224,7 @@ public abstract class InputController
             }
 
             @Override
-            public double getAxis(Axis type) {
+            public double getAxisValue(Axis type) {
                 return innerCont.getRawAxis(toXbox(type).value);
             }
 
@@ -234,7 +234,7 @@ public abstract class InputController
             }
 
             @Override
-            public double getPOV() {
+            public double getPOVValue() {
                 return innerCont.getPOV();
             }
         };
@@ -246,13 +246,13 @@ public abstract class InputController
             private PS4Controller innerCont = new PS4Controller(channel);
 
             @Override
-            public boolean getDPad(DPad type)
+            public boolean getDPadRaw(DPad type)
             {
                 return DPad.get(type, innerCont.getPOV());
             }
 
             @Override
-            public boolean getButton(Button type) {
+            public boolean getButtonValue(Button type) {
                 return innerCont.getRawButton(toPS4(type).value);
             }
             
@@ -267,7 +267,7 @@ public abstract class InputController
             }
 
             @Override
-            public double getAxis(Axis type) {
+            public double getAxisValue(Axis type) {
                 return innerCont.getRawAxis(toPS4(type).value);
             }
 
@@ -277,7 +277,7 @@ public abstract class InputController
             }
             
             @Override
-            public double getPOV() {
+            public double getPOVValue() {
                 return innerCont.getPOV();
             }
         };

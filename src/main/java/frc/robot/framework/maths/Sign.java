@@ -4,7 +4,8 @@ public enum Sign
 {
     PLUS(1),
     MINUS(-1),
-    ZERO(0)
+    ZERO(0),
+    UNDEFINED(Double.NaN)
     ;
 
     private double sign;

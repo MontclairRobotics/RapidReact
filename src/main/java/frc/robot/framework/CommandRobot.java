@@ -1,5 +1,7 @@
 package frc.robot.framework;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -21,6 +23,12 @@ public class CommandRobot extends TimedRobot
     private static Command autoCommand;
     private static SendableChooser<Command> autoChooser;
     private static RobotState state = RobotState.DISABLED;
+    private static List<Manager> managers = new ArrayList<Manager>();
+
+    public static void registerManager(Manager manager) 
+    {
+        managers.add(manager);
+    }
 
     public static RobotState getState() 
     {
@@ -51,6 +59,11 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotPeriodic() 
     {
+        for(var m : managers)
+        {
+            m.periodic();
+        }
+        
         CommandScheduler.getInstance().run();
         lastTime = System.currentTimeMillis();
     }

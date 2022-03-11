@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
@@ -48,7 +47,7 @@ public class TrackedNavx extends SubsystemBase
         angleZero = getAngleUnzeroed();
         prevAngle = angleZero;
 
-        //System.out.println("!!! RESET YAW !!!");
+        System.out.println("!!! RESETTING NAVX YAW !!!");
     }
 
     public double getAngularVelocity()

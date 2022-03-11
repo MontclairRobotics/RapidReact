@@ -22,7 +22,7 @@ import frc.robot.Constants;
 import frc.robot.Data;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.maths.MathDouble;
 import frc.robot.framework.profiling.Profiler;
 
 public final class Drivetrain extends SubsystemBase
@@ -92,6 +92,8 @@ public final class Drivetrain extends SubsystemBase
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
 
+    private int currentSpeedIndex = 0;
+
     private boolean isUsingDistancePID = true;
     private boolean isUsingAnglePID = true;
 
@@ -140,7 +142,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
-    public void setup()
+    public void reset()
     {
         // Setup distance pid
         distancePid = new PIDController(
@@ -162,12 +164,31 @@ public final class Drivetrain extends SubsystemBase
 
         // Setup max output
         setProfiler(Constants.DRIVE_PROFILER);
-        setMaxOutput(Constants.ROBOT_SPEEDS[0]);
+        currentSpeedIndex = 0;
+        updateDriveSpeedIndex();
 
         // Release all targets
         releaseAngleTarget();
         releaseDistanceTarget();
         stopStraightPidding();
+
+        // Kill momentum
+        killMomentum();
+    }
+
+    public void nextDriveSpeed()
+    {
+        // Loop through speeds
+        currentSpeedIndex++;
+        currentSpeedIndex %= DRIVE_SPEEDS.length;
+
+        // Set speed
+        updateDriveSpeedIndex();
+    }
+
+    private void updateDriveSpeedIndex() 
+    {
+        setMaxOutput(Constants.DRIVE_SPEEDS[currentSpeedIndex]);
     }
 
     public void startStraightPidding()
@@ -246,11 +267,11 @@ public final class Drivetrain extends SubsystemBase
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+            sum += -MathDouble.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+            sum += -MathDouble.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -280,7 +301,7 @@ public final class Drivetrain extends SubsystemBase
     private double calculateAnglePID(double target)
     {
         var angle = navx.getAngle();
-        var turn = MathUtils.clamp(
+        var turn = MathDouble.clamp(
             anglePid.calculate(angle, target) * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
@@ -320,7 +341,7 @@ public final class Drivetrain extends SubsystemBase
         else
         {
             // Square input
-            targetSpeed = MathUtils.signum(targetSpeed).get() * targetSpeed * targetSpeed;
+            targetSpeed = MathDouble.signum(targetSpeed).get() * targetSpeed * targetSpeed;
 
             // Update the speed with the smoother
             speedProfiler.update(CommandRobot.deltaTime(), targetSpeed * maxOutput);
@@ -344,7 +365,7 @@ public final class Drivetrain extends SubsystemBase
         }
 
         // Clamp speed
-        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
+        speed = MathDouble.clamp(speed, -maxOutput, maxOutput);
 
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn, false);
@@ -380,7 +401,10 @@ public final class Drivetrain extends SubsystemBase
 
     public void killMomentum() 
     {
-        speedProfiler.setDirect(0.0);
+        for(var p : Constants.DRIVE_PROFILERS)
+        {
+            p.setDirect(0.0);
+        }
     }
 
     public boolean isTargetingAnAngle()
