@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.framework.wpilib.AutoCommands;
 
 public class CommandRobot extends TimedRobot
 {
@@ -43,8 +44,7 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotInit() 
     {
-        autoChooser = container.getAutoCommands().chooser(container.defaultAutoCommand());
-        container.autoCommandInitializer().accept(container.autoNetworkTableName(), autoChooser);
+        autoChooser = AutoCommands.chooser();
         container.initialize();
     }
 

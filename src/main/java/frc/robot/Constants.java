@@ -124,4 +124,10 @@ public final class Constants
     public static final double ANGLE_VELOCITY_DEADBAND = 30.0 / 1.0;
 
 	public static final double ANGLE_PID_SCALE = 0.7;
+    
+    /////////////////////////////////
+    // AUTO
+    /////////////////////////////////
+    public static final double AUTO_DRIVE_DISTANCE = 96.0;
+    public static final double AUTO_WAIT_TIME = 5;
 }

@@ -14,22 +14,4 @@ public abstract class RobotContainer
 {
     public abstract void initialize();
     public abstract void reset();
-
-    public abstract AutoCommands getAutoCommands();
-
-    public BiConsumer<String, Sendable> autoCommandInitializer()
-    {
-        return (n, c) -> {
-            SmartDashboard.putData(n, c);
-            SmartDashboard.setPersistent(n);
-        };
-    }
-    public String autoNetworkTableName()
-    {
-        return "Auto";
-    }
-    public String defaultAutoCommand()
-    {
-        return "main";
-    }
 }

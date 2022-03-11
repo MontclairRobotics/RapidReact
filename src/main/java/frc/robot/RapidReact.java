@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.PIDDistanceCommand;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
@@ -152,26 +151,7 @@ public final class RapidReact extends RobotContainer
         
         // Shooter command
         operatorController.getButtonTrigger(LEFT_BUMPER)
-            .toggleWhenActive(
-                sequence(
-                    instant(() -> {
-                        ballMover.startMovingBackwards();
-                        ballShooter.reverseShooting();
-                    }),
-                    runForTime(0.25, block(ballMover, ballShooter)),
-                    instant(() -> {
-                        ballMover.stop();
-                        ballShooter.startShooting();
-                    }),
-                    runForTime(0.5, block(ballShooter)),
-                    instant(() -> ballMover.startMoving()),
-                    runForTime(2.5, block(ballMover, ballShooter)),
-                    instant(() -> {
-                        ballMover.stop();
-                        ballShooter.stop();
-                    })
-                )
-            );
+            .toggleWhenActive(Commands.shootSequence());
 
         //  Direct shooter
         operatorController.getAxisTrigger(LEFT_TRIGGER)
@@ -225,52 +205,32 @@ public final class RapidReact extends RobotContainer
             }, drivetrain)
         );
 
-        // Turn the thing 90 degrees
+        // Turn commands
         driverController.getDPadTrigger(DPad.LEFT)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(-90)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
+            .whenActive(Commands.turn(90));
         driverController.getDPadTrigger(DPad.RIGHT)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(90)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
+            .whenActive(Commands.turn(-90));
         driverController.getDPadTrigger(DPad.UP)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(180)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
+            .whenActive(Commands.turn(180));
+        driverController.getDPadTrigger(DPad.DOWN)
+            .whenActive(Commands.turn(-180));
 
         // CLIMBER BACKUPS
         ///*
-        operatorController.getAxisTrigger(LEFT_Y)
-        .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxisTrigger(LEFT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
-        operatorController.getAxisTrigger(LEFT_Y)
-        .when(MathUtils::lessThan, -0.5)
+        operatorController.getAxisTrigger(LEFT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
         
-        operatorController.getAxisTrigger(RIGHT_Y)
-        .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxisTrigger(RIGHT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        operatorController.getAxisTrigger(RIGHT_Y)
-        .when(MathUtils::lessThan, -0.5)
+        operatorController.getAxisTrigger(RIGHT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
@@ -297,20 +257,11 @@ public final class RapidReact extends RobotContainer
                 print("AAAAAAAAAAAAAAAAAAAAAA"),
                 instant(drivetrain::stopStraightPidding)
             ));
-    }
-
-    /////////////////////////////////
-    /// AUTO
-    /////////////////////////////////
-    private static final double AUTO_DRIVE_DISTANCE = 96.0;
-    private static final double AUTO_WAIT_TIME = 5;
-
-    @Override
-    public AutoCommands getAutoCommands()
-    {
-        var commands = new AutoCommands();
         
-        commands.add(
+        /////////////////////////////////
+        /// AUTO
+        /////////////////////////////////
+        AutoCommands.add(
             "Drive", 
             () -> sequence(
                 instant(() -> drivetrain.startStraightPidding()),
@@ -319,66 +270,33 @@ public final class RapidReact extends RobotContainer
                 instant(() -> drivetrain.stopStraightPidding())
             )
         );
-        commands.add(
+        AutoCommands.add(
             "Shoot",
-            () -> sequence(
-                // stops driving and starts revving up shooter and intake
-                instant(
-                    () -> {
-                        ballShooter.startShooting();
-                        ballSucker.startSucking();
-                    },
-                    ballShooter,
-                    ballSucker
-                ),
-                // wait for shooter to rev
-                waitFor(1.0),
-                // start transport
-                instant(
-                    () -> {
-                        ballMover.startMoving(); // fucking shit hell bitcoins
-                        //blinkinLEDDriver.set(CONFETTI);
-                    },
-                    ballMover
-                ),
-                // wait for ball to shoot
-                waitFor(2.0),
-                // stop shooter, transport, and intake
-                instant(
-                    () -> {
-                        ballShooter.stop();
-                        ballMover.stop();
-                        ballSucker.stop();
-                        //blinkinLEDDriver.set(HOT_PINK);
-                    },
-                    ballShooter,
-                    ballSucker
-                )
-            )
+            () -> Commands.shootSequence()
         );
-        commands.add(
+        AutoCommands.add(
             "Main",
-            () -> sequence(commands.get("Shoot"), commands.get("Drive"))
+            () -> sequence(AutoCommands.get("Shoot"), AutoCommands.get("Drive"))
         );
-        commands.add(
+        AutoCommands.add(
             "Delay Main",
-            () -> sequence(waitFor(AUTO_WAIT_TIME), commands.get("Main"))
+            () -> sequence(waitFor(AUTO_WAIT_TIME), AutoCommands.get("Main"))
         );
-        commands.add(
+        AutoCommands.add(
             "Nothing",
             () -> instant(() -> {})
         );
 
         // EXPIREMENTAL AUTOS
-        commands.add(
+        AutoCommands.add(
             "Drive Intake",
             () -> sequence(
                 instant(() -> ballSucker.startSucking()),
-                commands.get("Drive"),
+                AutoCommands.get("Drive"),
                 instant(() -> ballSucker.stop())
             )
         );
-        commands.add(
+        AutoCommands.add(
             "Drive Return",
             () -> sequence(
                 instant(() -> drivetrain.startStraightPidding()),
@@ -387,31 +305,25 @@ public final class RapidReact extends RobotContainer
                 instant(() -> drivetrain.stopStraightPidding())    
             )
         );
-        commands.add(
+        AutoCommands.add(
             "Main Taxi Intake",
             () -> sequence(
-                commands.get("Shoot"),
-                commands.get("Drive Intake")
+                AutoCommands.get("Shoot"),
+                AutoCommands.get("Drive Intake")
             )
         );
-        commands.add(
+        AutoCommands.add(
             "Main Two Ball",
             () -> sequence(
-                commands.get("Shoot"),
-                commands.get("Drive Intake"),
-                commands.get("Drive Return"),
-                commands.get("Shoot"),
-                commands.get("Drive")
+                AutoCommands.get("Shoot"),
+                AutoCommands.get("Drive Intake"),
+                AutoCommands.get("Drive Return"),
+                AutoCommands.get("Shoot"),
+                AutoCommands.get("Drive")
             )
         ); 
 
-        return commands;
-    }
-
-    @Override
-    public String defaultAutoCommand() 
-    {
-        return "Main Two Ball";
+        AutoCommands.setDefaultAutoCommand("Main Two Ball");
     }
 }
 

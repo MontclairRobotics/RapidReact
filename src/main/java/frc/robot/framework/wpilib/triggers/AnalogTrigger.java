@@ -229,4 +229,29 @@ public class AnalogTrigger
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.axis.getAsDouble(), otherB.axis.getAsDouble()));
     }
+
+    public Trigger whenGreaterThan(double value)
+    {
+        return when(MathUtils::greaterThan, value);
+    }
+    public Trigger whenGreaterThanOrEqualTo(double value)
+    {
+        return when(MathUtils::greaterThanOrEqualTo, value);
+    }
+    public Trigger whenLessThan(double value)
+    {
+        return when(MathUtils::lessThan, value);
+    }
+    public Trigger whenLessThanOrEqualTo(double value)
+    {
+        return when(MathUtils::lessThanOrEqualTo, value);
+    }
+    public Trigger whenEqualTo(double value)
+    {
+        return when(MathUtils::equalTo, value);
+    }
+    public Trigger whenUnequalTo(double value)
+    {
+        return when(MathUtils::unequalTo, value);
+    }
 }
