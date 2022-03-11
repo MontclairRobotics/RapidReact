@@ -174,6 +174,7 @@ public abstract class InputController
     public abstract boolean getButtonReleased(Button type);
     
     public abstract double getAxis(Axis type);
+    public abstract double getPOV();
 
     public abstract boolean getDPad(DPad type);
     public abstract Type getType();
@@ -189,6 +190,10 @@ public abstract class InputController
     public final AnalogTrigger getAxisTrigger(Axis type)
     {
         return new AnalogTrigger(() -> getAxis(type));
+    }
+    public final AnalogTrigger getPOVTrigger()
+    {
+        return new AnalogTrigger(() -> getPOV());
     }
 
     public static InputController xbox(int channel)
@@ -227,6 +232,11 @@ public abstract class InputController
             public Type getType() {
                 return Type.XBOX;
             }
+
+            @Override
+            public double getPOV() {
+                return innerCont.getPOV();
+            }
         };
     }
     public static InputController ps4(int channel)
@@ -264,6 +274,11 @@ public abstract class InputController
             @Override
             public Type getType() {
                 return Type.PS4;
+            }
+            
+            @Override
+            public double getPOV() {
+                return innerCont.getPOV();
             }
         };
     }

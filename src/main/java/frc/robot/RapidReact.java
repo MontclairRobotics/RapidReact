@@ -151,7 +151,7 @@ public final class RapidReact extends RobotContainer
         
         // Shooter command
         operatorController.getButtonTrigger(LEFT_BUMPER)
-            .toggleWhenActive(Commands.shootSequence());
+            .toggleWhenActive(RapidReactCommands.shootSequence());
 
         //  Direct shooter
         operatorController.getAxisTrigger(LEFT_TRIGGER)
@@ -207,13 +207,13 @@ public final class RapidReact extends RobotContainer
 
         // Turn commands
         driverController.getDPadTrigger(DPad.LEFT)
-            .whenActive(Commands.turn(90));
+            .whenActive(RapidReactCommands.turn(90));
         driverController.getDPadTrigger(DPad.RIGHT)
-            .whenActive(Commands.turn(-90));
+            .whenActive(RapidReactCommands.turn(-90));
         driverController.getDPadTrigger(DPad.UP)
-            .whenActive(Commands.turn(180));
+            .whenActive(RapidReactCommands.turn(180));
         driverController.getDPadTrigger(DPad.DOWN)
-            .whenActive(Commands.turn(-180));
+            .whenActive(RapidReactCommands.turn(-180));
 
         // CLIMBER BACKUPS
         ///*
@@ -238,11 +238,10 @@ public final class RapidReact extends RobotContainer
 
         // PID straight angle command: TELEOP ONLY
         driverController.getAxisTrigger(RIGHT_X).abs()
-            .when(MathUtils::lessThan, ANGLE_PID_DEADBAND)
+            .whenLessThan(ANGLE_PID_DEADBAND)
             .and(
-                AnalogTrigger.from(navx::getAngularVelocity)
-                    .abs()
-                    .when(MathUtils::lessThan, ANGLE_VELOCITY_DEADBAND)
+                AnalogTrigger.from(navx::getAngularVelocity).abs()
+                    .whenLessThan(ANGLE_VELOCITY_DEADBAND)
             )
             .and(new Trigger(drivetrain::isTargetingAnAngle).negate())
             .and(new Trigger(drivetrain::isStraightPidding).negate())
@@ -263,16 +262,11 @@ public final class RapidReact extends RobotContainer
         /////////////////////////////////
         AutoCommands.add(
             "Drive", 
-            () -> sequence(
-                instant(() -> drivetrain.startStraightPidding()),
-                runForTime(2.5, () -> drivetrain.set(0.5, 0), drivetrain),
-                instant(() -> drivetrain.set(0, 0)),
-                instant(() -> drivetrain.stopStraightPidding())
-            )
+            () -> RapidReactCommands.driveForTime(2.5, .5)
         );
         AutoCommands.add(
             "Shoot",
-            () -> Commands.shootSequence()
+            () -> RapidReactCommands.shootSequence()
         );
         AutoCommands.add(
             "Main",
@@ -298,12 +292,7 @@ public final class RapidReact extends RobotContainer
         );
         AutoCommands.add(
             "Drive Return",
-            () -> sequence(
-                instant(() -> drivetrain.startStraightPidding()),
-                runForTime(2.5, () -> drivetrain.set(-0.5, 0), drivetrain),
-                instant(() -> drivetrain.set(0, 0)),
-                instant(() -> drivetrain.stopStraightPidding())    
-            )
+            () -> RapidReactCommands.driveForTime(2.5, -.5)
         );
         AutoCommands.add(
             "Main Taxi Intake",

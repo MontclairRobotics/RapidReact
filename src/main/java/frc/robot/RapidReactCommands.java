@@ -11,9 +11,9 @@ import static frc.robot.framework.Commands.*;
 
 import static frc.robot.RapidReact.*;
 
-public final class CommandFactories
+public final class RapidReactCommands
 {
-    private CommandFactories() {}
+    private RapidReactCommands() {}
 
     public static Command shootSequence()
     {
@@ -22,12 +22,12 @@ public final class CommandFactories
                 ballMover.startMovingBackwards();
                 ballShooter.reverseShooting();
             }),
-            runForTime(0.25, block(ballMover, ballShooter)),
+            runForTime(0.1, block(ballMover, ballShooter)),
             instant(() -> {
                 ballMover.stop();
                 ballShooter.startShooting();
             }),
-            runForTime(0.5, block(ballShooter)),
+            runForTime(0.3, block(ballShooter)),
             instant(() -> ballMover.startMoving()),
             runForTime(2.5, block(ballMover, ballShooter)),
             instant(() -> {
@@ -46,11 +46,12 @@ public final class CommandFactories
         );
     }
 
-    public static Command driveForTime(double time)
+    public static Command driveForTime(double time, double percentOutput)
     {
         return sequence(
             instant(() -> {
                 drivetrain.setMaxOutput(Constants.AUTO_SPEED);
+                drivetrain.set(percentOutput, 0);
                 drivetrain.startStraightPidding();
             }),
             runForTime(time, block(drivetrain)),
