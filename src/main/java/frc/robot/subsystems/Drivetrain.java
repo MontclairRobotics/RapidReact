@@ -401,7 +401,7 @@ public final class Drivetrain extends SubsystemBase
 
     public void killMomentum() 
     {
-        for(var p : Constants.DRIVE_PROFILERS)
+        for(var p : Constants.PROFILERS)
         {
             p.setDirect(0.0);
         }
