@@ -1,0 +1,65 @@
+<xml version="1.0">
+<dashboard>
+	<widget field="Auto" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1142" y="161"/>
+		<property name="Use Radio Buttons" value="false"/>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1163" y="148"/>
+		<property name="Text" value="AUTO COMMAND"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
+		<location x="241" y="156"/>
+		<width>399</width>
+		<height>324</height>
+		<property name="Camera Choice" value="Shooter Camera"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
+		<location x="645" y="157"/>
+		<width>416</width>
+		<height>324</height>
+		<property name="Camera Choice" value="Intake Camera"/>
+	</static-widget>
+	<widget field="CurrentEasing" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="879" y="125"/>
+	</widget>
+	<widget field="CurrentMaxSpeed" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="874" y="104"/>
+	</widget>
+	<widget field="AngularVelocity" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="652" y="104"/>
+	</widget>
+	<widget field="PID.AngleToTarget" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="403" y="103"/>
+	</widget>
+	<widget field="PID.DistanceToTarget" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="197" y="102"/>
+	</widget>
+	<widget field="PID.Angle.Tolerance" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="779" y="55"/>
+	</widget>
+	<widget field="PID.Angle.KP" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="197" y="55"/>
+	</widget>
+	<widget field="PID.Angle.KI" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="369" y="52"/>
+	</widget>
+	<widget field="PID.Angle.KD" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="535" y="51"/>
+	</widget>
+	<widget field="PID.Distance.Tolerance" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="775" y="30"/>
+	</widget>
+	<widget field="PID.Distance.KP" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="197" y="31"/>
+	</widget>
+	<widget field="PID.Distance.KI" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="369" y="30"/>
+	</widget>
+	<widget field="PID.Distance.KD" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="536" y="29"/>
+	</widget>
+</dashboard>
+<live-window>
+</live-window>
+</xml>
