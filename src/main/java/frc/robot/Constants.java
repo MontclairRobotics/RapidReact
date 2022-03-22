@@ -48,6 +48,10 @@ public final class Constants
     public static final int LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT = 43;
     public static final int RIGHT_ROTATIONAL_CLIMBER_MOTOR_PORT = 44;
 
+    // Climber limit switch ports
+    public static final int LEFT_LOWER_CLIMBER_LIMIT_PORT = 0;
+    public static final int RIGHT_LOWER_CLIMBER_LIMIT_PORT = 1;
+    
     // BlinkinLEDDriver port
     public static final int BLINKIN_LED_DRIVER_PORT = 0;
 

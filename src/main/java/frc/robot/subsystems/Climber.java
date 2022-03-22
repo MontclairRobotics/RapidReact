@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -29,6 +30,9 @@ public class Climber extends SubsystemBase
     private TalonFX talonLeft = new TalonFX(Constants.LEFT_CLIMBER_MOTOR_PORT);
     private TalonFX talonRight = new TalonFX(Constants.RIGHT_CLIMBER_MOTOR_PORT);
 
+    private DigitalInput leftLimitSwitch = new DigitalInput(Constants.LEFT_LOWER_CLIMBER_LIMIT_PORT);
+    private DigitalInput rightLimitSwitch = new DigitalInput(Constants.RIGHT_LOWER_CLIMBER_LIMIT_PORT);
+
     private double left;
     private double right;
     
@@ -43,7 +47,6 @@ public class Climber extends SubsystemBase
         
         left = 0;
         right = 0;
-        
         
     }
     
@@ -87,6 +90,7 @@ public class Climber extends SubsystemBase
     @Override
     public void periodic()
     {
+        // Limit switches using the encoder values
         /*
         if(left > 0)
         {
@@ -120,6 +124,17 @@ public class Climber extends SubsystemBase
             } 
         }
         */
+
+        // code for the hard limit switches
+        if (left < 0 && leftLimitSwitch.get()) 
+        {
+            left = 0;
+        }
+        if (right < 0 && rightLimitSwitch.get())
+        {
+            right = 0;
+        } 
+
         talonLeft.set(ControlMode.PercentOutput, left);
         talonRight.set(ControlMode.PercentOutput, right);
         
