@@ -1,6 +1,12 @@
-echo "Setting up code!"
+#!/bin/bash
+echo "Setting up code!\n"
+
+echo "Installing python packages to su!"
 sudo python -m pip install pynetworktables
 sudo python -m pip install opencv-python
-sudo systemctl enable frc.service
-sudo systemtl daemon-reload
+
+echo "Setting up service!"
+sudo systemctl daemon-reload
+sudo systemctl enable /home/pi/Desktop/rapidreact/src/main/pi_linux/frc.service
+
 echo "Done! Yay!"
