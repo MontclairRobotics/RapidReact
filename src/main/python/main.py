@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 from cv_utils import *
 from data_structures import *
 from constant import *
@@ -7,16 +8,18 @@ import cv2
 ###################################
 # NetworkTables
 ###################################
-_nt = NetworkTablesInstance.getDefault().getTable(NT_NAME)
-_sd = NetworkTablesInstance.getDefault().getTable("SmartDashboard")
+NetworkTables.initialize(server='roborio-555-frc.local')
 
-protoVerEntry = _nt.getEntry(PROTO_VER_NAME)
+dataTable = NetworkTables.getTable(NT_NAME)
+smartDashboard = NetworkTables.getTable("SmartDashboard")
 
-xsEntry = _nt.getEntry(XS_NAME)
-ysEntry = _nt.getEntry(YS_NAME)
-anglesEntry = _nt.getEntry(ANGLES_NAME)
+protoVerEntry = dataTable.getEntry(PROTO_VER_NAME)
 
-currentTeamEntry = _sd.getEntry(CURRENT_TEAM_NAME)
+xsEntry = dataTable.getEntry(XS_NAME)
+ysEntry = dataTable.getEntry(YS_NAME)
+anglesEntry = dataTable.getEntry(ANGLES_NAME)
+
+currentTeamEntry = smartDashboard.getEntry(CURRENT_TEAM_NAME)
 
 ###################################
 # Globals
@@ -61,6 +64,7 @@ def update():
     ]
 
     # Draw Dev (Temp)
+    """
     output = cv2.bitwise_and(frame, frame, mask=mask)
     ContourInfo.draw_contours(
         output, contours, (255, 255, 255), 3
@@ -69,6 +73,7 @@ def update():
     cv2.rectangle(frame, (0, 0), (130, 80), (255, 255, 255), -1)
     cat = cv2.hconcat([cv2.cvtColor(detectable, cv2.COLOR_GRAY2RGB), output])
     cv2.imshow(f"Color Mask : Team - {current_team.value}", cat)
+    """
 
     # Update NetworkTables
     anglesEntry.setDoubleArray([(2 / width) * c.center[0] for c in contours])
@@ -81,11 +86,5 @@ def update():
 # Main Behaviour
 ###################################
 if __name__ == '__main__':
-
     while True:
         update()
-        if cv2.waitKey(10) & 0xFF == ord('q'):
-            break
-
-    cv2.destroyAllWindows()
-    videoCapture.release()

@@ -35,32 +35,32 @@ public final class Drivetrain extends SubsystemBase
     private final CANSparkMax 
         leftMotor1 = new CANSparkMax(LEFT_MOTOR_1_PORT, MotorType.kBrushless),
         leftMotor2 = new CANSparkMax(LEFT_MOTOR_2_PORT, MotorType.kBrushless),
-        //leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
+        leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
         rightMotor1 = new CANSparkMax(RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
-        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless)//,
-        //rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
+        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
+        rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
     ;
     
     private final CANSparkMax[]
         leftMotors = {
             leftMotor1,
             leftMotor2,
-            //leftMotor3
+            leftMotor3
         },
         rightMotors = {
             rightMotor1, 
             rightMotor2,
-            //rightMotor3
+            rightMotor3
         }
     ;
 
     private final RelativeEncoder 
         leftEncoder1 = leftMotor1.getEncoder(),
         leftEncoder2 = leftMotor2.getEncoder(),
-        //leftEncoder3 = leftMotor3.getEncoder(),
+        leftEncoder3 = leftMotor3.getEncoder(),
         rightEncoder1 = rightMotor1.getEncoder(),
-        rightEncoder2 = rightMotor2.getEncoder()//,
-        //rightEncoder3 = rightMotor3.getEncoder()
+        rightEncoder2 = rightMotor2.getEncoder(),
+        rightEncoder3 = rightMotor3.getEncoder()
     ;
 
 
@@ -68,12 +68,12 @@ public final class Drivetrain extends SubsystemBase
         leftEncoders = {
             leftEncoder1,
             leftEncoder2,
-            //leftEncoder3
+            leftEncoder3
         },
         rightEncoders = {
             rightEncoder1, 
             rightEncoder2,
-            //rightEncoder3
+            rightEncoder3
         }
     ;
 
@@ -296,6 +296,8 @@ public final class Drivetrain extends SubsystemBase
     {
         this.targetSpeed = targetSpeed;
         this.targetTurn = targetTurn;
+        //System.out.println("Setting Speed to: " + targetSpeed + "speed");
+        //System.out.println("Setting Angle to: " + targetTurn + "percent turning");
     }
 
     private double calculateAnglePID(double target)
@@ -341,10 +343,10 @@ public final class Drivetrain extends SubsystemBase
         else
         {
             // Square input
-            targetSpeed = MathDouble.signum(targetSpeed).get() * targetSpeed * targetSpeed;
+            var targetSpeedReal = MathDouble.signum(targetSpeed).get() * MathDouble.pow(MathDouble.abs(targetSpeed), 1.1);
 
             // Update the speed with the smoother
-            speedProfiler.update(CommandRobot.deltaTime(), targetSpeed * maxOutput);
+            speedProfiler.update(CommandRobot.deltaTime(), targetSpeedReal * maxOutput);
             speed = speedProfiler.current();
 
             //System.out.println("Robot driving");
@@ -357,6 +359,7 @@ public final class Drivetrain extends SubsystemBase
         }
         else if(isUsingAnglePID && isStraightPidding)
         {
+            //System.out.println("started pidding!");
             turn = calculateAnglePID(0);
         }
         else
@@ -367,6 +370,7 @@ public final class Drivetrain extends SubsystemBase
         // Clamp speed
         speed = MathDouble.clamp(speed, -maxOutput, maxOutput);
 
+        //System.out.println("speed: " + speed);
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn, false);
     }

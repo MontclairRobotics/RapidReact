@@ -1,0 +1,13 @@
+[Unit]
+Description=Frc Code :D
+After=multi-user.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=sudo /usr/bin/python3 /home/pi/Desktop/rapidreact/src/main/python/main.py
+
+[Install]
+WantedBy=multi-user.target

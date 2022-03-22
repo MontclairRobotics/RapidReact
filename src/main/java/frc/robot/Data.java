@@ -56,9 +56,9 @@ public final class Data
     public static double getDistanceKD() {return 0.0;/*SmartDashboard.getNumber("PID.Distance.KD", 0);*/}
     public static double getDistanceTolerance() {return 0.1;/*SmartDashboard.getNumber("PID.Distance.Tolerance", 0);*/}
 
-    public static double getAngleKP() {return 0.005;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
+    public static double getAngleKP() {return 0.008;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
     public static double getAngleKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
-    public static double getAngleKD() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
+    public static double getAngleKD() {return 0.00004;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
     public static double getAngleTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
 
     public static void setDistanceToTarget(double value) {SmartDashboard.putNumber("PID.DistanceToTarget", value);}

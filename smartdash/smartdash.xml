@@ -59,6 +59,9 @@
 	<widget field="PID.Distance.KD" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
 		<location x="536" y="29"/>
 	</widget>
+	<widget field="Climber" type="Subsystem" class="edu.wpi.first.smartdashboard.gui.elements.Subsystem">
+		<location x="14" y="23"/>
+	</widget>
 </dashboard>
 <live-window>
 </live-window>

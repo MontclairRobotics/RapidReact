@@ -16,4 +16,10 @@ public class DetectedBall
     public double getAngle() {return angle;}
     public double getX() {return x;}
     public double getY() {return y;}
+
+    @Override
+    public String toString() 
+    {
+        return "DetectedBall(" + x + ", " + y + ", angle=" + angle + ")";
+    }
 }

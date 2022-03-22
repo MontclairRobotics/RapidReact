@@ -83,11 +83,12 @@ public class Climber extends SubsystemBase
             right = 0;
         }
     }
+    
     @Override
     public void periodic()
     {
-        
-        if(left>0)
+        /*
+        if(left > 0)
         {
             if(talonLeft.getSelectedSensorPosition() >= Constants.CLIMBER_UPPER_LIMIT)
             {
@@ -118,9 +119,10 @@ public class Climber extends SubsystemBase
                 right = 0;
             } 
         }
-            
+        */
         talonLeft.set(ControlMode.PercentOutput, left);
         talonRight.set(ControlMode.PercentOutput, right);
         
     }
+    
 }

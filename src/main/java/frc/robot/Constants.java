@@ -41,8 +41,8 @@ public final class Constants
     public static final int RIGHT_SHOOTER_MOTOR_PORT = 5;
 
     // Climber Motor Ports
-    public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
-    public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 42;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 41;
 
     // Rotational Climber Motor Ports
     public static final int LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT = 43;
@@ -96,7 +96,8 @@ public final class Constants
     public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
     public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
 
-    public static final double REVERSE_SHOOTER_SPEED = -0.4;
+    public static final double REVERSE_SHOOTER_SPEED = -0.7;
+    
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.5;

@@ -43,6 +43,14 @@ public class VisionManager extends ManagerBase
         balls = new DetectedBall[0];
     }
 
+    private void simulate()
+    {
+        protoVerEntry.setString("0.5.0");
+        anglesEntry.setDoubleArray(new double[] {0, 1});
+        xsEntry.setDoubleArray(new double[] {200, 300});
+        ysEntry.setDoubleArray(new double[] {100, 200});
+    }
+
     private boolean isUpdating;
 
     private DetectedBall[] balls;
@@ -50,6 +58,10 @@ public class VisionManager extends ManagerBase
     
     public void periodic() 
     {
+        //*TEMPORARY
+        simulate();
+        //*/
+
         if(!isUpdating)
         {
             return;
@@ -100,5 +112,16 @@ public class VisionManager extends ManagerBase
         {
             balls[i] = new DetectedBall(angles[i], xs[i], ys[i]);
         }
+
+        /*/ TEMPORARY
+        System.out.println("---------------------------------");
+        System.out.println("Ball count: " + balls.length);
+        for (var ball : balls) 
+        {
+            System.out.println(ball);
+        }
+        System.out.println();
+        System.out.println("---------------------------------");
+        //*/
     }
 }

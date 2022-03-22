@@ -45,6 +45,11 @@ public final class AutoCommands
     {
         var s = new SendableChooser<Command>();
 
+        if(!commands.containsKey(defaultAutoCommand))
+        {
+            throw new IllegalArgumentException("Default state (" + defaultAutoCommand + ") does not exist!");
+        }
+
         s.setDefaultOption(defaultAutoCommand, get(defaultAutoCommand));
 
         for(var name : commands.keySet())

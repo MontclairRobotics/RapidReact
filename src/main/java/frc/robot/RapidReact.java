@@ -76,7 +76,7 @@ public final class RapidReact extends RobotContainer
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
     public static final Climber climber = new Climber();
-    public static final RotationalClimber rotationalClimber = new RotationalClimber();
+    //public static final RotationalClimber rotationalClimber = new RotationalClimber();
 
     public static final VisionManager vision = new VisionManager();
 
@@ -177,7 +177,7 @@ public final class RapidReact extends RobotContainer
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
-
+        /*
         // Rotational climber forward command
         operatorController.getDPad(DPad.LEFT)
             .whenActive(rotationalClimber::rotateForward)
@@ -188,6 +188,7 @@ public final class RapidReact extends RobotContainer
             .whenActive(rotationalClimber::rotateBackward)
             .whileActiveContinuous(block(rotationalClimber))
             .whenInactive(rotationalClimber::stop);
+        */
 
         // Max speed command
         driverController.getButton(A_CROSS)
@@ -211,13 +212,17 @@ public final class RapidReact extends RobotContainer
 
         // Turn commands
         driverController.getDPad(DPad.LEFT)
-            .whenActive(RapidReactCommands.turn(90));
+            .whenActive(RapidReactCommands.turn(90))
+            .whileActiveContinuous(block(drivetrain));
         driverController.getDPad(DPad.RIGHT)
-            .whenActive(RapidReactCommands.turn(-90));
+            .whenActive(RapidReactCommands.turn(-90))
+            .whileActiveContinuous(block(drivetrain));
         driverController.getDPad(DPad.UP)
-            .whenActive(RapidReactCommands.turn(180));
+            .whenActive(RapidReactCommands.turn(180))
+            .whileActiveContinuous(block(drivetrain));
         driverController.getDPad(DPad.DOWN)
-            .whenActive(RapidReactCommands.turn(-180));
+            .whenActive(RapidReactCommands.turn(-180))
+            .whileActiveContinuous(block(drivetrain));
 
         // CLIMBER BACKUPS
         ///*
@@ -266,7 +271,7 @@ public final class RapidReact extends RobotContainer
         /////////////////////////////////
         AutoCommands.add(
             "Drive", 
-            () -> RapidReactCommands.driveForTime(2.5, .5)
+            () -> RapidReactCommands.driveForTime(2.5, 1)
         );
         AutoCommands.add(
             "Shoot",

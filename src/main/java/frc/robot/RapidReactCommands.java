@@ -22,14 +22,14 @@ public final class RapidReactCommands
                 ballMover.startMovingBackwards();
                 ballShooter.reverseShooting();
             }),
-            runForTime(0.1, block(ballMover, ballShooter)),
+            runForTime(0.05, block(ballMover, ballShooter)),
             instant(() -> {
                 ballMover.stop();
                 ballShooter.startShooting();
             }),
-            runForTime(0.3, block(ballShooter)),
+            runForTime(0.2, block(ballShooter)),
             instant(() -> ballMover.startMoving()),
-            runForTime(2.5, block(ballMover, ballShooter)),
+            runForTime(2.0, block(ballMover, ballShooter)),
             instant(() -> {
                 ballMover.stop();
                 ballShooter.stop();
@@ -40,25 +40,35 @@ public final class RapidReactCommands
     public static Command turn(double degrees)
     {
         return sequence(
-            instant(() -> drivetrain.setTargetAngle(degrees)),
-            runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-            instant(() -> drivetrain.releaseAngleTarget())
+            deadline(
+                waitFor(3), // fail safe in event of lock up
+                sequence(
+                    instant(() -> drivetrain.setTargetAngle(degrees)),
+                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain))
+                )
+            ),
+            instant(() -> drivetrain.releaseAngleTarget()),
+            print("done turning")
         );
     }
 
     public static Command driveForTime(double time, double percentOutput)
     {
         return sequence(
-            instant(() -> {
-                drivetrain.setMaxOutput(Constants.AUTO_SPEED);
-                drivetrain.set(percentOutput, 0);
-                drivetrain.startStraightPidding();
-            }),
-            runForTime(time, block(drivetrain)),
-            instant(() -> {
-                drivetrain.stop();
-                drivetrain.stopStraightPidding();
-            })
+            sequence(
+                instant(() -> {
+                    drivetrain.setMaxOutput(Constants.AUTO_SPEED);
+                    drivetrain.set(percentOutput, 0);
+                    drivetrain.startStraightPidding();
+                    //System.out.println("Start Driving");
+                }),
+                runForTime(time, block(drivetrain)),
+                instant(() -> {
+                    drivetrain.stop();
+                    //**/drivetrain.stopStraightPidding();
+                    //System.out.println("Stop Driving");
+                })
+            )
         );
     }
 
@@ -74,7 +84,6 @@ public final class RapidReactCommands
             instant(() -> {
                 drivetrain.stop();
                 drivetrain.releaseDistanceTarget();
-                drivetrain.stopStraightPidding();
             })
         );
     }

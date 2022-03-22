@@ -52,8 +52,8 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotInit() 
     {
-        autoChooser = AutoCommands.chooser();
         container.initialize();
+        autoChooser = AutoCommands.chooser();
     }
 
     @Override
