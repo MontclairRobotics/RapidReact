@@ -115,7 +115,6 @@ def main():
     ###################################
     # NetworkTables
     ###################################
-    NetworkTables.initialize("roborio-555-frc.local")
     data_table = NetworkTables.getTable('Vision')
     smart_dashboard = NetworkTables.getTable('SmartDashboard')
 
