@@ -315,6 +315,7 @@ public final class Drivetrain extends SubsystemBase
     public void startTargetingABall()
     {
         isTargetingABall = true;
+        isStraightPidding = false;
     }
 
     public double convertBallsToDegrees(DetectedBall[] balls)
@@ -327,7 +328,7 @@ public final class Drivetrain extends SubsystemBase
                 smallestAngle = ball.getAngle();
             }
         }
-        return smallestAngle * 30;
+        return smallestAngle * -30;
     }
 
     public void set(double targetSpeed, double targetTurn)
@@ -395,11 +396,6 @@ public final class Drivetrain extends SubsystemBase
         {
             turn = calculateAnglePID(targetAngle);
         }
-        else if(isUsingAnglePID && isStraightPidding)
-        {
-            //System.out.println("started pidding!");
-            turn = calculateAnglePID(0);
-        }
         else if (isUsingBallPID && isTargetingABall)
         {
             double degrees = convertBallsToDegrees(RapidReact.vision.getBalls());
@@ -412,6 +408,11 @@ public final class Drivetrain extends SubsystemBase
                 isTargetingABall = false;
                 turn = 0;
             }
+        }
+        else if(isUsingAnglePID && isStraightPidding)
+        {
+            //System.out.println("started pidding!");
+            turn = calculateAnglePID(0);
         }
         else
         {   

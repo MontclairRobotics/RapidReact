@@ -1,5 +1,15 @@
 <xml version="1.0">
 <dashboard>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
+		<location x="35" y="165"/>
+		<width>349</width>
+		<height>255</height>
+		<property name="Camera Choice" value="Shooter Vision"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="35" y="71"/>
+		<property name="Text" value="Alliance"/>
+	</static-widget>
 	<widget field="Auto" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
 		<location x="1142" y="161"/>
 		<property name="Use Radio Buttons" value="false"/>
@@ -9,16 +19,16 @@
 		<property name="Text" value="AUTO COMMAND"/>
 	</static-widget>
 	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
-		<location x="241" y="156"/>
-		<width>399</width>
-		<height>324</height>
+		<location x="378" y="170"/>
+		<width>330</width>
+		<height>246</height>
 		<property name="Camera Choice" value="USB Camera 0"/>
 	</static-widget>
 	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.CameraServerViewer">
-		<location x="645" y="157"/>
-		<width>416</width>
-		<height>324</height>
-		<property name="Camera Choice" value="Debug"/>
+		<location x="715" y="225"/>
+		<width>489</width>
+		<height>191</height>
+		<property name="Camera Choice" value="Highlight Out"/>
 	</static-widget>
 	<widget field="CurrentEasing" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
 		<location x="879" y="125"/>
@@ -59,22 +69,22 @@
 	<widget field="PID.Distance.KD" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
 		<location x="536" y="29"/>
 	</widget>
+	<widget field="CurrentTeam" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="29" y="84"/>
+	</widget>
 </dashboard>
 <live-window>
-	<widget field="Drivetrain" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
-		<location x="9" y="9"/>
-	</widget>
-	<widget field="BallSucker" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
-		<location x="19" y="1"/>
+	<widget field="BallShooter" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<location x="29" y="14"/>
 	</widget>
 	<widget field="BallMover" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
-		<location x="17" y="14"/>
+		<location x="6" y="16"/>
 	</widget>
-	<widget field="BallShooter" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
-		<location x="24" y="3"/>
+	<widget field="BallSucker" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<location x="2" y="16"/>
 	</widget>
 	<widget field="Climber" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
-		<location x="25" y="11"/>
+		<location x="7" y="13"/>
 	</widget>
 	<widget field="Ungrouped" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
 		<widget field="DigitalInput[0]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
@@ -92,35 +102,22 @@
 			<height>155</height>
 			<width>143</width>
 		</widget>
-		<widget field="PIDController[1]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
+		<widget field="PIDController[3]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
 			<location x="6" y="211"/>
 			<height>155</height>
 			<width>143</width>
 		</widget>
-		<widget field="PIDController[4]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
+		<widget field="PIDController[1]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
 			<location x="6" y="366"/>
 			<height>155</height>
 			<width>143</width>
 		</widget>
-		<widget field="PIDController[3]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
-			<location x="6" y="521"/>
-			<height>155</height>
-			<width>143</width>
-		</widget>
-		<widget field="PIDController[6]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
-			<location x="6" y="676"/>
-			<height>155</height>
-			<width>143</width>
-		</widget>
-		<widget field="PIDController[5]" type="PIDController" class="edu.wpi.first.smartdashboard.gui.elements.PIDEditor">
-			<location x="6" y="831"/>
-			<height>155</height>
-			<width>143</width>
-		</widget>
-		<location x="3" y="0"/>
+		<location x="15" y="28"/>
 		<width>155</width>
-		<height>992</height>
+		<height>527</height>
+	</widget>
+	<widget field="Drivetrain" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<location x="8" y="4"/>
 	</widget>
 </live-window>
-	<hidden field="Climber"/>
 </xml>
