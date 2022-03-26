@@ -20,10 +20,13 @@ import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
 import frc.robot.Data;
+import frc.robot.DetectedBall;
+import frc.robot.RapidReact;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotState;
 import frc.robot.framework.maths.MathDouble;
 import frc.robot.framework.profiling.Profiler;
+import frc.robot.managers.VisionManager;
 
 public final class Drivetrain extends SubsystemBase
 {
@@ -91,11 +94,13 @@ public final class Drivetrain extends SubsystemBase
     
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
+    private PIDController ballPid; //ball
 
     private int currentSpeedIndex = 0;
 
     private boolean isUsingDistancePID = true;
     private boolean isUsingAnglePID = true;
+    private boolean isUsingBallPID = true;
 
     private double targetSpeed;
     private double targetTurn;
@@ -106,6 +111,8 @@ public final class Drivetrain extends SubsystemBase
     private double targetDistance = 0.0;
     private boolean isTargetingAnAngle = false;
     private double targetAngle = 0.0;
+    private boolean isTargetingABall = false;
+    private double targetBall = 0.0;
 
     private double maxOutput = 0.0;
 
@@ -160,6 +167,14 @@ public final class Drivetrain extends SubsystemBase
         );
         anglePid.setTolerance(Data.getAngleTolerance());
 
+        // Setup ball pid
+        ballPid = new PIDController(
+            Data.getBallKP(),
+            Data.getBallKI(),
+            Data.getBallKD()
+        );
+        ballPid.setTolerance(Data.getBallTolerance());
+
         //System.out.println("akp " + anglePid.getP());
 
         // Setup max output
@@ -200,6 +215,10 @@ public final class Drivetrain extends SubsystemBase
     {
         isStraightPidding = false;
     }
+    public void stopTargetingABall()
+    {
+        isTargetingABall = false;
+    }
     public boolean isStraightPidding()
     {
         return isStraightPidding;
@@ -209,11 +228,13 @@ public final class Drivetrain extends SubsystemBase
     {
         isUsingAnglePID = true;
         isUsingDistancePID = true;
+        isUsingBallPID = true;
     }
     public void disableAllPID()
     {
         isUsingAnglePID = false;
         isUsingDistancePID = false;
+        isUsingBallPID = false;
     }
     
     public void setProfiler(Profiler speedProfiler) 
@@ -291,6 +312,23 @@ public final class Drivetrain extends SubsystemBase
         targetAngle = ta;
         isTargetingAnAngle = true;
     }
+    public void startTargetingABall()
+    {
+        isTargetingABall = true;
+    }
+
+    public double convertBallsToDegrees(DetectedBall[] balls)
+    {
+        double smallestAngle = Double.NaN;
+        for (var ball : balls)
+        {
+            if (Math.abs(ball.getAngle()) < smallestAngle || Double.isNaN(smallestAngle))
+            {
+                smallestAngle = ball.getAngle();
+            }
+        }
+        return smallestAngle * 30;
+    }
 
     public void set(double targetSpeed, double targetTurn)
     {
@@ -361,6 +399,19 @@ public final class Drivetrain extends SubsystemBase
         {
             //System.out.println("started pidding!");
             turn = calculateAnglePID(0);
+        }
+        else if (isUsingBallPID && isTargetingABall)
+        {
+            double degrees = convertBallsToDegrees(RapidReact.vision.getBalls());
+            if (!Double.isNaN(degrees))
+            {
+                turn = calculateAnglePID(degrees);
+            }
+            else
+            {
+                isTargetingABall = false;
+                turn = 0;
+            }
         }
         else
         {   

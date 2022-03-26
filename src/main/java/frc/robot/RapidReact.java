@@ -215,6 +215,11 @@ public final class RapidReact extends RobotContainer
         driverController.getDPad(DPad.DOWN)
             .whenActive(RapidReactCommands.turn(-180));
 
+        // turn to ball
+        driverController.getButton(RIGHT_STICK)
+            .whenActive(drivetrain::startTargetingABall)
+            .whenInactive(drivetrain::stopTargetingABall); 
+        
         // CLIMBER BACKUPS
         ///*
         operatorController.getAxis(LEFT_Y).whenGreaterThan(0.5)
