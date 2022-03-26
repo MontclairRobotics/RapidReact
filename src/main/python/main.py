@@ -1,4 +1,6 @@
 #! /usr/bin/etc python3
+import sys
+import os
 import time
 import math
 import cv2
@@ -33,18 +35,10 @@ CONTOUR_DRAW_CROSS_SIZE = 10
 
 
 ########################
-# region # Classes
+# region # Classes and Helpers
 ########################
-class TeamColor(Enum):
-    RED = "Red"
-    BLUE = "Blue"
-
-    @staticmethod
-    def get_from(s):
-        if s.lower() == "red":
-            return TeamColor.RED
-        else:
-            return TeamColor.BLUE
+def clear_cons():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 class ContourInfo:
@@ -103,12 +97,12 @@ class ContourInfo:
 
 def main():
 
+    clear_cons()
+
     print('#' * 50)
     print('# Starting frc script:')
     print('#' * 50)
     print('')
-    
-    print("Hello from the pi!")
     
     ###################################
     # Camera settings
@@ -154,7 +148,6 @@ def main():
     angles_entry = data_table.getEntry('Angles')
 
     current_team_entry = smart_dashboard.getEntry('CurrentTeam')
-    current_team_entry.setDefaultString('Red')
 
     ###################################
     # Capture data
@@ -181,10 +174,11 @@ def main():
             time.sleep(0.01)
             continue
 
-        current_team = TeamColor.get_from(current_team_entry.getString("Red"))
+        current_team = current_team_entry.getString("red")
+        print(f'Current team: {current_team!r}')
 
         # Preprocessing
-        if current_team == TeamColor.RED:
+        if current_team.lower() == "red":
             convert = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(convert, LOW_RED, HIGH_RED)
         else:
@@ -202,11 +196,11 @@ def main():
             )
             if c.area > width * height * 0.05 * 0.05 and c.circularity > 0.5 and c.mean[0] < 127
         ]
-        
-        if len(contours) == 0:
-            print("No balls!")
-        else:
-            print("Balls!")
+
+        # if len(contours) == 0:
+        #     print("No balls!")
+        # else:
+        #     print("Balls!")
 
         # Draw into debug output stream
         output = cv2.bitwise_and(frame, frame, mask=mask)
@@ -218,11 +212,10 @@ def main():
         output_stream.putFrame(cat)
 
         # Update NetworkTables
-        angles_entry.setDoubleArray('TODO, FIX' + [(2 / width) * c.center[0] for c in contours])
+        angles_entry.setDoubleArray([2 * c.center[0] / width - 1 for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
         proto_ver_entry.setString(VERSION)
-
 
 
 if __name__ == '__main__':
