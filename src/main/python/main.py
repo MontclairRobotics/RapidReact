@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/etc python3
 import time
 import math
 import cv2
@@ -7,9 +7,10 @@ import json
 import numpy as np
 
 from networktables import *
-from cscore import *
+from cscore import CameraServer
 
 from enum import Enum
+from threading import Condition
 
 
 ########################
@@ -37,6 +38,13 @@ CONTOUR_DRAW_CROSS_SIZE = 10
 class TeamColor(Enum):
     RED = "Red"
     BLUE = "Blue"
+
+    @staticmethod
+    def get_from(s):
+        if s.lower() == "red":
+            return TeamColor.RED
+        else:
+            return TeamColor.BLUE
 
 
 class ContourInfo:
@@ -112,10 +120,30 @@ def main():
     width = ipt_camera['width']
     height = ipt_camera['height']
 
+    #print("the width is " + str(width))
+
     ###################################
     # NetworkTables
     ###################################
-    NetworkTables.initialize("roborio-555-frc.local")
+    NetworkTables.initialize(server='10.5.55.2')
+    network_table_inited = [False]
+
+    network_cond = Condition()
+
+    def listener(connected, info):
+        with network_cond:
+            network_table_inited[0] = True
+            network_cond.notify()
+    
+    NetworkTables.addConnectionListener(listener, immediateNotify=True)
+
+    with network_cond:
+        if not network_table_inited[0]:
+            print("Waiting for network tables!")
+            network_cond.wait()
+    
+    print("Connected!")
+
     data_table = NetworkTables.getTable('Vision')
     smart_dashboard = NetworkTables.getTable('SmartDashboard')
 
@@ -126,6 +154,7 @@ def main():
     angles_entry = data_table.getEntry('Angles')
 
     current_team_entry = smart_dashboard.getEntry('CurrentTeam')
+    current_team_entry.setDefaultString('Red')
 
     ###################################
     # Capture data
@@ -152,7 +181,7 @@ def main():
             time.sleep(0.01)
             continue
 
-        current_team = TeamColor[current_team_entry.getString("RED")]
+        current_team = TeamColor.get_from(current_team_entry.getString("Red"))
 
         # Preprocessing
         if current_team == TeamColor.RED:
@@ -162,7 +191,7 @@ def main():
             convert = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(convert, LOW_BLUE, HIGH_BLUE)
 
-        detectable = cv2.blur(mask, (20, 20))
+        detectable = cv2.blur(mask, (width // 40, height // 40))
         _, detectable = cv2.threshold(detectable, 100, 255, cv2.THRESH_BINARY_INV)
         detectable_bordered = cv2.copyMakeBorder(detectable, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=255)
 
@@ -171,7 +200,7 @@ def main():
             c for c in ContourInfo.find_contours(
                 detectable_bordered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            if width * height * 0.9 > c.area > width * height * 0.01 and c.circularity > 0.8 and c.mean[0] < 127
+            if c.area > width * height * 0.05 * 0.05 and c.circularity > 0.5 and c.mean[0] < 127
         ]
         
         if len(contours) == 0:
@@ -189,7 +218,7 @@ def main():
         output_stream.putFrame(cat)
 
         # Update NetworkTables
-        angles_entry.setDoubleArray([(2 / width) * c.center[0] for c in contours])
+        angles_entry.setDoubleArray('TODO, FIX' + [(2 / width) * c.center[0] for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
         proto_ver_entry.setString(VERSION)

@@ -11,14 +11,14 @@ import frc.robot.framework.ManagerBase;
 
 public class VisionManager extends ManagerBase 
 {
-    public static final String CURRENT_PROTO_VER = "0.5.0";
+    public static final String CURRENT_PROTO_VER = "0.6.0";
 
     public static final String NT_NAME = "Vision";
-    public static final String PROTO_VER = "__VER";
+    public static final String PROTO_VER = "__ver";
     
-    public static final String ANGLES = "ANGLES";
-    public static final String XS = "XS";
-    public static final String YS = "YS";
+    public static final String ANGLES = "Angles";
+    public static final String XS = "Xs";
+    public static final String YS = "Ys";
 
     public VisionManager()
     {
@@ -45,7 +45,7 @@ public class VisionManager extends ManagerBase
 
     private void simulate()
     {
-        protoVerEntry.setString("0.5.0");
+        protoVerEntry.setString("0.6.0");
         anglesEntry.setDoubleArray(new double[] {0, 1});
         xsEntry.setDoubleArray(new double[] {200, 300});
         ysEntry.setDoubleArray(new double[] {100, 200});
@@ -58,7 +58,7 @@ public class VisionManager extends ManagerBase
     
     public void periodic() 
     {
-        //*TEMPORARY
+        /*/*TEMPORARY
         simulate();
         //*/
 
@@ -70,21 +70,25 @@ public class VisionManager extends ManagerBase
         var pVer = protoVerEntry.getString("[not present]");
         if(!pVer.equals(CURRENT_PROTO_VER))
         {
-            if(pVer.equals("[not present]"))
+            // TODO: kill myself
+            if(System.currentTimeMillis() % 10 == 0)
             {
-                System.out.println(
-                    "[WARNING]: vision data is not present! Skipping this update."
-                );
-            }
-            else
-            {
-                System.out.println(
-                    "[WARNING]: vision protocol version '" + pVer + 
-                    "' does not match expected version " + CURRENT_PROTO_VER +
-                    ". Stopping the vision pipeline now."
-                );
+                if(pVer.equals("[not present]"))
+                {
+                    System.out.println(
+                        "[WARNING]: vision data is not present! Skipping this update."
+                    );
+                }
+                else
+                {
+                    System.out.println(
+                        "[WARNING]: vision protocol version '" + pVer + 
+                        "' does not match expected version " + CURRENT_PROTO_VER +
+                        ". Stopping the vision pipeline now."
+                    );
 
-                isUpdating = false;
+                    isUpdating = false;
+                }
             }
 
             reset();

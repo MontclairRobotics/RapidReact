@@ -41,8 +41,8 @@ public final class Constants
     public static final int RIGHT_SHOOTER_MOTOR_PORT = 5;
 
     // Climber Motor Ports
-    public static final int LEFT_CLIMBER_MOTOR_PORT = 42;
-    public static final int RIGHT_CLIMBER_MOTOR_PORT = 41;
+    public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
+    public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
 
     // Rotational Climber Motor Ports
     public static final int LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT = 43;
@@ -86,8 +86,8 @@ public final class Constants
     public static final boolean SHOOTER_RIGHT_INVERSION = false;
 
     // Climber inversion
-    public static final boolean LEFT_CLIMBER_INVERTED = false;
-    public static final boolean RIGHT_CLIMBER_INVERTED = false;
+    public static final boolean LEFT_CLIMBER_INVERTED = true;
+    public static final boolean RIGHT_CLIMBER_INVERTED = true;
 
     // Rotational Climber Inversion
     public static final boolean LEFT_ROTATIONAL_CLIMBER_INVERTED = false;

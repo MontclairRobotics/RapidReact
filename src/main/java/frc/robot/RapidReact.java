@@ -115,12 +115,7 @@ public final class RapidReact extends RobotContainer
         Data.setup();
 
         // Camera servers
-        intakeCamera = CameraServer.startAutomaticCapture("Intake Camera", 0);
-        intakeCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
-
-        shooterCamera = CameraServer.startAutomaticCapture("Shooter Camera", 1);
-        shooterCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
-
+        
         // Intake
         operatorController.getButton(X_SQUARE)
             .whenActive(ballSucker::startSucking)
@@ -212,17 +207,13 @@ public final class RapidReact extends RobotContainer
 
         // Turn commands
         driverController.getDPad(DPad.LEFT)
-            .whenActive(RapidReactCommands.turn(90))
-            .whileActiveContinuous(block(drivetrain));
+            .whenActive(RapidReactCommands.turn(90));
         driverController.getDPad(DPad.RIGHT)
-            .whenActive(RapidReactCommands.turn(-90))
-            .whileActiveContinuous(block(drivetrain));
+            .whenActive(RapidReactCommands.turn(-90));
         driverController.getDPad(DPad.UP)
-            .whenActive(RapidReactCommands.turn(180))
-            .whileActiveContinuous(block(drivetrain));
+            .whenActive(RapidReactCommands.turn(180));
         driverController.getDPad(DPad.DOWN)
-            .whenActive(RapidReactCommands.turn(-180))
-            .whileActiveContinuous(block(drivetrain));
+            .whenActive(RapidReactCommands.turn(-180));
 
         // CLIMBER BACKUPS
         ///*

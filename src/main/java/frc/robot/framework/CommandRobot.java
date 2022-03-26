@@ -59,9 +59,12 @@ public class CommandRobot extends TimedRobot
     @Override
     public void robotPeriodic() 
     {
-        for(var m : managers)
+        if(state != RobotState.DISABLED)
         {
-            m.periodic();
+            for(var m : managers)
+            {
+                m.periodic();
+            }
         }
         
         CommandScheduler.getInstance().run();
