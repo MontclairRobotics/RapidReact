@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.BallSucker;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static frc.robot.framework.Commands.*;
@@ -21,10 +22,12 @@ public final class RapidReactCommands
             instant(() -> {
                 ballMover.startMovingBackwards();
                 ballShooter.reverseShooting();
+                ballSucker.startSucking();
             }),
             runForTime(0.05, block(ballMover, ballShooter)),
             instant(() -> {
                 ballMover.stop();
+                ballSucker.stop();
                 ballShooter.startShooting();
             }),
             runForTime(0.2, block(ballShooter)),

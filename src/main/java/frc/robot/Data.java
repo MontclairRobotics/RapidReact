@@ -61,10 +61,10 @@ public final class Data
     public static double getAngleKD() {return 0.0004;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
     public static double getAngleTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
 
-    public static double getBallKP() {return 0.008;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
+    public static double getBallKP() {return 0.2;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
     public static double getBallKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
-    public static double getBallKD() {return 0.0004;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
-    public static double getBallTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
+    public static double getBallKD() {return 0.01;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
+    public static double getBallTolerance() {return 0.02;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
 
     public static void setDistanceToTarget(double value) {SmartDashboard.putNumber("PID.DistanceToTarget", value);}
     public static void setAngleToTarget(double value) {SmartDashboard.putNumber("PID.AngleToTarget", value);}
