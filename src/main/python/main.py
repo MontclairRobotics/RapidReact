@@ -9,16 +9,15 @@ import json
 import numpy as np
 
 from networktables import *
-from cscore import CameraServer
 
-from enum import Enum
+from cscore import CameraServer
 from threading import Condition
 
 
 ########################
 # region # Constants
 ########################
-VERSION = "0.6.0"
+VERSION = "1.0.0"
 
 LOW_BLUE = (190 / 2, 100, 50)
 HIGH_BLUE = (220 / 2, 255, 240)
@@ -26,11 +25,14 @@ HIGH_BLUE = (220 / 2, 255, 240)
 LOW_RED = (115, 50, 100)
 HIGH_RED = (160, 255, 255)
 
-CONTOUR_DRAW_COL = (255, 255, 255)
-CONTOUR_DRAW_WIDTH = 3
-CONTOUR_DRAW_CROSS_SIZE = 10
+BLUR_FACTOR = 1 / 20
+BLUR_THRESHOLD = 100
 
-MIN_CAM_AREA = 0.1 ** 2
+CONTOUR_DRAW_COL = (255, 255, 255)
+CONTOUR_DRAW_WIDTH = 2
+CONTOUR_DRAW_CROSS_SIZE = 5
+
+COLOR_STRIPE_WIDTH_FACTOR = 0.1
 ########################
 # endregion
 ########################
@@ -39,10 +41,6 @@ MIN_CAM_AREA = 0.1 ** 2
 ########################
 # region # Classes and Helpers
 ########################
-def clear_cons():
-    return
-
-
 class ContourInfo:
 
     @staticmethod
@@ -99,8 +97,6 @@ class ContourInfo:
 
 def main():
 
-    clear_cons()
-
     print('#' * 50)
     print('# Starting frc script:')
     print('#' * 50)
@@ -148,29 +144,30 @@ def main():
     ys_entry = data_table.getEntry('Ys')
     angles_entry = data_table.getEntry('Angles')
     areas_entry = data_table.getEntry('Areas')
+    circularities_entry = data_table.getEntry('Circularities')
+    perimeters_entry = data_table.getEntry('Perimeters')
 
     current_team_entry = data_table.getEntry('CurrentTeam')
 
     ###################################
     # Capture data
     ###################################
-    camera_server = CameraServer.getInstance()
+    cs = CameraServer.getInstance()
 
-    ipt_cam = camera_server.startAutomaticCapture(dev=0, name='Camera Vision')
-    other_cam = camera_server.startAutomaticCapture(dev=2, name='Shooter Vision')
+    ipt_cam = cs.startAutomaticCapture(dev=0, name='Camera Vision')
+    other_cam = cs.startAutomaticCapture(dev=2, name='Shooter Vision')
 
-    input_stream = camera_server.getVideo(camera=ipt_cam)
-    other_stream = camera_server.getVideo(camera=other_cam)
-    output_stream = camera_server.putVideo('Highlight Out', width_config * 2, height_config)
+    input_stream = cs.getVideo(camera=ipt_cam)
+    other_stream = cs.getVideo(camera=other_cam)
+
+    output_stream = cs.putVideo('Vision Output', width_config * 2, height_config)
     
-    base_img = np.zeros(shape=(width_config, height_config, 3), dtype=np.uint8)
+    base_img = np.zeros(shape=(height_config, width_config, 3), dtype=np.uint8)
 
     ###################################
-    # Main Function
+    # Main Functionality
     ###################################
     while True:
-
-        #print('Executing frame!')
 
         # Get camera data
         frame_time, frame = input_stream.grabFrame(base_img)
@@ -179,55 +176,68 @@ def main():
             time.sleep(0.01)
             continue
 
-        width, height = frame.shape[1::-1]
-        max_area = width * height
+        # Dimension information
+        real_width, real_height = frame.shape[1::-1]
+        max_area = real_width * real_height
 
-        current_team = current_team_entry.getString('red')
-        #print(f'Current team: {current_team!r}')
+        # Get current alliance
+        current_team = current_team_entry.getString('Red')
 
         # Preprocessing
-        if current_team.lower() == 'red':
+        if current_team == 'Red':
             convert = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(convert, LOW_RED, HIGH_RED)
         else:
             convert = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(convert, LOW_BLUE, HIGH_BLUE)
 
-        detectable = cv2.blur(mask, (width // 20, height // 20))
-        _, detectable = cv2.threshold(detectable, 100, 255, cv2.THRESH_BINARY_INV)
-        detectable_bordered = cv2.copyMakeBorder(detectable, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=255 // 2)
+        _, detectable = cv2.threshold(
+            cv2.blur(
+                mask, #mask
+                (
+                    int(real_width * BLUR_FACTOR), #x
+                    int(real_height * BLUR_FACTOR) #y
+                )
+            ), 
+            BLUR_THRESHOLD, 255, cv2.THRESH_BINARY_INV
+        )
+
+        detectable_bordered = cv2.copyMakeBorder(
+            detectable, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=BLUR_THRESHOLD-1
+        )
 
         # Get contours
         contours = [
             c for c in ContourInfo.find_contours(
                 detectable_bordered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            if 1 > c.area / max_area > MIN_CAM_AREA and c.circularity > 0.5 and c.mean[0] < 127
+            if c.mean[0] < 127
         ]
 
-        # if len(contours) == 0:
-        #     print("No balls!")
-        # else:
-        #     print("Balls!")
-
-        # Draw into debug output stream
+        # Draw into output stream
         output = frame
         ContourInfo.draw_contours(
             output, contours, CONTOUR_DRAW_COL, CONTOUR_DRAW_WIDTH, CONTOUR_DRAW_CROSS_SIZE
         )
-        output = cv2.copyMakeBorder(output, 0, 0, width // 2, 0, cv2.BORDER_CONSTANT, value=(255,255,255))
-        output = cv2.rectangle(output, (0,0), (width//2,height),  
-                   (0,0,255) if current_team.lower() == 'red' else (255,0,0), -1)
+        output = cv2.copyMakeBorder(
+            output, 
+            0, 0, int(real_width * COLOR_STRIPE_WIDTH_FACTOR), 0, 
+            cv2.BORDER_CONSTANT, 
+            value=(0,0,255) if current_team.lower() == 'red' else (255,0,0)
+        )
 
-        #mlcena@montclair.blah.blah.blah
+        # mlcena@montclair.blah.blah.blah
 
         output_stream.putFrame(output)
 
         # Update NetworkTables
-        angles_entry.setDoubleArray([2 * c.center[0] / width - 1 for c in contours])
+        circularities_entry.setDoubleArray([c.circularity for c in contours])
+        perimeters_entry.setDoubleArray([c.perimeter for c in contours])
+        angles_entry.setDoubleArray([2 * c.center[0] / real_width - 1 for c in contours])
+        areas_entry.setDoubleArray([c.area / max_area for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
-        areas_entry.setDoubleArray([c.area / max_area for c in contours])
+
         proto_ver_entry.setString(VERSION)
 
 

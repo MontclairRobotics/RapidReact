@@ -318,19 +318,6 @@ public final class Drivetrain extends SubsystemBase
         isStraightPidding = false;
     }
 
-    public double convertBallsToDegrees(DetectedBall[] balls)
-    {
-        double smallestAngle = Double.NaN;
-        for (var ball : balls)
-        {
-            if (Math.abs(ball.getAngle()) < smallestAngle || Double.isNaN(smallestAngle))
-            {
-                smallestAngle = ball.getAngle();
-            }
-        }
-        return smallestAngle;
-    }
-
     public void set(double targetSpeed, double targetTurn)
     {
         this.targetSpeed = targetSpeed;
@@ -402,7 +389,10 @@ public final class Drivetrain extends SubsystemBase
         }
         else if (isUsingBallPID && isTargetingABall)
         {
-            double degrees = convertBallsToDegrees(RapidReact.vision.getBalls());
+            var degrees = RapidReact.vision
+                .getBall((a, b) -> a.getArea() < b.getArea())
+                .getAngle();
+
             if (!Double.isNaN(degrees))
             {
                 turn = modifyAnglePIDOut(
