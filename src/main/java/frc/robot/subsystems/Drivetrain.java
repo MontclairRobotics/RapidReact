@@ -315,6 +315,7 @@ public final class Drivetrain extends SubsystemBase
     public void startTargetingABall()
     {
         isTargetingABall = true;
+        isStraightPidding = false;
     }
 
     public double convertBallsToDegrees(DetectedBall[] balls)
@@ -327,7 +328,7 @@ public final class Drivetrain extends SubsystemBase
                 smallestAngle = ball.getAngle();
             }
         }
-        return smallestAngle * 30;
+        return smallestAngle;
     }
 
     public void set(double targetSpeed, double targetTurn)
@@ -338,14 +339,18 @@ public final class Drivetrain extends SubsystemBase
         //System.out.println("Setting Angle to: " + targetTurn + "percent turning");
     }
 
-    private double calculateAnglePID(double target)
+    private double modifyAnglePIDOut(double value)
     {
-        var angle = navx.getAngle();
-        var turn = MathDouble.clamp(
-            anglePid.calculate(angle, target) * Constants.ANGLE_PID_SCALE, 
+        return MathDouble.clamp(
+            value * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
         );
+    }
+    private double calculateAnglePID(double target)
+    {
+        var angle = navx.getAngle();
+        var turn = modifyAnglePIDOut(anglePid.calculate(angle, target));
 
         //System.out.println("Current angle: " + angle + "*");
         //System.out.println("Current turn: " + turn);
@@ -395,23 +400,26 @@ public final class Drivetrain extends SubsystemBase
         {
             turn = calculateAnglePID(targetAngle);
         }
-        else if(isUsingAnglePID && isStraightPidding)
-        {
-            //System.out.println("started pidding!");
-            turn = calculateAnglePID(0);
-        }
         else if (isUsingBallPID && isTargetingABall)
         {
             double degrees = convertBallsToDegrees(RapidReact.vision.getBalls());
             if (!Double.isNaN(degrees))
             {
-                turn = calculateAnglePID(degrees);
+                turn = modifyAnglePIDOut(
+                    ballPid.calculate(-degrees, 0.0)
+                );
+                System.out.println("We fuckin ball pidding: " + turn);
             }
             else
             {
                 isTargetingABall = false;
                 turn = 0;
             }
+        }
+        else if(isUsingAnglePID && isStraightPidding)
+        {
+            System.out.println("not gay!");
+            turn = calculateAnglePID(0);
         }
         else
         {   

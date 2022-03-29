@@ -29,6 +29,8 @@ HIGH_RED = (160, 255, 255)
 CONTOUR_DRAW_COL = (255, 255, 255)
 CONTOUR_DRAW_WIDTH = 3
 CONTOUR_DRAW_CROSS_SIZE = 10
+
+MIN_CAM_AREA = 0.1 ** 2
 ########################
 # endregion
 ########################
@@ -38,7 +40,7 @@ CONTOUR_DRAW_CROSS_SIZE = 10
 # region # Classes and Helpers
 ########################
 def clear_cons():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    return
 
 
 class ContourInfo:
@@ -111,10 +113,10 @@ def main():
         config = json.load(f)
     ipt_camera = config['cameras'][0]
 
-    width = ipt_camera['width']
-    height = ipt_camera['height']
+    width_config = ipt_camera['width']
+    height_config = ipt_camera['height']
 
-    #print("the width is " + str(width))
+    #print("the width_config is " + str(width_config))
 
     ###################################
     # NetworkTables
@@ -139,26 +141,29 @@ def main():
     print("Connected!")
 
     data_table = NetworkTables.getTable('Vision')
-    smart_dashboard = NetworkTables.getTable('SmartDashboard')
 
     proto_ver_entry = data_table.getEntry('__ver')
 
     xs_entry = data_table.getEntry('Xs')
     ys_entry = data_table.getEntry('Ys')
     angles_entry = data_table.getEntry('Angles')
+    areas_entry = data_table.getEntry('Areas')
 
-    current_team_entry = smart_dashboard.getEntry('CurrentTeam')
+    current_team_entry = data_table.getEntry('CurrentTeam')
 
     ###################################
     # Capture data
     ###################################
     camera_server = CameraServer.getInstance()
-    camera_server.startAutomaticCapture()
 
-    input_stream = camera_server.getVideo()
-    output_stream = camera_server.putVideo('Debug', width * 2, height)
+    ipt_cam = camera_server.startAutomaticCapture(dev=0, name='Camera Vision')
+    other_cam = camera_server.startAutomaticCapture(dev=2, name='Shooter Vision')
+
+    input_stream = camera_server.getVideo(camera=ipt_cam)
+    other_stream = camera_server.getVideo(camera=other_cam)
+    output_stream = camera_server.putVideo('Highlight Out', width_config * 2, height_config)
     
-    base_img = np.zeros(shape=(width, height, 3), dtype=np.uint8)
+    base_img = np.zeros(shape=(width_config, height_config, 3), dtype=np.uint8)
 
     ###################################
     # Main Function
@@ -174,27 +179,30 @@ def main():
             time.sleep(0.01)
             continue
 
-        current_team = current_team_entry.getString("red")
-        print(f'Current team: {current_team!r}')
+        width, height = frame.shape[1::-1]
+        max_area = width * height
+
+        current_team = current_team_entry.getString('red')
+        #print(f'Current team: {current_team!r}')
 
         # Preprocessing
-        if current_team.lower() == "red":
+        if current_team.lower() == 'red':
             convert = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(convert, LOW_RED, HIGH_RED)
         else:
             convert = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(convert, LOW_BLUE, HIGH_BLUE)
 
-        detectable = cv2.blur(mask, (width // 40, height // 40))
+        detectable = cv2.blur(mask, (width // 20, height // 20))
         _, detectable = cv2.threshold(detectable, 100, 255, cv2.THRESH_BINARY_INV)
-        detectable_bordered = cv2.copyMakeBorder(detectable, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=255)
+        detectable_bordered = cv2.copyMakeBorder(detectable, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=255 // 2)
 
         # Get contours
         contours = [
             c for c in ContourInfo.find_contours(
                 detectable_bordered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            if c.area > width * height * 0.05 * 0.05 and c.circularity > 0.5 and c.mean[0] < 127
+            if 1 > c.area / max_area > MIN_CAM_AREA and c.circularity > 0.5 and c.mean[0] < 127
         ]
 
         # if len(contours) == 0:
@@ -203,18 +211,23 @@ def main():
         #     print("Balls!")
 
         # Draw into debug output stream
-        output = cv2.bitwise_and(frame, frame, mask=mask)
+        output = frame
         ContourInfo.draw_contours(
             output, contours, CONTOUR_DRAW_COL, CONTOUR_DRAW_WIDTH, CONTOUR_DRAW_CROSS_SIZE
         )
-        cat = cv2.hconcat([cv2.cvtColor(detectable, cv2.COLOR_GRAY2RGB), output])
+        output = cv2.copyMakeBorder(output, 0, 0, width // 2, 0, cv2.BORDER_CONSTANT, value=(255,255,255))
+        output = cv2.rectangle(output, (0,0), (width//2,height),  
+                   (0,0,255) if current_team.lower() == 'red' else (255,0,0), -1)
 
-        output_stream.putFrame(cat)
+        #mlcena@montclair.blah.blah.blah
+
+        output_stream.putFrame(output)
 
         # Update NetworkTables
         angles_entry.setDoubleArray([2 * c.center[0] / width - 1 for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
+        areas_entry.setDoubleArray([c.area / max_area for c in contours])
         proto_ver_entry.setString(VERSION)
 
 

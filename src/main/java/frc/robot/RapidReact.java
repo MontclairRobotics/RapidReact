@@ -216,7 +216,7 @@ public final class RapidReact extends RobotContainer
             .whenActive(RapidReactCommands.turn(-180));
 
         // turn to ball
-        driverController.getButton(RIGHT_STICK)
+        driverController.getButton(B_CIRCLE)
             .whenActive(drivetrain::startTargetingABall)
             .whenInactive(drivetrain::stopTargetingABall); 
         

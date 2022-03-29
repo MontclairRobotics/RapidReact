@@ -5,9 +5,12 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.DetectedBall;
 import frc.robot.Team;
 import frc.robot.framework.ManagerBase;
+import frc.robot.framework.wpilib.senables.Sendables;
 
 public class VisionManager extends ManagerBase 
 {
@@ -19,6 +22,7 @@ public class VisionManager extends ManagerBase
     public static final String ANGLES = "Angles";
     public static final String XS = "Xs";
     public static final String YS = "Ys";
+    public static final String CURRENT_TEAM = "CurrentTeam";
 
     public VisionManager()
     {
@@ -29,14 +33,22 @@ public class VisionManager extends ManagerBase
         anglesEntry = nt.getEntry(ANGLES);
         xsEntry = nt.getEntry(XS);
         ysEntry = nt.getEntry(YS);
+        currentTeamEntry = nt.getEntry(CURRENT_TEAM);
+
+        SmartDashboard.delete(CURRENT_TEAM);
+        SmartDashboard.delete(CURRENT_TEAM);
+        
+        currentTeamChooser = Sendables.chooser("Red", "Blue");
+        SmartDashboard.putData(CURRENT_TEAM, currentTeamChooser);
 
         isUpdating = true;
         reset();
     }
 
     private final NetworkTableEntry
-        protoVerEntry, anglesEntry, xsEntry, ysEntry
+        protoVerEntry, anglesEntry, xsEntry, ysEntry, currentTeamEntry
     ;
+    private final SendableChooser<String> currentTeamChooser;
 
     private void reset()
     {
@@ -58,6 +70,7 @@ public class VisionManager extends ManagerBase
     
     public void periodic() 
     {
+        currentTeamEntry.setString(currentTeamChooser.getSelected());
         /*/*TEMPORARY
         simulate();
         //*/
