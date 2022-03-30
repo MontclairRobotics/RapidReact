@@ -8,11 +8,17 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.framework.functions.DoubleDualPredicate;
 import frc.robot.framework.functions.DoublePredicate;
 import frc.robot.framework.functions.DoubleTriPredicate;
-import frc.robot.framework.maths.MathDouble;
+import frc.robot.framework.maths.MathUtils;
 
+// I AM A TWO
 public class AnalogValue
 {
     private final DoubleSupplier axis;
+
+    public DoubleSupplier getAxis()
+    {
+        return axis;
+    }
 
     //////////////////////////////////
     // CONSTRUCTION
@@ -32,106 +38,106 @@ public class AnalogValue
     //////////////////////////////////
     public AnalogValue plus(AnalogValue other)
     {
-        return against(other, MathDouble::add);
+        return against(other, (a, b) -> a + b);
     }
     public AnalogValue plus(DoubleSupplier other)
     {
-        return against(other, MathDouble::add);
+        return against(other, (a, b) -> a + b);
     }
     public AnalogValue plus(double other)
     {
-        return against(other, MathDouble::add);
+        return against(other, (a, b) -> a + b);
     }
 
     public AnalogValue minus(AnalogValue other)
     {
-        return against(other, MathDouble::subtract);
+        return against(other, (a, b) -> a - b);
     }
     public AnalogValue minus(DoubleSupplier other)
     {
-        return against(other, MathDouble::subtract);
+        return against(other, (a, b) -> a - b);
     }
     public AnalogValue minus(double other)
     {
-        return against(other, MathDouble::subtract);
+        return against(other, (a, b) -> a - b);
     }
 
     public AnalogValue times(AnalogValue other)
     {
-        return against(other, MathDouble::multiply);
+        return against(other, (a, b) -> a * b);
     }
     public AnalogValue times(DoubleSupplier other)
     {
-        return against(other, MathDouble::multiply);
+        return against(other, (a, b) -> a * b);
     }
     public AnalogValue times(double other)
     {
-        return against(other, MathDouble::multiply);
+        return against(other, (a, b) -> a * b);
     }
 
     public AnalogValue over(AnalogValue other)
     {
-        return against(other, MathDouble::divide);
+        return against(other, (a, b) -> a / b);
     }
     public AnalogValue over(DoubleSupplier other)
     {
-        return against(other, MathDouble::divide);
+        return against(other, (a, b) -> a / b);
     }
     public AnalogValue over(double other)
     {
-        return against(other, MathDouble::divide);
+        return against(other, (a, b) -> a / b);
     }
 
     public AnalogValue raisedTo(AnalogValue other)
     {
-        return against(other, MathDouble::pow);
+        return against(other, MathUtils::pow);
     }
     public AnalogValue raisedTo(DoubleSupplier other)
     {
-        return against(other, MathDouble::pow);
+        return against(other, MathUtils::pow);
     }
     public AnalogValue raisedTo(double other)
     {
-        return against(other, MathDouble::pow);
+        return against(other, MathUtils::pow);
     }
 
     public AnalogValue modulo(AnalogValue other)
     {
-        return against(other, MathDouble::modulo);
+        return against(other, (a, b) -> a % b);
     }
     public AnalogValue modulo(DoubleSupplier other)
     {
-        return against(other, MathDouble::modulo);
+        return against(other, (a, b) -> a % b);
     }
     public AnalogValue modulo(double other)
     {
-        return against(other, MathDouble::modulo);
+        return against(other, (a, b) -> a % b);
     }
 
     public AnalogValue min(AnalogValue other)
     {
-        return against(other, MathDouble::min);
+        return against(other, MathUtils::min);
     }
     public AnalogValue min(DoubleSupplier other)
     {
-        return against(other, MathDouble::min);
+        return against(other, MathUtils::min);
     }
     public AnalogValue min(double other)
     {
-        return against(other, MathDouble::min);
+        return against(other, MathUtils::min);
     }
 
     public AnalogValue max(AnalogValue other)
     {
-        return against(other, MathDouble::max);
+        return against(other, MathUtils::max);
     }
     public AnalogValue max(DoubleSupplier other)
     {
-        return against(other, MathDouble::max);
+        return against(other, MathUtils::max);
     }
     public AnalogValue max(double other)
     {
-        return against(other, MathDouble::max);
+        return against(other, MathUtils::max);
     }
 
     public AnalogValue against(AnalogValue other, DoubleBinaryOperator operator)
@@ -149,23 +155,23 @@ public class AnalogValue
 
     public AnalogValue squared()
     {
-        return applied(MathDouble::square);
+        return applied(MathUtils::square);
     }
     public AnalogValue sqrt()
     {
-        return applied(MathDouble::sqrt);
+        return applied(MathUtils::sqrt);
     }
     public AnalogValue inversed()
     {
-        return applied(MathDouble::inverse);
+        return applied(a -> 1 / a);
     }
     public AnalogValue negated()
     {
-        return applied(MathDouble::negative);
+        return applied(a -> -a);
     }
     public AnalogValue abs()
     {
-        return applied(MathDouble::abs);
+        return applied(MathUtils::abs);
     }
 
     public AnalogValue applied(DoubleUnaryOperator operator)
@@ -232,26 +238,26 @@ public class AnalogValue
 
     public Trigger whenGreaterThan(double value)
     {
-        return when(MathDouble::greaterThan, value);
+        return when((a, b) -> a > b, value);
     }
     public Trigger whenGreaterThanOrEqualTo(double value)
     {
-        return when(MathDouble::greaterThanOrEqualTo, value);
+        return when((a, b) -> a >= b, value);
     }
     public Trigger whenLessThan(double value)
     {
-        return when(MathDouble::lessThan, value);
+        return when((a, b) -> a < b, value);
     }
     public Trigger whenLessThanOrEqualTo(double value)
     {
-        return when(MathDouble::lessThanOrEqualTo, value);
+        return when((a, b) -> a <= b, value);
     }
     public Trigger whenEqualTo(double value)
     {
-        return when(MathDouble::equalTo, value);
+        return when((a, b) -> a == b, value);
     }
     public Trigger whenUnequalTo(double value)
     {
-        return when(MathDouble::unequalTo, value);
+        return when((a, b) -> a != b, value);
     }
 }

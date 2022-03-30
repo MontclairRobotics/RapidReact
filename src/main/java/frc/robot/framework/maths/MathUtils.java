@@ -1,32 +1,10 @@
 package frc.robot.framework.maths;
 
-public final class MathDouble
+public final class MathUtils
 {
-    private MathDouble() {}
+    private MathUtils() {}
 
     public static final double epsilon = 1E-7;
-    
-    public static double add(double x, double y)
-    {
-        return x + y;
-    }
-    public static double subtract(double x, double y)
-    {
-        return x - y;
-    }
-    public static double multiply(double x, double y)
-    {
-        return x * y;
-    }
-    public static double divide(double x, double y)
-    {
-        return x / y;
-    }
-
-    public static double modulo(double x, double y)
-    {
-        return x % y;
-    }
 
     public static double pow(double x, double y)
     {
@@ -54,39 +32,7 @@ public final class MathDouble
     {
         return Math.sqrt(x);
     }
-    public static double negative(double x)
-    {
-        return -x;
-    }
-    public static double inverse(double x)
-    {
-        return 1 / x;
-    }
 
-    public static boolean greaterThan(double x, double y)
-    {
-        return x > y;
-    }
-    public static boolean greaterThanOrEqualTo(double x, double y)
-    {
-        return x >= y;
-    }
-    public static boolean lessThan(double x, double y)
-    {
-        return x < y;
-    }
-    public static boolean lessThanOrEqualTo(double x, double y)
-    {
-        return x <= y;
-    }
-    public static boolean equalTo(double x, double y)
-    {
-        return x == y;
-    }
-    public static boolean unequalTo(double x, double y)
-    {
-        return x != y;
-    }
     public static boolean approximately(double x, double y)
     {
         return Math.abs(x - y) <= epsilon;
@@ -112,7 +58,7 @@ public final class MathDouble
 
     public static boolean isInteger(double x)
     {
-        return (int)x == x;
+        return x % 1 == 0;
     }
     public static boolean isEven(double x)
     {
@@ -199,5 +145,10 @@ public final class MathDouble
     public static double signFromBoolean(boolean x)
     {
         return x ? 1 : -1;
+    }
+
+    public static double powSignless(double x, double y)
+    {
+        return signum(x).get() * pow(abs(x), y);
     }
 }

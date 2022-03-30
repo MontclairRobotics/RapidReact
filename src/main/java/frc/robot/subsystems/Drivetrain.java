@@ -358,6 +358,7 @@ public final class Drivetrain extends SubsystemBase
         double speed, turn;
 
         // Pid the speed distance of the input if targetting a distacne
+        var preEaseSpeed = 0.0;
         if(isUsingDistancePID && isTargetingADistance)
         {
             var averageDistance = getAverageDistanceTraveled();
@@ -365,24 +366,20 @@ public final class Drivetrain extends SubsystemBase
 
             //System.out.println("Average distance: " + averageDistance);
 
-            var tspeed = distancePid.calculate(averageDistance, targetDistance);
+            preEaseSpeed = distancePid.calculate(averageDistance, targetDistance);
 
-            speedProfiler.update(CommandRobot.deltaTime(), tspeed * maxOutput);
-            speed = speedProfiler.current();
-
-            System.out.println("the speed: " + speed);
+            System.out.println("the speed: " + preEaseSpeed);
         }
         else
         {
             // Square input
-            var targetSpeedReal = MathDouble.signum(targetSpeed).get() * MathDouble.pow(MathDouble.abs(targetSpeed), 1.1);
-
-            // Update the speed with the smoother
-            speedProfiler.update(CommandRobot.deltaTime(), targetSpeedReal * maxOutput);
-            speed = speedProfiler.current();
+            preEaseSpeed = MathDouble.powSignless(targetSpeed, 1.1);
 
             //System.out.println("Robot driving");
         }
+
+        speedProfiler.update(CommandRobot.deltaTime(), preEaseSpeed * maxOutput);
+        speed = speedProfiler.current();
 
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
