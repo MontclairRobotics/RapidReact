@@ -11,6 +11,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -198,13 +199,13 @@ public final class RapidReact extends RobotContainer
 
         // Turn commands
         driverController.getDPad(DPad.RIGHT)
-            .whenActive(RapidReactCommands.turn(90));
+            .toggleWhenActive(RapidReactCommands.turn(90));
         driverController.getDPad(DPad.LEFT)
-            .whenActive(RapidReactCommands.turn(-90));
+            .toggleWhenActive(RapidReactCommands.turn(-90));
         driverController.getDPad(DPad.UP)
-            .whenActive(RapidReactCommands.turn(-180));
+            .toggleWhenActive(RapidReactCommands.turn(-180));
         driverController.getDPad(DPad.DOWN)
-            .whenActive(RapidReactCommands.turn(180));
+            .toggleWhenActive(RapidReactCommands.turn(180));
 
         // turn to ball
         driverController.getButton(B_CIRCLE)
@@ -250,6 +251,10 @@ public final class RapidReact extends RobotContainer
                 ),
                 instant(drivetrain::stopStraightPidding)
             ));
+
+        AutoCommands.setAutoCommandInitializer((name, s) -> {
+            Data.mainTab().add(name, s);
+        });
         
         /////////////////////////////////
         /// AUTO
@@ -260,7 +265,15 @@ public final class RapidReact extends RobotContainer
         );
         AutoCommands.add(
             "Drive (6 ft)",
-            () -> RapidReactCommands.driveDistance(6*12)
+            () -> RapidReactCommands.driveDistance(6 * 12)
+        );
+        AutoCommands.add(
+            "Turn (left 90 degrees)",
+            () -> RapidReactCommands.turn(-90)
+        );
+        AutoCommands.add(
+            "Turn (180 degrees)",
+            () -> RapidReactCommands.turn(180)
         );
 
         AutoCommands.add(

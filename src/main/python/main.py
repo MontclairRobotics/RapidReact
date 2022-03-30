@@ -249,9 +249,8 @@ def main():
         areas_entry.setDoubleArray([c.area / max_area for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
-        is_writing_entry.setBoolean(False)
-
         proto_ver_entry.setString(VERSION)
+        is_writing_entry.setBoolean(False)
 
 
 if __name__ == '__main__':

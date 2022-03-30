@@ -47,7 +47,7 @@ public class CommandRobot extends TimedRobot
     }
     public static boolean isCurrentlyEnabled()
     {
-        return state == RobotState.DISABLED;
+        return state != RobotState.DISABLED;
     }
     public static boolean isOperated()
     {
@@ -124,13 +124,13 @@ public class CommandRobot extends TimedRobot
     public void teleopInit() 
     {
         state = RobotState.TELEOP;
+        reset();
 
         if(autoCommand != null)
         {
             CommandScheduler.getInstance().cancel(autoCommand);
         }
 
-        reset();
         lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
     }
 

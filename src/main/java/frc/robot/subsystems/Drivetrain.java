@@ -184,6 +184,7 @@ public final class Drivetrain extends ManagedSubsystemBase
         releaseAngleTarget();
         releaseDistanceTarget();
         stopStraightPidding();
+        stopTargetingABall();
 
         // Stop driving
         stop();
@@ -382,6 +383,9 @@ public final class Drivetrain extends ManagedSubsystemBase
         speedProfiler.update(CommandRobot.deltaTime(), preEaseSpeed * maxOutput);
         speed = speedProfiler.current();
 
+        // Clamp speed
+        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
+
         Data.setDriveSpeed(speed);
 
         // Pid the angle if the input turn is within the deadband
@@ -420,13 +424,12 @@ public final class Drivetrain extends ManagedSubsystemBase
         {   
             Data.setTurnMode("[simple]");
 
-            turn = Constants.adjustTurn(speed, targetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
+            var realTargetTurn = MathUtils.powSignless(targetTurn, 2);
+            turn = Constants.adjustTurn(speed, realTargetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
         }
 
+        
         Data.setTurnSpeed(turn);
-
-        // Clamp speed
-        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
 
         //System.out.println("speed: " + speed);
         // Set the drive

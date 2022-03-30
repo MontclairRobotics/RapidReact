@@ -44,14 +44,13 @@ public final class RapidReactCommands
     {
         return sequence(
             deadline(
-                waitFor(2.5 + Math.abs(degrees / 180.0)), // fail safe in event of lock up
+                waitFor(3.5 + Math.abs(degrees / 180.0)), // fail safe in event of lock up
                 sequence(
                     instant(() -> drivetrain.setTargetAngle(degrees)),
                     runUntil(drivetrain::reachedTargetAngle, block(drivetrain))
                 )
             ),
-            instant(() -> drivetrain.releaseAngleTarget()),
-            print("done turning")
+            instant(drivetrain::releaseAngleTarget)
         );
     }
 

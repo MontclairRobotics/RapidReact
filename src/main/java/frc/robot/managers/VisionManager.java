@@ -145,7 +145,7 @@ public class VisionManager extends ManagerBase
             ys.length != len) 
         {
             System.out.println(
-                "Lengths of circularities, perimeters, angles, areas, xs, and ys."
+                "[WARNING] Lengths of circularities, perimeters, angles, areas, xs, and ys must match! Skipping this update."
             );
 
             reset();
@@ -177,6 +177,7 @@ public class VisionManager extends ManagerBase
         System.out.println();
         System.out.println("---------------------------------");
         //*/
+    
     }
 
     /**

@@ -20,17 +20,19 @@ import frc.robot.framework.wpilib.senables.Sendables;
 public final class Data 
 {
     private Data(){}
-//fucky wucky
+                                        //fucky wucky
     public static void setup()
     {
         mainTab = Shuffleboard.getTab("Main");
         debugTab = Shuffleboard.getTab("Debug");
 
         distanceToTarget = debugTab.add("Distance to Target", 0)
+            .withWidget(BuiltInWidgets.kGraph)
             .getEntry();
-        angleToTarget    = debugTab.add("Angle to Target", 0)
+        angleToTarget = debugTab.add("Angle to Target", 0)
+            .withWidget(BuiltInWidgets.kGraph)
             .getEntry();
-        useFmsAlliance   = debugTab.add("Use FMS Alliance?", false)
+        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
             .withWidget(BuiltInWidgets.kToggleSwitch)
             .getEntry();
         
@@ -45,13 +47,15 @@ public final class Data
         mainTab.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
         
         allianceChooser = Sendables.chooser("Red", "Blue");
-        mainTab.add(allianceChooser)
+        mainTab.add("Alliance", allianceChooser)
             .withWidget(BuiltInWidgets.kSplitButtonChooser);
 
         fmsAlliance = NetworkTableInstance.getDefault()
             .getTable("FMSInfo")
             .getEntry("IsRedAlliance");
     }
+
+    public static ShuffleboardTab mainTab() {return mainTab;}
 
     private static ShuffleboardTab mainTab;
     private static ShuffleboardTab debugTab;
@@ -82,14 +86,14 @@ public final class Data
         return getAllianceRaw();
     }
 
-    public static double getDistanceKP() {return 0.025;}
+    public static double getDistanceKP() {return 0.035;}
     public static double getDistanceKI() {return 0.0;}
-    public static double getDistanceKD() {return 0.0;}
+    public static double getDistanceKD() {return 0.0078;}
     public static double getDistanceTolerance() {return 2;}
 
     public static double getAngleKP() {return 0.009;}
-    public static double getAngleKI() {return 0.001;}
-    public static double getAngleKD() {return 0.0004;}
+    public static double getAngleKI() {return 0.002;}
+    public static double getAngleKD() {return 0.00145;}
     public static double getAngleTolerance() {return 1.0;}
 
     public static double getBallKP() {return 0.25;}

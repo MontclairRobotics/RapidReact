@@ -143,7 +143,7 @@ public final class Constants
     = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
 
     public static final double ANGLE_PID_DEADBAND = 0.1;
-    public static final double ANGLE_VELOCITY_DEADBAND = 30.0 / 1.0;
+    public static final double ANGLE_VELOCITY_DEADBAND = 20.0 / 1.0;
 
 	public static final double ANGLE_PID_SCALE = 0.7;
     
