@@ -1,6 +1,6 @@
 package frc.robot.framework.profiling;
 
-import frc.robot.framework.maths.MathDouble;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.maths.Updater;
 
 /**

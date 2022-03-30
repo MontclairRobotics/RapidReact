@@ -102,7 +102,7 @@ public class VisionManager extends ManagerBase
                 }
                 else
                 {
-                    System.err.println(
+                    System.out.println(
                         "[WARNING]: vision protocol version '" + pVer + 
                         "' does not match expected version " + CURRENT_PROTO_VER +
                         ". Stopping the vision pipeline now."
@@ -125,6 +125,7 @@ public class VisionManager extends ManagerBase
 
         var len = angles.length;
 
+        // TODO: handle edge cases: reading during writing
         if(
             circularities.length != len ||
             perimeters.length != len ||
@@ -134,7 +135,7 @@ public class VisionManager extends ManagerBase
             ys.length != len) 
         {
             System.out.println(
-                "Lengths of circularities, perimeters, angles, areas, xs, and ys."
+                "[WARNING]: Lengths of circularities, perimeters, angles, areas, xs, and ys do not match."
             );
 
             reset();

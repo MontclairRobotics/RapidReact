@@ -103,6 +103,10 @@ public final class RapidReact extends RobotContainer
         drivetrain.reset();
         drivetrain.enableAllPID();
 
+        ballShooter.stop();
+        ballSucker.stop();
+        ballMover.stop();
+
         // TEMP
         //drivetrain.disableAllPID();
     }
@@ -196,6 +200,11 @@ public final class RapidReact extends RobotContainer
         // Drive command
         drivetrain.setDefaultCommand(
             run(() -> {
+                if(CommandRobot.getState() == RobotState.AUTO)
+                {
+                    return;
+                }
+                
                 drivetrain.set(
                     -driverController.getAxisValue(LEFT_Y), 
                     driverController.getAxisValue(RIGHT_X)

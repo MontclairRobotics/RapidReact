@@ -24,7 +24,7 @@ import frc.robot.DetectedBall;
 import frc.robot.RapidReact;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathDouble;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.profiling.Profiler;
 import frc.robot.managers.VisionManager;
 
@@ -261,6 +261,7 @@ public final class Drivetrain extends SubsystemBase
      */
     public void stop() 
     {
+        targetSpeed = 0;
         differentialDrive.stopMotor();
         killMomentum();
     }
@@ -287,11 +288,11 @@ public final class Drivetrain extends SubsystemBase
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum += /*MathDouble.signFromBoolean(LEFT_DRIVE_INVERSION) */ e.getPosition();
+            sum += /*MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) */ e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum += /*MathDouble.signFromBoolean(RIGHT_DRIVE_INVERSION) */ e.getPosition();
+            sum += /*MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) */ e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -327,7 +328,7 @@ public final class Drivetrain extends SubsystemBase
 
     private double modifyAnglePIDOut(double value)
     {
-        return MathDouble.clamp(
+        return MathUtils.clamp(
             value * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
@@ -368,18 +369,20 @@ public final class Drivetrain extends SubsystemBase
 
             preEaseSpeed = distancePid.calculate(averageDistance, targetDistance);
 
-            System.out.println("the speed: " + preEaseSpeed);
+            System.out.println("[distance pid] the speed: " + preEaseSpeed);
         }
         else
         {
             // Square input
-            preEaseSpeed = MathDouble.powSignless(targetSpeed, 1.1);
+            preEaseSpeed = MathUtils.powSignless(targetSpeed, 1.1);
 
-            //System.out.println("Robot driving");
+            System.out.println("Robot driving (not distance pid): " + preEaseSpeed);
         }
 
         speedProfiler.update(CommandRobot.deltaTime(), preEaseSpeed * maxOutput);
         speed = speedProfiler.current();
+
+        System.out.println("[post-easing] the speed: " + speed);
 
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
@@ -407,16 +410,16 @@ public final class Drivetrain extends SubsystemBase
         }
         else if(isUsingAnglePID && isStraightPidding)
         {
-            System.out.println("not gay!");
+            //System.out.println("not gay!");
             turn = calculateAnglePID(0);
         }
         else
         {   
-            turn = Constants.adjustTurn(speed, targetTurn) * MathDouble.signFromBoolean(!isTurnReversed);
+            turn = Constants.adjustTurn(speed, targetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
         }
 
         // Clamp speed
-        speed = MathDouble.clamp(speed, -maxOutput, maxOutput);
+        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
 
         //System.out.println("speed: " + speed);
         // Set the drive
@@ -428,7 +431,6 @@ public final class Drivetrain extends SubsystemBase
         isTargetingADistance = false;
         stop();
     }
-
     public void releaseAngleTarget() 
     {
         isTargetingAnAngle = false;
