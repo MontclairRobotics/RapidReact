@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Data;
 import frc.robot.DetectedBall;
 import frc.robot.Team;
 import frc.robot.framework.ManagerBase;
@@ -22,7 +23,7 @@ public class VisionManager extends ManagerBase
     ////////////////////////
     // NETWORK TABLE INFO
     ////////////////////////
-    public static final String CURRENT_PROTO_VER = "0.6.0";
+    public static final String CURRENT_PROTO_VER = "1.0.0";
 
     public static final String NT_NAME = "Vision";
     public static final String PROTO_VER = "__ver";
@@ -59,12 +60,6 @@ public class VisionManager extends ManagerBase
         ysEntry = nt.getEntry(YS);
         currentTeamEntry = nt.getEntry(CURRENT_TEAM);
 
-        SmartDashboard.delete(CURRENT_TEAM);
-        SmartDashboard.delete(CURRENT_TEAM);
-        
-        currentTeamChooser = Sendables.chooser("Red", "Blue");
-        SmartDashboard.putData(CURRENT_TEAM, currentTeamChooser);
-
         isUpdating = true;
         reset();
     }
@@ -74,7 +69,6 @@ public class VisionManager extends ManagerBase
         anglesEntry, areasEntry, xsEntry, ysEntry, circularitiesEntry, perimetersEntry,
         currentTeamEntry
     ;
-    private final SendableChooser<String> currentTeamChooser;
 
     private void reset()
     {
@@ -83,12 +77,12 @@ public class VisionManager extends ManagerBase
 
     private boolean isUpdating;
 
-    private ArrayList<DetectedBall> balls;
+    private ArrayList<DetectedBall> balls = new ArrayList<>();
     public ArrayList<DetectedBall> getBalls() {return balls;}
     
     public void periodic() 
     {
-        currentTeamEntry.setString(currentTeamChooser.getSelected());
+        currentTeamEntry.setString(Data.getAlliance());
 
         if(!isUpdating)
         {
@@ -108,7 +102,7 @@ public class VisionManager extends ManagerBase
                 }
                 else
                 {
-                    System.out.println(
+                    System.err.println(
                         "[WARNING]: vision protocol version '" + pVer + 
                         "' does not match expected version " + CURRENT_PROTO_VER +
                         ". Stopping the vision pipeline now."
@@ -150,11 +144,6 @@ public class VisionManager extends ManagerBase
         balls = new ArrayList<>();
         for(int i = 0; i < len; i++)
         {
-            if(circularities[i] > MIN_CIRCULARITY || areas[i] > MIN_AREA)
-            {
-                continue;
-            }
-
             balls.add(
                 new DetectedBall(
                     circularities[i],

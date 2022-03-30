@@ -3,6 +3,8 @@ package frc.robot;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
@@ -49,19 +51,42 @@ public final class Data
 
         SmartDashboard.putNumber("CurrentMaxSpeed", 0);
         SmartDashboard.putString("CurrentEasing", "None");
+        
+        allianceChooser = Sendables.chooser("Red", "Blue");
+        SmartDashboard.putData("Alliance", allianceChooser);
+
+        SmartDashboard.putBoolean("UseFMSAlliance", false);
+
+        fmsAlliance = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance");
     }
 
-    public static double getDistanceKP() {return 0.1;/*SmartDashboard.getNumber("PID.Distance.KP", 0);*/}
+    private static NetworkTableEntry fmsAlliance;
+    private static SendableChooser<String> allianceChooser;
+
+    public static String getAllianceRaw() {return allianceChooser.getSelected();}
+    public static boolean getUseFMSAlliance() {return SmartDashboard.getBoolean("UseFMSAlliance", false);}
+
+    public static String getAlliance()
+    {
+        if(getUseFMSAlliance())
+        {
+            return fmsAlliance.getBoolean(false) ? "Blue" : "Red";
+        }
+
+        return getAllianceRaw();
+    }
+
+    public static double getDistanceKP() {return 0.025;/*SmartDashboard.getNumber("PID.Distance.KP", 0);*/}
     public static double getDistanceKI() {return 0.0;/*SmartDashboard.getNumber("PID.Distance.KI", 0);*/}
     public static double getDistanceKD() {return 0.0;/*SmartDashboard.getNumber("PID.Distance.KD", 0);*/}
-    public static double getDistanceTolerance() {return 0.1;/*SmartDashboard.getNumber("PID.Distance.Tolerance", 0);*/}
+    public static double getDistanceTolerance() {return 2;/*SmartDashboard.getNumber("PID.Distance.Tolerance", 0);*/}
 
-    public static double getAngleKP() {return 0.008;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
-    public static double getAngleKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
+    public static double getAngleKP() {return 0.009;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
+    public static double getAngleKI() {return 0.001;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
     public static double getAngleKD() {return 0.0004;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
     public static double getAngleTolerance() {return 1.0;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}
 
-    public static double getBallKP() {return 0.2;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
+    public static double getBallKP() {return 0.25;/*SmartDashboard.getNumber("PID.Angle.KP", 0);*/}
     public static double getBallKI() {return 0.0;/*SmartDashboard.getNumber("PID.Angle.KI", 0);*/}
     public static double getBallKD() {return 0.01;/*SmartDashboard.getNumber("PID.Angle.KD", 0);*/}
     public static double getBallTolerance() {return 0.02;/*SmartDashboard.getNumber("PID.Angle.Tolerance", 0);*/}

@@ -30,8 +30,6 @@ import frc.robot.managers.VisionManager;
 
 public final class Drivetrain extends SubsystemBase
 {
-
-
     ////////////////////////////////////////////////
     // Final fields
     ////////////////////////////////////////////////
@@ -112,11 +110,12 @@ public final class Drivetrain extends SubsystemBase
     private boolean isTargetingAnAngle = false;
     private double targetAngle = 0.0;
     private boolean isTargetingABall = false;
-    private double targetBall = 0.0;
 
     private double maxOutput = 0.0;
 
     private boolean isStraightPidding = false;
+
+    private boolean isTurnReversed = false;
     
     ////////////////////////////////////////////////
     // Constructor
@@ -288,11 +287,11 @@ public final class Drivetrain extends SubsystemBase
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum += -MathDouble.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+            sum += /*MathDouble.signFromBoolean(LEFT_DRIVE_INVERSION) */ e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum += -MathDouble.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+            sum += /*MathDouble.signFromBoolean(RIGHT_DRIVE_INVERSION) */ e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
     }
@@ -350,8 +349,7 @@ public final class Drivetrain extends SubsystemBase
     /**
      * Update this subsystem
      */
-    @Override
-    public void periodic()
+    public void onUpdate()
     {
         if(CommandRobot.getState().equals(RobotState.DISABLED))
             return;
@@ -363,12 +361,16 @@ public final class Drivetrain extends SubsystemBase
         if(isUsingDistancePID && isTargetingADistance)
         {
             var averageDistance = getAverageDistanceTraveled();
+            Data.setDistanceToTarget(targetDistance - averageDistance);
 
             //System.out.println("Average distance: " + averageDistance);
 
-            speed = -distancePid.calculate(averageDistance, targetDistance) * maxOutput;
+            var tspeed = distancePid.calculate(averageDistance, targetDistance);
 
-            Data.setDistanceToTarget(targetDistance - averageDistance);
+            speedProfiler.update(CommandRobot.deltaTime(), tspeed * maxOutput);
+            speed = speedProfiler.current();
+
+            System.out.println("the speed: " + speed);
         }
         else
         {
@@ -389,20 +391,20 @@ public final class Drivetrain extends SubsystemBase
         }
         else if (isUsingBallPID && isTargetingABall)
         {
-            var degrees = RapidReact.vision
-                .getBall((a, b) -> a.getArea() < b.getArea())
-                .getAngle();
+            var ball = RapidReact.vision
+                .getBall((a, b) -> Math.abs(a.getAngle()) < Math.abs(b.getAngle()));
+            System.out.println("We fuckin ball pidding!");
 
-            if (!Double.isNaN(degrees))
+            if (ball != null)
             {
                 turn = modifyAnglePIDOut(
-                    ballPid.calculate(-degrees, 0.0)
+                    ballPid.calculate(-ball.getAngle(), 0.0)
                 );
-                System.out.println("We fuckin ball pidding: " + turn);
+                System.out.println("We fuckin ball pidding with turn: " + turn);
             }
             else
             {
-                isTargetingABall = false;
+                //isTargetingABall = false;
                 turn = 0;
             }
         }
@@ -413,7 +415,7 @@ public final class Drivetrain extends SubsystemBase
         }
         else
         {   
-            turn = Constants.adjustTurn(speed, targetTurn);
+            turn = Constants.adjustTurn(speed, targetTurn) * MathDouble.signFromBoolean(!isTurnReversed);
         }
 
         // Clamp speed
@@ -427,6 +429,7 @@ public final class Drivetrain extends SubsystemBase
     public void releaseDistanceTarget() 
     {
         isTargetingADistance = false;
+        stop();
     }
 
     public void releaseAngleTarget() 
@@ -467,5 +470,14 @@ public final class Drivetrain extends SubsystemBase
     public boolean isTargetingADistance()
     {
         return isTargetingADistance;
+    }
+
+    public void startReverseTurning()
+    {
+        isTurnReversed = true;
+    }
+    public void stopReverseTurning()
+    {
+        isTurnReversed = false;
     }
 }

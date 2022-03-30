@@ -137,6 +137,7 @@ def main():
     print("Connected!")
 
     data_table = NetworkTables.getTable('Vision')
+    sd_table = NetworkTables.getTable('SmartDashboard')
 
     proto_ver_entry = data_table.getEntry('__ver')
 
@@ -146,6 +147,11 @@ def main():
     areas_entry = data_table.getEntry('Areas')
     circularities_entry = data_table.getEntry('Circularities')
     perimeters_entry = data_table.getEntry('Perimeters')
+
+    min_area_entry = sd_table.getEntry('MinArea')
+    min_circularity_entry = sd_table.getEntry('MinCircularity')
+    min_area_entry.setDefaultDouble(0.1 ** 2)
+    min_circularity_entry.setDefaultDouble(0.5)
 
     current_team_entry = data_table.getEntry('CurrentTeam')
 
@@ -180,6 +186,9 @@ def main():
         real_width, real_height = frame.shape[1::-1]
         max_area = real_width * real_height
 
+        min_area = min_area_entry.getDouble(0.1 ** 2)
+        min_circularity = min_circularity_entry.getDouble(0.5)
+
         # Get current alliance
         current_team = current_team_entry.getString('Red')
 
@@ -211,7 +220,7 @@ def main():
             c for c in ContourInfo.find_contours(
                 detectable_bordered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
             )
-            if c.mean[0] < 127
+            if 1 >= c.area / max_area > min_area and c.circularity > min_circularity and c.mean[0] < 127
         ]
 
         # Draw into output stream
@@ -219,9 +228,10 @@ def main():
         ContourInfo.draw_contours(
             output, contours, CONTOUR_DRAW_COL, CONTOUR_DRAW_WIDTH, CONTOUR_DRAW_CROSS_SIZE
         )
+        stripe_w = int(real_width * COLOR_STRIPE_WIDTH_FACTOR / 2)
         output = cv2.copyMakeBorder(
             output, 
-            0, 0, int(real_width * COLOR_STRIPE_WIDTH_FACTOR), 0, 
+            0, 0, stripe_w, stripe_w, 
             cv2.BORDER_CONSTANT, 
             value=(0,0,255) if current_team.lower() == 'red' else (255,0,0)
         )

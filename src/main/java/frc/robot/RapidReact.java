@@ -23,6 +23,7 @@ import frc.robot.framework.wpilib.AutoCommands;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
 import frc.robot.framework.wpilib.triggers.AnalogValue;
+import frc.robot.managers.DrivetrainManager;
 import frc.robot.managers.VisionManager;
 import frc.robot.subsystems.TrackedNavx;
 import frc.robot.subsystems.Climber.ClimberSide;
@@ -79,9 +80,7 @@ public final class RapidReact extends RobotContainer
     //public static final RotationalClimber rotationalClimber = new RotationalClimber();
 
     public static final VisionManager vision = new VisionManager();
-
-    private static UsbCamera intakeCamera;
-    private static UsbCamera shooterCamera;
+    public static final DrivetrainManager drivetrainManager = new DrivetrainManager(drivetrain);
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -205,15 +204,20 @@ public final class RapidReact extends RobotContainer
             }, drivetrain)
         );
 
+        // Turn reverse
+        driverController.getAxis(RIGHT_TRIGGER).whenGreaterThan(0.5)
+            .whenActive(drivetrain::startReverseTurning)
+            .whenInactive(drivetrain::stopReverseTurning);
+
         // Turn commands
-        driverController.getDPad(DPad.LEFT)
-            .whenActive(RapidReactCommands.turn(90));
         driverController.getDPad(DPad.RIGHT)
+            .whenActive(RapidReactCommands.turn(90));
+        driverController.getDPad(DPad.LEFT)
             .whenActive(RapidReactCommands.turn(-90));
         driverController.getDPad(DPad.UP)
-            .whenActive(RapidReactCommands.turn(180));
-        driverController.getDPad(DPad.DOWN)
             .whenActive(RapidReactCommands.turn(-180));
+        driverController.getDPad(DPad.DOWN)
+            .whenActive(RapidReactCommands.turn(180));
 
         // turn to ball
         driverController.getButton(B_CIRCLE)
@@ -268,6 +272,10 @@ public final class RapidReact extends RobotContainer
         AutoCommands.add(
             "Drive", 
             () -> RapidReactCommands.driveForTime(2.5, 1)
+        );
+        AutoCommands.add(
+            "Drive (6 ft)",
+            () -> RapidReactCommands.driveDistance(6*12)
         );
         AutoCommands.add(
             "Shoot",
