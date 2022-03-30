@@ -5,11 +5,17 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.framework.ManagedSubsystemBase;
 
-public class BallMover extends SubsystemBase
+public class BallMover extends ManagedSubsystemBase
 {
-
     private TalonFX motor = new TalonFX(Constants.TRANSPORT_MOTOR_PORT);
+
+    @Override
+    public void reset() 
+    {
+        stop();
+    }
 
     public void startMoving() 
     {

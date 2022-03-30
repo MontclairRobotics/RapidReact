@@ -13,5 +13,5 @@ import frc.robot.framework.wpilib.AutoCommands;
 public abstract class RobotContainer 
 {
     public abstract void initialize();
-    public abstract void reset();
+    public void reset() {}
 }

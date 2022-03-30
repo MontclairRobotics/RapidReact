@@ -13,21 +13,21 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Data;
-import frc.robot.DetectedBall;
-import frc.robot.Team;
 import frc.robot.framework.ManagerBase;
 import frc.robot.framework.wpilib.senables.Sendables;
+import frc.robot.structure.DetectedBall;
 
 public class VisionManager extends ManagerBase 
 {
     ////////////////////////
     // NETWORK TABLE INFO
     ////////////////////////
-    public static final String CURRENT_PROTO_VER = "1.0.0";
+    public static final String CURRENT_PROTO_VER = "1.1.0";
 
     public static final String NT_NAME = "Vision";
     public static final String PROTO_VER = "__ver";
     
+    public static final String IS_WRITING = "IsWriting";
     public static final String CIRCULARITIES = "Circularities";
     public static final String PERIMETERS = "Perimeters";
     public static final String ANGLES = "Angles";
@@ -52,12 +52,15 @@ public class VisionManager extends ManagerBase
 
         protoVerEntry = nt.getEntry(PROTO_VER);
 
+        isWritingEntry = nt.getEntry(IS_WRITING);
+
         circularitiesEntry = nt.getEntry(CIRCULARITIES);
         perimetersEntry = nt.getEntry(PERIMETERS);
         anglesEntry = nt.getEntry(ANGLES);
         areasEntry = nt.getEntry(AREAS);
         xsEntry = nt.getEntry(XS);
         ysEntry = nt.getEntry(YS);
+
         currentTeamEntry = nt.getEntry(CURRENT_TEAM);
 
         isUpdating = true;
@@ -66,11 +69,13 @@ public class VisionManager extends ManagerBase
 
     private final NetworkTableEntry
         protoVerEntry, 
+        isWritingEntry,
         anglesEntry, areasEntry, xsEntry, ysEntry, circularitiesEntry, perimetersEntry,
         currentTeamEntry
     ;
 
-    private void reset()
+    @Override
+    public void reset()
     {
         balls = new ArrayList<>();
     }
@@ -80,7 +85,7 @@ public class VisionManager extends ManagerBase
     private ArrayList<DetectedBall> balls = new ArrayList<>();
     public ArrayList<DetectedBall> getBalls() {return balls;}
     
-    public void periodic() 
+    public void always() 
     {
         currentTeamEntry.setString(Data.getAlliance());
 
@@ -113,6 +118,12 @@ public class VisionManager extends ManagerBase
             }
 
             reset();
+            return;
+        }
+
+        if(isWritingEntry.getBoolean(false))
+        {
+            System.out.println("[LOW]: vision data is lagging behind! Skipping this update.");
             return;
         }
 
@@ -174,16 +185,16 @@ public class VisionManager extends ManagerBase
      */
     public DetectedBall getBall(BiPredicate<DetectedBall, DetectedBall> predicate)
     {
-        DetectedBall minBall = null;
+        DetectedBall selection = null;
 
         for (var ball : balls)
         {
-            if (minBall == null || predicate.test(ball, minBall))
+            if (selection == null || predicate.test(ball, selection))
             {
-                minBall = ball;
+                selection = ball;
             }
         }
 
-        return minBall;
+        return selection;
     }
 }

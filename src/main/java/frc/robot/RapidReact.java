@@ -23,9 +23,8 @@ import frc.robot.framework.wpilib.AutoCommands;
 import frc.robot.framework.wpilib.controllers.InputController;
 import frc.robot.framework.wpilib.controllers.InputController.DPad;
 import frc.robot.framework.wpilib.triggers.AnalogValue;
-import frc.robot.managers.DrivetrainManager;
+import frc.robot.managers.NavxManager;
 import frc.robot.managers.VisionManager;
-import frc.robot.subsystems.TrackedNavx;
 import frc.robot.subsystems.Climber.ClimberSide;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
@@ -71,8 +70,7 @@ public final class RapidReact extends RobotContainer
     ////////////////////////////////
     // SUBSYSTEMS / MANAGERS
     ////////////////////////////////
-    public static final TrackedNavx navx = new TrackedNavx(new AHRS());
-    public static final Drivetrain drivetrain = new Drivetrain(navx);
+    public static final Drivetrain drivetrain = new Drivetrain();
     public static final BallSucker ballSucker = new BallSucker();
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
@@ -80,7 +78,7 @@ public final class RapidReact extends RobotContainer
     //public static final RotationalClimber rotationalClimber = new RotationalClimber();
 
     public static final VisionManager vision = new VisionManager();
-    public static final DrivetrainManager drivetrainManager = new DrivetrainManager(drivetrain);
+    public static final NavxManager navx = new NavxManager(new AHRS());
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -93,27 +91,10 @@ public final class RapidReact extends RobotContainer
     // INITIALIZATION
     ////////////////////////////////
     @Override
-    public void reset() 
-    {
-        // Calibrate the navx
-        navx.calibrate();
-        navx.zeroYaw();
-
-        // PID setup
-        drivetrain.reset();
-        drivetrain.enableAllPID();
-
-        // TEMP
-        //drivetrain.disableAllPID();
-    }
-
-    @Override
     public void initialize()
     {
         // Smart dashboard
         Data.setup();
-
-        // Camera servers
         
         // Intake
         operatorController.getButton(X_SQUARE)
@@ -148,7 +129,7 @@ public final class RapidReact extends RobotContainer
         operatorController.getButton(LEFT_BUMPER)
             .toggleWhenActive(RapidReactCommands.shootSequence());
 
-        //  Direct shooter
+        // Direct shooter
         operatorController.getAxis(LEFT_TRIGGER)
             .whenGreaterThan(0.5)
             .whenActive(ballShooter::startShooting)
@@ -195,7 +176,13 @@ public final class RapidReact extends RobotContainer
 
         // Drive command
         drivetrain.setDefaultCommand(
-            run(() -> {
+            run(() -> 
+            {
+                if(CommandRobot.isOperated())
+                {
+                    return;
+                }
+
                 drivetrain.set(
                     -driverController.getAxisValue(LEFT_Y), 
                     driverController.getAxisValue(RIGHT_X)

@@ -6,10 +6,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import frc.robot.Constants;
+import frc.robot.framework.ManagedSubsystemBase;
 
-public class Climber extends SubsystemBase
+public class Climber extends ManagedSubsystemBase
 {
- 
     public static enum ClimberSide
     {
         LEFT,
@@ -88,7 +88,13 @@ public class Climber extends SubsystemBase
     }
     
     @Override
-    public void periodic()
+    public void reset() 
+    {
+        stop(ClimberSide.BOTH);
+    }
+
+    @Override
+    public void always()
     {
         // Limit switches using the encoder values
         /*
@@ -107,6 +113,7 @@ public class Climber extends SubsystemBase
                 right = 0;
             }
         }
+        
 
         if(left<0)
         {
@@ -126,6 +133,7 @@ public class Climber extends SubsystemBase
         */
 
         // code for the hard limit switches
+        /*
         if (left < 0 && leftLimitSwitch.get()) 
         {
             left = 0;
@@ -137,7 +145,7 @@ public class Climber extends SubsystemBase
 
         talonLeft.set(ControlMode.PercentOutput, left);
         talonRight.set(ControlMode.PercentOutput, right);
-        
+        */
     }
     
 }

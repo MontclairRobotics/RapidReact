@@ -23,6 +23,7 @@ public class CommandRobot extends TimedRobot
     private static Command autoCommand;
     private static SendableChooser<Command> autoChooser;
     private static RobotState state = RobotState.DISABLED;
+
     private static List<Manager> managers = new ArrayList<Manager>();
 
     public static void registerManager(Manager manager) 
@@ -30,9 +31,27 @@ public class CommandRobot extends TimedRobot
         managers.add(manager);
     }
 
+    public static void unregisterManager(Manager manager)
+    {
+        managers.remove(manager);
+    }
+
     public static RobotState getState() 
     {
         return state;
+    }
+
+    public static boolean isCurrentlyDisabled()
+    {
+        return state == RobotState.DISABLED;
+    }
+    public static boolean isCurrentlyEnabled()
+    {
+        return state == RobotState.DISABLED;
+    }
+    public static boolean isOperated()
+    {
+        return isCurrentlyEnabled() && state != RobotState.AUTO;
     }
     
     public static Trigger whenAuto()
@@ -53,6 +72,11 @@ public class CommandRobot extends TimedRobot
     public void robotInit() 
     {
         container.initialize();
+        for(var m : managers)
+        {
+            m.initialize();
+        }
+
         autoChooser = AutoCommands.chooser();
     }
 
@@ -61,7 +85,7 @@ public class CommandRobot extends TimedRobot
     {
         for(var m : managers)
         {
-            m.periodic();
+            m.always();
         }
         
         CommandScheduler.getInstance().run();
@@ -74,7 +98,7 @@ public class CommandRobot extends TimedRobot
         //System.out.println("Auto Init");
 
         state = RobotState.AUTO;
-        container.reset();
+        reset();
 
         autoCommand = autoChooser.getSelected();
         //System.out.println(autoCommand == null);
@@ -106,14 +130,14 @@ public class CommandRobot extends TimedRobot
             CommandScheduler.getInstance().cancel(autoCommand);
         }
 
-        container.reset();
+        reset();
         lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
     }
 
     @Override
     public void testInit() 
     {
-        container.reset();
+        reset();
     }
 
     @Override
@@ -126,7 +150,16 @@ public class CommandRobot extends TimedRobot
         }
     }
 
-    public static Supplier<CommandRobot> from(Supplier<RobotContainer> containerSupplier)
+    private void reset()
+    {
+        container.reset();
+        for(var m : managers)
+        {
+            m.reset();
+        }
+    }
+
+    public static Supplier<CommandRobot> of(Supplier<RobotContainer> containerSupplier)
     {
         return () -> new CommandRobot(containerSupplier.get());
     }

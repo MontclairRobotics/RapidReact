@@ -6,4 +6,7 @@ public abstract class ManagerBase implements Manager
     {
         CommandRobot.registerManager(this);
     }
+
+    public void reset() {}
+    public void initialize() {}
 }

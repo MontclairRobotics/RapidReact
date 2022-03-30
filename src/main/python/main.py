@@ -17,7 +17,7 @@ from threading import Condition
 ########################
 # region # Constants
 ########################
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 LOW_BLUE = (190 / 2, 100, 50)
 HIGH_BLUE = (220 / 2, 255, 240)
@@ -147,6 +147,7 @@ def main():
     areas_entry = data_table.getEntry('Areas')
     circularities_entry = data_table.getEntry('Circularities')
     perimeters_entry = data_table.getEntry('Perimeters')
+    is_writing_entry = data_table.getEntry('IsWriting')
 
     min_area_entry = sd_table.getEntry('MinArea')
     min_circularity_entry = sd_table.getEntry('MinCircularity')
@@ -241,12 +242,14 @@ def main():
         output_stream.putFrame(output)
 
         # Update NetworkTables
+        is_writing_entry.setBoolean(True)
         circularities_entry.setDoubleArray([c.circularity for c in contours])
         perimeters_entry.setDoubleArray([c.perimeter for c in contours])
         angles_entry.setDoubleArray([2 * c.center[0] / real_width - 1 for c in contours])
         areas_entry.setDoubleArray([c.area / max_area for c in contours])
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
+        is_writing_entry.setBoolean(False)
 
         proto_ver_entry.setString(VERSION)
 

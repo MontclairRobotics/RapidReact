@@ -20,15 +20,17 @@ import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
 import frc.robot.Data;
-import frc.robot.DetectedBall;
 import frc.robot.RapidReact;
 import frc.robot.framework.CommandRobot;
+import frc.robot.framework.ManagedSubsystemBase;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathDouble;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.profiling.Profiler;
+import frc.robot.managers.NavxManager;
 import frc.robot.managers.VisionManager;
+import frc.robot.structure.DetectedBall;
 
-public final class Drivetrain extends SubsystemBase
+public final class Drivetrain extends ManagedSubsystemBase
 {
     ////////////////////////////////////////////////
     // Final fields
@@ -103,8 +105,6 @@ public final class Drivetrain extends SubsystemBase
     private double targetSpeed;
     private double targetTurn;
 
-    private TrackedNavx navx;
-
     private boolean isTargetingADistance = false;
     private double targetDistance = 0.0;
     private boolean isTargetingAnAngle = false;
@@ -120,11 +120,9 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(TrackedNavx navx) 
+    public Drivetrain() 
     {
         this.speedProfiler = Constants.DRIVE_PROFILER;
-
-        this.navx = navx;
 
         for(var m : leftMotors)
         {
@@ -148,6 +146,7 @@ public final class Drivetrain extends SubsystemBase
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
+    @Override
     public void reset()
     {
         // Setup distance pid
@@ -186,8 +185,8 @@ public final class Drivetrain extends SubsystemBase
         releaseDistanceTarget();
         stopStraightPidding();
 
-        // Kill momentum
-        killMomentum();
+        // Stop driving
+        stop();
     }
 
     public void nextDriveSpeed()
@@ -208,7 +207,7 @@ public final class Drivetrain extends SubsystemBase
     public void startStraightPidding()
     {
         isStraightPidding = true;
-        navx.zeroYaw();
+        RapidReact.navx.zeroYaw();
     }
     public void stopStraightPidding()
     {
@@ -239,7 +238,6 @@ public final class Drivetrain extends SubsystemBase
     public void setProfiler(Profiler speedProfiler) 
     {
         this.speedProfiler = speedProfiler;
-        Data.setCurrentEasing(speedProfiler.getName());
     }
 
     /**
@@ -252,8 +250,6 @@ public final class Drivetrain extends SubsystemBase
         
         speedProfiler.setMinValue(-maxOutput);
         speedProfiler.setMaxValue(maxOutput);
-
-        Data.setCurrentMaxSpeed(maxOutput);
     }
 
     /**
@@ -307,7 +303,7 @@ public final class Drivetrain extends SubsystemBase
     }
     public void setTargetAngle(double ta)
     {
-        navx.zeroYaw();
+        RapidReact.navx.zeroYaw();
         targetAngle = ta;
         isTargetingAnAngle = true;
     }
@@ -327,7 +323,7 @@ public final class Drivetrain extends SubsystemBase
 
     private double modifyAnglePIDOut(double value)
     {
-        return MathDouble.clamp(
+        return MathUtils.clamp(
             value * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
@@ -335,7 +331,7 @@ public final class Drivetrain extends SubsystemBase
     }
     private double calculateAnglePID(double target)
     {
-        var angle = navx.getAngle();
+        var angle = RapidReact.navx.getAngle();
         var turn = modifyAnglePIDOut(anglePid.calculate(angle, target));
 
         //System.out.println("Current angle: " + angle + "*");
@@ -349,10 +345,13 @@ public final class Drivetrain extends SubsystemBase
     /**
      * Update this subsystem
      */
-    public void onUpdate()
+    @Override
+    public void always()
     {
-        if(CommandRobot.getState().equals(RobotState.DISABLED))
+        if(CommandRobot.isCurrentlyDisabled())
+        {
             return;
+        }
 
         // Locals for speed and turn
         double speed, turn;
@@ -361,19 +360,21 @@ public final class Drivetrain extends SubsystemBase
         var preEaseSpeed = 0.0;
         if(isUsingDistancePID && isTargetingADistance)
         {
+            Data.setDriveMode("[pid: " + targetDistance + "]");
+
             var averageDistance = getAverageDistanceTraveled();
             Data.setDistanceToTarget(targetDistance - averageDistance);
 
             //System.out.println("Average distance: " + averageDistance);
 
             preEaseSpeed = distancePid.calculate(averageDistance, targetDistance);
-
-            System.out.println("the speed: " + preEaseSpeed);
         }
         else
         {
+            Data.setDriveMode("[simple]");
+
             // Square input
-            preEaseSpeed = MathDouble.powSignless(targetSpeed, 1.1);
+            preEaseSpeed = MathUtils.powSignless(targetSpeed, 1.1);
 
             //System.out.println("Robot driving");
         }
@@ -381,23 +382,27 @@ public final class Drivetrain extends SubsystemBase
         speedProfiler.update(CommandRobot.deltaTime(), preEaseSpeed * maxOutput);
         speed = speedProfiler.current();
 
+        Data.setDriveSpeed(speed);
+
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
         {
+            Data.setTurnMode("[angle pid]");
+
             turn = calculateAnglePID(targetAngle);
         }
         else if (isUsingBallPID && isTargetingABall)
         {
+            Data.setTurnMode("[ball pid]");
+
             var ball = RapidReact.vision
                 .getBall((a, b) -> Math.abs(a.getAngle()) < Math.abs(b.getAngle()));
-            System.out.println("We fuckin ball pidding!");
 
             if (ball != null)
             {
                 turn = modifyAnglePIDOut(
                     ballPid.calculate(-ball.getAngle(), 0.0)
                 );
-                System.out.println("We fuckin ball pidding with turn: " + turn);
             }
             else
             {
@@ -407,20 +412,34 @@ public final class Drivetrain extends SubsystemBase
         }
         else if(isUsingAnglePID && isStraightPidding)
         {
-            System.out.println("not gay!");
+            Data.setTurnMode("[straight pid]");
+
             turn = calculateAnglePID(0);
         }
         else
         {   
-            turn = Constants.adjustTurn(speed, targetTurn) * MathDouble.signFromBoolean(!isTurnReversed);
+            Data.setTurnMode("[simple]");
+
+            turn = Constants.adjustTurn(speed, targetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
         }
 
+        Data.setTurnSpeed(turn);
+
         // Clamp speed
-        speed = MathDouble.clamp(speed, -maxOutput, maxOutput);
+        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
 
         //System.out.println("speed: " + speed);
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn, false);
+    }
+
+    public double getMaxOutput()
+    {
+        return maxOutput;
+    }
+    public Profiler getProfiler()
+    {
+        return speedProfiler;
     }
 
     public void releaseDistanceTarget() 
