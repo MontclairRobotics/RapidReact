@@ -178,7 +178,7 @@ public final class RapidReact extends RobotContainer
         drivetrain.setDefaultCommand(
             run(() -> 
             {
-                if(CommandRobot.isOperated())
+                if(!CommandRobot.isOperated())
                 {
                     return;
                 }
@@ -244,12 +244,10 @@ public final class RapidReact extends RobotContainer
             .and(CommandRobot.whenTeleop())
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
-                //print("AAAAAAAAAAAAAAAAAAAAAA"),
                 waitUntil(() ->
                     Math.abs(driverController.getAxisValue(RIGHT_X)) >= ANGLE_PID_DEADBAND
                     || drivetrain.isTargetingAnAngle()
                 ),
-                //print("AAAAAAAAAAAAAAAAAAAAAA"),
                 instant(drivetrain::stopStraightPidding)
             ));
         
@@ -264,6 +262,7 @@ public final class RapidReact extends RobotContainer
             "Drive (6 ft)",
             () -> RapidReactCommands.driveDistance(6*12)
         );
+
         AutoCommands.add(
             "Shoot",
             () -> RapidReactCommands.shootSequence()
