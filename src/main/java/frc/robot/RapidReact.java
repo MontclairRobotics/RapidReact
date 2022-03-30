@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.framework.CommandRobot;
 import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathDouble;
+import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
 import frc.robot.framework.wpilib.AutoCommands;
 import frc.robot.framework.wpilib.controllers.InputController;
@@ -150,7 +150,7 @@ public final class RapidReact extends RobotContainer
 
         //  Direct shooter
         operatorController.getAxis(LEFT_TRIGGER)
-            .when(MathDouble::greaterThan, 0.5)
+            .whenGreaterThan(0.5)
             .whenActive(ballShooter::startShooting)
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
