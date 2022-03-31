@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.framework.CommandWrapper;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.Drivetrain;
@@ -9,6 +10,8 @@ import frc.robot.subsystems.BallSucker;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
 import static frc.robot.framework.Commands.*;
+
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.RapidReact.*;
 
@@ -52,11 +55,15 @@ public final class RapidReactCommands
 
     public static Command turn(double degrees)
     {
+        return turn(() -> degrees);
+    }
+    public static Command turn(DoubleSupplier degrees)
+    {
         return sequence(
             deadline(
-                waitFor(3.5 + Math.abs(degrees / 180.0)), // fail safe in event of lock up
+                waitFor(3.5 + Math.abs(degrees.getAsDouble() / 180.0)), // fail safe in event of lock up
                 sequence(
-                    instant(() -> drivetrain.setTargetAngle(degrees)),
+                    instant(() -> drivetrain.setTargetAngle(degrees.getAsDouble())),
                     runUntil(drivetrain::reachedTargetAngle, block(drivetrain))
                 )
             ),
@@ -96,6 +103,7 @@ public final class RapidReactCommands
             runUntil(() -> drivetrain.reachedTargetDistance(), block(drivetrain)),
             instant(() -> {
                 drivetrain.releaseDistanceTarget();
+                drivetrain.stop();
             })
         );
     }

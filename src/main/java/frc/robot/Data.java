@@ -54,12 +54,14 @@ public final class Data
         values.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
         values.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
 
-        mainTab.add("Cam 1", CameraServer.getVideo("Shooter Camera").getSource())
+        /*
+        mainTab.add("Cam 1", CameraServer.getVideo("Shooter Vision").getSource())
             .withPosition(1, 0)
             .withSize(3, 2);
         mainTab.add("Vision", CameraServer.getVideo("Vision Output").getSource())
             .withPosition(1+3, 0)
             .withSize(3, 2);
+        */
     }
     private static void setupDebugTab()
     {
@@ -70,7 +72,7 @@ public final class Data
             .getEntry();
         angleToTarget = debugTab.add("Angle to Target", 0)
             .withWidget(BuiltInWidgets.kGraph)
-            .withPosition(0+2, 0)
+            .withPosition(0+3, 0)
             .withSize(3, 3)
             .getEntry();
 
@@ -95,18 +97,24 @@ public final class Data
         
         angleToBall = ball.add("Angle to Selected", 0).getEntry();
         ballArea = ball.add("Area of Selected", 0).getEntry();
+
+        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(0, 3)
+            .withSize(2, 1)
+            .getEntry();
     }
 
-    public static void setupAuto(String name, Sendable sendable)
+    public static void setupAuto(String name, Sendable sendable) 
     {
         mainTab.add(name, sendable)
             .withWidget(BuiltInWidgets.kComboBoxChooser)
             .withPosition(0+2, 3)
-            .withSize(1, 2);
+            .withSize(2, 1);
         debugTab.add(name, sendable)
             .withWidget(BuiltInWidgets.kComboBoxChooser)
-            .withPosition(0, 2)
-            .withSize(1, 2);
+            .withPosition(0+2, 3)
+            .withSize(2, 1);
     }
 
     public static ShuffleboardTab mainTab() {return mainTab;}
@@ -137,7 +145,7 @@ public final class Data
     {
         if(getUseFMSAlliance())
         {
-            return fmsAlliance.getBoolean(false) ? "Blue" : "Red";
+            return fmsAlliance.getBoolean(false) ? "Red" : "Blue";
         }
 
         return getAllianceRaw();
@@ -148,10 +156,10 @@ public final class Data
     public static double getDistanceKD() {return 0.0078;}
     public static double getDistanceTolerance() {return 2;}
 
-    public static double getAngleKP() {return 0.009;}
-    public static double getAngleKI() {return 0.002;}
-    public static double getAngleKD() {return 0.00145;}
-    public static double getAngleTolerance() {return 1.0;}
+    public static double getAngleKP() {return 0.0092;}
+    public static double getAngleKI() {return 0.001;}
+    public static double getAngleKD() {return 0.0014;}
+    public static double getAngleTolerance() {return 2.0;}
 
     public static double getBallKP() {return 0.25;}
     public static double getBallKI() {return 0.0;}

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.framework.CommandRobot;
+import frc.robot.framework.CommandWrapper;
 import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
 import frc.robot.framework.maths.MathUtils;
@@ -284,11 +285,11 @@ public final class RapidReact extends RobotContainer
         );
 
         final double ballDistance = 92; //in
-        final double ballPidLeadIn = 10; //in
-        final double ballStartSpeed = 0.5;
-        final double ballPidTime = 2; //sec
-        final double ballPidOutput = 0.5;
-        final double returnTime = 2;
+        final double ballPidLeadIn = 35; //in
+        final double ballStartSpeed = 0.5; 
+        final double ballPidTime = 1.5; //sec
+        final double ballPidOutput = 0.4; // (speed while ball pidding)
+        final double returnTime = 1.6;
         final double ballTransportTime = 0.7; //sec
         final double taxiTime = 3; //sec
 
@@ -321,10 +322,15 @@ public final class RapidReact extends RobotContainer
                 instant(ballSucker::startSucking),
                 RapidReactCommands.driveForTime(ballPidTime, ballPidOutput),
                 instant(drivetrain::stopTargetingABall),
+                instant(ballSucker::stop),
+
+                // Angle pid
+                RapidReactCommands.turn(() -> -navx.getAngle()),
 
                 // Return 
                 parallel(
                     sequence(
+                        instant(ballSucker::startSucking),
                         instant(ballMover::startMoving),
                         waitFor(ballTransportTime),
                         instant(ballMover::stop),
@@ -334,10 +340,7 @@ public final class RapidReact extends RobotContainer
                 ),
 
                 // Shoot ball (long this time)
-                RapidReactCommands.shootSequence(),
-
-                // Taxi
-                AutoCommands.get("Taxi")
+                RapidReactCommands.shootSequence()
             )
         );
         AutoCommands.add(

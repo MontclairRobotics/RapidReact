@@ -70,7 +70,7 @@ public final class Constants
     public static final double BALL_TRANSPORT_SPEED = 1; 
 
     //Shooter Speed
-    public static final double SHOOTER_SPEED = 1.0;
+    public static final double SHOOTER_SPEED = 0.8;
 
     //Climber Speed
     public static final double CLIMBER_MOTOR_SPEED =  1; 
