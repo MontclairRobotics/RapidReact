@@ -307,11 +307,11 @@ public final class RapidReact extends RobotContainer
                     sequence(
                         instant(ballMover::startMoving),
                         waitFor(ballTransportTime),
-                        instant(ballMover::stop)
+                        instant(ballMover::stop),
+                        instant(ballSucker::stop)
                     ),
                     RapidReactCommands.driveForTime(returnTime, -1)
                 ),
-                instant(ballSucker::stop),
 
                 // Shoot ball (long this time)
                 RapidReactCommands.shootSequence(),
