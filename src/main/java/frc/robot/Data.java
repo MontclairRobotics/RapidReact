@@ -42,6 +42,11 @@ public final class Data
         turnSpeed = debugTab.add("Turn Speed", 0).getEntry();
         driveSpeed = debugTab.add("Drive Speed", 0).getEntry();
 
+        distanceTraveled = debugTab.add("Distace Travelled", 0).getEntry();
+
+        angleToBall = debugTab.add("Angle to Ball", 0).getEntry();
+        ballArea = debugTab.add("Area of Ball", 0).getEntry();
+
         mainTab.addNumber("Angular Velocity", RapidReact.navx::getAngularVelocity);
         mainTab.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
         mainTab.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
@@ -67,7 +72,10 @@ public final class Data
         turnMode,
         driveMode,
         turnSpeed,
-        driveSpeed
+        driveSpeed,
+        angleToBall,
+        ballArea,
+        distanceTraveled
     ;
 
     private static NetworkTableEntry fmsAlliance;
@@ -126,5 +134,19 @@ public final class Data
     public static void setDriveSpeed(double value)
     {
         driveSpeed.setDouble(value);
+    }
+
+    public static void setDistanceTraveled(double value)
+    {
+        distanceTraveled.setDouble(value);
+    }
+
+    public static void setAngleToBall(double value)
+    {
+        angleToBall.setDouble(value);
+    }
+    public static void setBallArea(double value)
+    {
+        ballArea.setDouble(value);
     }
 }

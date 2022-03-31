@@ -111,6 +111,8 @@ public final class Drivetrain extends ManagedSubsystemBase
     private double targetAngle = 0.0;
     private boolean isTargetingABall = false;
 
+    private double averageDistance = 0.0;
+
     private double maxOutput = 0.0;
 
     private boolean isStraightPidding = false;
@@ -363,7 +365,9 @@ public final class Drivetrain extends ManagedSubsystemBase
         {
             Data.setDriveMode("[pid: " + targetDistance + "]");
 
-            var averageDistance = getAverageDistanceTraveled();
+            averageDistance = getAverageDistanceTraveled();
+            
+            Data.setDistanceTraveled(averageDistance);
             Data.setDistanceToTarget(targetDistance - averageDistance);
 
             //System.out.println("Average distance: " + averageDistance);
@@ -404,6 +408,9 @@ public final class Drivetrain extends ManagedSubsystemBase
 
             if (ball != null)
             {
+                Data.setAngleToBall(ball.getAngle());
+                Data.setBallArea(ball.getArea());
+
                 turn = modifyAnglePIDOut(
                     ballPid.calculate(-ball.getAngle(), 0.0)
                 );
