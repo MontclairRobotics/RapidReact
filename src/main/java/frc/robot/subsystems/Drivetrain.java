@@ -166,6 +166,10 @@ public final class Drivetrain extends ManagedSubsystemBase
             Data.getAngleKD()
         );
         anglePid.setTolerance(Data.getAngleTolerance());
+        anglePid.setIntegratorRange(
+            -Data.getAngleIntMax(), 
+            Data.getAngleIntMax()
+        );
 
         // Setup ball pid
         ballPid = new PIDController(

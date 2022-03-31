@@ -156,10 +156,11 @@ public final class Data
     public static double getDistanceKD() {return 0.0078;}
     public static double getDistanceTolerance() {return 2;}
 
-    public static double getAngleKP() {return 0.0092;}
-    public static double getAngleKI() {return 0.001;}
-    public static double getAngleKD() {return 0.0014;}
+    public static double getAngleKP() {return 0.0091;}
+    public static double getAngleKI() {return 0.002;}
+    public static double getAngleKD() {return 0.00135;}
     public static double getAngleTolerance() {return 2.0;}
+    public static double getAngleIntMax() {return 0.1;}
 
     public static double getBallKP() {return 0.25;}
     public static double getBallKI() {return 0.0;}

@@ -60,11 +60,11 @@ public final class RapidReactCommands
     public static Command turn(DoubleSupplier degrees)
     {
         return sequence(
-            deadline(
+            race(
                 waitFor(3.5 + Math.abs(degrees.getAsDouble() / 180.0)), // fail safe in event of lock up
                 sequence(
                     instant(() -> drivetrain.setTargetAngle(degrees.getAsDouble())),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain))
+                    waitUntil(drivetrain::reachedTargetAngle)
                 )
             ),
             instant(drivetrain::releaseAngleTarget)
