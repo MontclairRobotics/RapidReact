@@ -16,7 +16,7 @@ public final class RapidReactCommands
 {
     private RapidReactCommands() {}
 
-    public static Command shootSequence()
+    public static Command shootSequenceBuilder(double shootTime)
     {
         return sequence(
             instant(() -> {
@@ -32,12 +32,22 @@ public final class RapidReactCommands
             }),
             runForTime(0.2, block(ballShooter)),
             instant(() -> ballMover.startMoving()),
-            runForTime(2.0, block(ballMover, ballShooter)),
+            runForTime(shootTime, block(ballMover, ballShooter)),
             instant(() -> {
                 ballMover.stop();
                 ballShooter.stop();
             })
         );
+    }
+
+    public static Command shootSequence()
+    {
+        return shootSequenceBuilder(2);
+    }
+
+    public static Command shootSequenceShort()
+    {
+        return shootSequenceBuilder(1);
     }
 
     public static Command turn(double degrees)

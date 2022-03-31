@@ -10,14 +10,37 @@
         "hgap": 16.0,
         "vgap": 16.0,
         "titleType": 0,
-        "tiles": {}
+        "tiles": {
+          "4,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/MinArea",
+              "_title": "/SmartDashboard/MinArea"
+            }
+          },
+          "5,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/MinCircularity",
+              "_title": "/SmartDashboard/MinCircularity"
+            }
+          }
+        }
       }
     }
   ],
   "windowGeometry": {
-    "x": 0.0,
-    "y": 0.0,
+    "x": 27.600000381469727,
+    "y": 27.200000762939453,
     "width": 1469.199951171875,
-    "height": 689.5999755859375
+    "height": 754.4000244140625
   }
 }

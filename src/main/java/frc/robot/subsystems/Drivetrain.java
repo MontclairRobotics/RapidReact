@@ -192,6 +192,11 @@ public final class Drivetrain extends ManagedSubsystemBase
         stop();
     }
 
+    public double getAverageDistance()
+    {
+        return averageDistance;
+    }
+
     public void nextDriveSpeed()
     {
         // Loop through speeds
@@ -276,10 +281,7 @@ public final class Drivetrain extends ManagedSubsystemBase
         }
     }
 
-    /**
-     * Get the average distance traveled by the encoders
-     */
-    public double getAverageDistanceTraveled()
+    private double calculateAverageDistanceTraveled()
     {
         // 42 ticks per revolutions
         // gear box ratio is 10.86 : 1
@@ -356,6 +358,8 @@ public final class Drivetrain extends ManagedSubsystemBase
             return;
         }
 
+        averageDistance = calculateAverageDistanceTraveled();
+
         // Locals for speed and turn
         double speed, turn;
 
@@ -364,10 +368,6 @@ public final class Drivetrain extends ManagedSubsystemBase
         if(isUsingDistancePID && isTargetingADistance)
         {
             Data.setDriveMode("[pid: " + targetDistance + "]");
-
-            averageDistance = getAverageDistanceTraveled();
-            
-            Data.setDistanceTraveled(averageDistance);
             Data.setDistanceToTarget(targetDistance - averageDistance);
 
             //System.out.println("Average distance: " + averageDistance);

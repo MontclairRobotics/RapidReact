@@ -26,35 +26,41 @@ public final class Data
         mainTab = Shuffleboard.getTab("Main");
         debugTab = Shuffleboard.getTab("Debug");
 
+        // SETTINGS //
+        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .getEntry();
+        
+        // CHOOSERS //
+        allianceChooser = Sendables.chooser("Red", "Blue");
+        mainTab.add("Alliance", allianceChooser)
+            .withWidget(BuiltInWidgets.kSplitButtonChooser);
+        
+        // DEBUGS //
         distanceToTarget = debugTab.add("Distance to Target", 0)
             .withWidget(BuiltInWidgets.kGraph)
             .getEntry();
         angleToTarget = debugTab.add("Angle to Target", 0)
             .withWidget(BuiltInWidgets.kGraph)
             .getEntry();
-        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
-            .withWidget(BuiltInWidgets.kToggleSwitch)
-            .getEntry();
-        
+
         turnMode = debugTab.add("Turn Mode", "[normal]").getEntry();
         driveMode = debugTab.add("Drive Mode", "[normal]").getEntry();
 
         turnSpeed = debugTab.add("Turn Speed", 0).getEntry();
         driveSpeed = debugTab.add("Drive Speed", 0).getEntry();
 
-        distanceTraveled = debugTab.add("Distace Travelled", 0).getEntry();
-
         angleToBall = debugTab.add("Angle to Ball", 0).getEntry();
         ballArea = debugTab.add("Area of Ball", 0).getEntry();
 
+        // SUPPLIED VALUES //
         mainTab.addNumber("Angular Velocity", RapidReact.navx::getAngularVelocity);
         mainTab.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
         mainTab.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
         
-        allianceChooser = Sendables.chooser("Red", "Blue");
-        mainTab.add("Alliance", allianceChooser)
-            .withWidget(BuiltInWidgets.kSplitButtonChooser);
+        debugTab.addNumber("Distace Travelled", RapidReact.drivetrain::getAverageDistance);
 
+        // INTERNALS //
         fmsAlliance = NetworkTableInstance.getDefault()
             .getTable("FMSInfo")
             .getEntry("IsRedAlliance");
@@ -74,8 +80,7 @@ public final class Data
         turnSpeed,
         driveSpeed,
         angleToBall,
-        ballArea,
-        distanceTraveled
+        ballArea
     ;
 
     private static NetworkTableEntry fmsAlliance;
@@ -134,11 +139,6 @@ public final class Data
     public static void setDriveSpeed(double value)
     {
         driveSpeed.setDouble(value);
-    }
-
-    public static void setDistanceTraveled(double value)
-    {
-        distanceTraveled.setDouble(value);
     }
 
     public static void setAngleToBall(double value)
