@@ -288,6 +288,7 @@ public final class RapidReact extends RobotContainer
         final double ballStartSpeed = 0.5;
         final double ballPidTime = 2; //sec
         final double ballPidOutput = 0.5;
+        final double returnTime = 2;
         final double ballTransportTime = 0.7; //sec
         final double taxiTime = 3; //sec
 
@@ -329,7 +330,7 @@ public final class RapidReact extends RobotContainer
                         instant(ballMover::stop),
                         instant(ballSucker::stop)
                     ),
-                    RapidReactCommands.driveDistance(-ballDistance)
+                    RapidReactCommands.driveForTime(returnTime, -1)
                 ),
 
                 // Shoot ball (long this time)
