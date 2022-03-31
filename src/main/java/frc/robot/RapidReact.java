@@ -307,6 +307,64 @@ public final class RapidReact extends RobotContainer
             )
         );
 
+        // final double ballDistance = 92; //in
+        // final double ballPidLeadIn = 35; //in
+        // final double ballStartSpeed = 0.5; 
+        // final double ballPidTime = 1.5; //sec
+        // final double ballPidOutput = 0.4; // (speed while ball pidding)
+        // final double returnTime = 1.6;
+        // final double ballTransportTime = 0.7; //sec
+        // final double taxiTime = 3; //sec
+        AutoCommands.add(
+            "Get 3 Balls",
+            () -> sequence (
+                // Shoot ball
+                AutoCommands.get("Shoot"),
+
+                // Go to where it needs to go
+                RapidReactCommands.driveDistance(40),
+
+                // Angle pid
+                //RapidReactCommands.turn(() -> -navx.getAngle()), // undo the ball pidding that was done
+                RapidReactCommands.turn(145), // turn the degrees to ball
+
+                // Return go to balls 
+                instant(() -> ballSucker.startSucking()),
+                instant(() -> ballMover.startMoving()),
+                instant(() -> drivetrain.startTargetingABall()),
+                // waitFor(ballTransportTime),
+                // instant(ballMover::stop),
+                // instant(ballSucker::stop)
+                RapidReactCommands.driveDistance(250),
+                instant(() -> ballSucker.stop()),
+                instant(() -> ballMover.stop()),
+                instant(() -> drivetrain.stop())
+            )
+        );
+
+        AutoCommands.add(
+            "Return and shoot 3 balls",
+            () -> sequence(
+                RapidReactCommands.driveDistance(-250),
+
+                RapidReactCommands.turn(() -> -145),
+
+                RapidReactCommands.driveDistance(40),
+
+                AutoCommands.get("Shoot")
+
+            )
+        );
+
+        AutoCommands.add(
+            "Main 3 Ball",
+            () -> sequence(
+                AutoCommands.get("Get 3 Balls"),
+                AutoCommands.get("Return and shoot 4 balls")
+            )
+        );
+        
+
         AutoCommands.add(
             "Main",
             () -> sequence(
@@ -343,6 +401,7 @@ public final class RapidReact extends RobotContainer
                 RapidReactCommands.shootSequence()
             )
         );
+
         AutoCommands.add(
             "Delay Main",
             () -> sequence(
