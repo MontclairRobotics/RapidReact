@@ -76,6 +76,7 @@ public final class RapidReactCommands
                 }),
                 runForTime(time, block(drivetrain)),
                 instant(() -> {
+                    drivetrain.set(0, 0);
                     drivetrain.stop();
                     //**/drivetrain.stopStraightPidding();
                     //System.out.println("Stop Driving");

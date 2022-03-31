@@ -230,7 +230,8 @@ def main():
             output, contours, CONTOUR_DRAW_COL, CONTOUR_DRAW_WIDTH, CONTOUR_DRAW_CROSS_SIZE
         )
         stripe_w = int(real_width * COLOR_STRIPE_WIDTH_FACTOR / 2)
-        output = cv2.copyMakeBorder(
+        output = cv2.copyMakeB
+        order(
             output, 
             0, 0, stripe_w, stripe_w, 
             cv2.BORDER_CONSTANT, 

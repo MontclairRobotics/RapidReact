@@ -255,12 +255,10 @@ public final class RapidReact extends RobotContainer
         /////////////////////////////////
         /// AUTO
         /////////////////////////////////
-        AutoCommands.setAutoCommandInitializer((name, s) -> {
-            Data.mainTab().add(name, s);
-        });
+        AutoCommands.setAutoCommandInitializer(Data::setupAuto);
 
         AutoCommands.add(
-            "Drive", 
+            "Drive (2.5 sec)", 
             () -> RapidReactCommands.driveForTime(2.5, 1)
         );
         AutoCommands.add(
@@ -277,26 +275,47 @@ public final class RapidReact extends RobotContainer
         );
 
         AutoCommands.add(
-            "Shoot",
+            "Shoot Test",
             () -> RapidReactCommands.shootSequence()
+        );
+        AutoCommands.add(
+            "Shoot",
+            () -> RapidReactCommands.shootSequenceShort()
         );
 
         final double ballDistance = 92; //in
-        final double ballPidLeadIn = 20; //in
+        final double ballPidLeadIn = 10; //in
+        final double ballStartSpeed = 0.5;
         final double ballPidTime = 2; //sec
-        final double ballPidOutput = 0.1;
-        final double ballTransportTime = 0.5; //sec
-        final double returnTime = 2;
-        final double taxiTime = 5; //sec
+        final double ballPidOutput = 0.5;
+        final double ballTransportTime = 0.7; //sec
+        final double taxiTime = 3; //sec
+
+        AutoCommands.add(
+            "Taxi",
+            () -> RapidReactCommands.driveForTime(taxiTime, 1)
+        );
+
+        AutoCommands.add(
+            "Single Ball",
+            () -> sequence(
+                // Shoot ball
+                AutoCommands.get("Shoot"),
+                AutoCommands.get("Taxi")
+            )
+        );
 
         AutoCommands.add(
             "Main",
             () -> sequence(
                 // Shoot ball
-                RapidReactCommands.shootSequenceShort(),
+                AutoCommands.get("Shoot"),
 
                 // Retreive next ball
-                RapidReactCommands.driveDistance(ballDistance - ballPidLeadIn),
+                instant(drivetrain::resetEncoders),
+                instant(() -> drivetrain.set(ballStartSpeed, 0)),
+                waitUntil(() -> drivetrain.getAverageDistance() >= ballDistance - ballPidLeadIn),
+
                 instant(drivetrain::startTargetingABall),
                 instant(ballSucker::startSucking),
                 RapidReactCommands.driveForTime(ballPidTime, ballPidOutput),
@@ -310,19 +329,27 @@ public final class RapidReact extends RobotContainer
                         instant(ballMover::stop),
                         instant(ballSucker::stop)
                     ),
-                    RapidReactCommands.driveForTime(returnTime, -1)
+                    RapidReactCommands.driveDistance(-ballDistance)
                 ),
 
                 // Shoot ball (long this time)
                 RapidReactCommands.shootSequence(),
 
                 // Taxi
-                RapidReactCommands.driveForTime(taxiTime, 1)
+                AutoCommands.get("Taxi")
             )
         );
         AutoCommands.add(
             "Delay Main",
-            () -> sequence(waitFor(AUTO_WAIT_TIME), AutoCommands.get("Main"))
+            () -> sequence(
+                waitFor(AUTO_WAIT_TIME), 
+                AutoCommands.get("Main")
+            )
+        );
+        
+        AutoCommands.add(
+            "Nothing",
+            () -> instant(() -> {})
         );
         AutoCommands.add(
             "Nothing",

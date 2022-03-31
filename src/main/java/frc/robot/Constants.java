@@ -80,6 +80,7 @@ public final class Constants
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = false;
     public static final boolean RIGHT_DRIVE_INVERSION = true;
+    public static final double MIN_PID_TURN = 0.0002;
 
     // Shooter Inversion
     public static final boolean SHOOTER_LEFT_INVERSION = true;

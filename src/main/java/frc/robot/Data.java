@@ -3,11 +3,14 @@ package frc.robot;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -20,53 +23,94 @@ import frc.robot.framework.wpilib.senables.Sendables;
 public final class Data 
 {
     private Data(){}
-                                        //fucky wucky
+    //fucky wucky
+
     public static void setup()
     {
         mainTab = Shuffleboard.getTab("Main");
         debugTab = Shuffleboard.getTab("Debug");
 
-        // SETTINGS //
-        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
-            .withWidget(BuiltInWidgets.kToggleSwitch)
-            .getEntry();
-        
-        // CHOOSERS //
         allianceChooser = Sendables.chooser("Red", "Blue");
-        mainTab.add("Alliance", allianceChooser)
-            .withWidget(BuiltInWidgets.kSplitButtonChooser);
-        
-        // DEBUGS //
-        distanceToTarget = debugTab.add("Distance to Target", 0)
-            .withWidget(BuiltInWidgets.kGraph)
-            .getEntry();
-        angleToTarget = debugTab.add("Angle to Target", 0)
-            .withWidget(BuiltInWidgets.kGraph)
-            .getEntry();
-
-        turnMode = debugTab.add("Turn Mode", "[normal]").getEntry();
-        driveMode = debugTab.add("Drive Mode", "[normal]").getEntry();
-
-        turnSpeed = debugTab.add("Turn Speed", 0).getEntry();
-        driveSpeed = debugTab.add("Drive Speed", 0).getEntry();
-
-        angleToBall = debugTab.add("Angle to Ball", 0).getEntry();
-        ballArea = debugTab.add("Area of Ball", 0).getEntry();
-
-        // SUPPLIED VALUES //
-        mainTab.addNumber("Angular Velocity", RapidReact.navx::getAngularVelocity);
-        mainTab.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
-        mainTab.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
-        
-        debugTab.addNumber("Distace Travelled", RapidReact.drivetrain::getAverageDistance);
-
-        // INTERNALS //
         fmsAlliance = NetworkTableInstance.getDefault()
             .getTable("FMSInfo")
             .getEntry("IsRedAlliance");
+
+        setupMainTab();
+        setupDebugTab();
+    }
+
+    private static void setupMainTab()
+    {
+        mainTab.add("Alliance", allianceChooser)
+            .withWidget(BuiltInWidgets.kSplitButtonChooser)
+            .withPosition(0, 3)
+            .withSize(1, 2);
+
+        var values = mainTab.getLayout("Values", BuiltInLayouts.kList)
+            .withPosition(1, 0)
+            .withSize(1, 3);
+
+        values.addNumber("Angular Velocity", RapidReact.navx::getAngularVelocity);
+        values.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
+        values.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
+
+        mainTab.add("Cam 1", CameraServer.getVideo("Shooter Camera").getSource())
+            .withPosition(1, 0)
+            .withSize(3, 2);
+        mainTab.add("Vision", CameraServer.getVideo("Vision Output").getSource())
+            .withPosition(1+3, 0)
+            .withSize(3, 2);
+    }
+    private static void setupDebugTab()
+    {
+        distanceToTarget = debugTab.add("Distance to Target", 0)
+            .withWidget(BuiltInWidgets.kGraph)
+            .withPosition(0, 0)
+            .withSize(3, 3)
+            .getEntry();
+        angleToTarget = debugTab.add("Angle to Target", 0)
+            .withWidget(BuiltInWidgets.kGraph)
+            .withPosition(0+2, 0)
+            .withSize(3, 3)
+            .getEntry();
+
+        var drive = debugTab.getLayout("Drive", BuiltInLayouts.kList)
+            .withPosition(0+3+3, 0)
+            .withSize(1, 2);
+
+        driveMode = drive.add("Drive Mode", "[normal]").getEntry();
+        driveSpeed = drive.add("Drive Speed", 0).getEntry();
+        drive.addNumber("Distace Travelled", RapidReact.drivetrain::getAverageDistance);
+
+        var turn = debugTab.getLayout("Turn", BuiltInLayouts.kList)
+            .withPosition(0+3+3+1, 0)
+            .withSize(1, 2);
+
+        turnSpeed = turn.add("Turn Speed", 0).getEntry();
+        turnMode = turn.add("Turn Mode", "[normal]").getEntry();
+
+        var ball = debugTab.getLayout("Ball", BuiltInLayouts.kList)
+            .withPosition(0+3+3+1+1, 0)
+            .withSize(1, 2);
+        
+        angleToBall = ball.add("Angle to Selected", 0).getEntry();
+        ballArea = ball.add("Area of Selected", 0).getEntry();
+    }
+
+    public static void setupAuto(String name, Sendable sendable)
+    {
+        mainTab.add(name, sendable)
+            .withWidget(BuiltInWidgets.kComboBoxChooser)
+            .withPosition(0+2, 3)
+            .withSize(1, 2);
+        debugTab.add(name, sendable)
+            .withWidget(BuiltInWidgets.kComboBoxChooser)
+            .withPosition(0, 2)
+            .withSize(1, 2);
     }
 
     public static ShuffleboardTab mainTab() {return mainTab;}
+    public static ShuffleboardTab debugTab() {return debugTab;}
 
     private static ShuffleboardTab mainTab;
     private static ShuffleboardTab debugTab;

@@ -190,6 +190,9 @@ public final class Drivetrain extends ManagedSubsystemBase
 
         // Stop driving
         stop();
+
+        // Reset encoders
+        resetEncoders();
     }
 
     public double getAverageDistance()
@@ -426,6 +429,10 @@ public final class Drivetrain extends ManagedSubsystemBase
             Data.setTurnMode("[straight pid]");
 
             turn = calculateAnglePID(0);
+            if(Math.abs(turn) < Constants.MIN_PID_TURN)
+            {
+                turn = 0;
+            }
         }
         else
         {   
