@@ -329,6 +329,7 @@ public final class RapidReact extends RobotContainer
                 RapidReactCommands.turn(145), // turn the degrees to ball
 
                 // Return go to balls 
+                instant(navx::zeroYaw),
                 instant(() -> ballSucker.startSucking()),
                 instant(() -> ballMover.startMoving()),
                 instant(() -> drivetrain.startTargetingABall()),
@@ -338,7 +339,10 @@ public final class RapidReact extends RobotContainer
                 RapidReactCommands.driveDistance(250),
                 instant(() -> ballSucker.stop()),
                 instant(() -> ballMover.stop()),
-                instant(() -> drivetrain.stop())
+                instant(() -> drivetrain.stop()),
+                instant(() -> drivetrain.stopTargetingABall()),
+
+                RapidReactCommands.turn(() -> -navx.getAngle())
             )
         );
 
