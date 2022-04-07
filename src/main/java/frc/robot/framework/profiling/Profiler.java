@@ -1,7 +1,7 @@
 package frc.robot.framework.profiling;
 
-import frc.robot.framework.maths.MathUtils;
-import frc.robot.framework.maths.Updater;
+import frc.robot.framework.math.MathUtils;
+import frc.robot.framework.math.Updater;
 
 /**
  * @apiNote was previously named Smoother

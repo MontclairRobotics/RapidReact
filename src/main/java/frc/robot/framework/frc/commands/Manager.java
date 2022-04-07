@@ -1,4 +1,4 @@
-package frc.robot.framework;
+package frc.robot.framework.frc.commands;
 
 public interface Manager 
 {

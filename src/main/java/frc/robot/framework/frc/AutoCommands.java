@@ -1,4 +1,4 @@
-package frc.robot.framework.wpilib;
+package frc.robot.framework.frc;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.util.HashMap;
@@ -18,17 +18,8 @@ public final class AutoCommands
     private static final Map<String, Supplier<Command>> commands = new HashMap<>();
 
     // Settings
-    private static BiConsumer<String, Sendable> autoCommandInitializer = (n, c) -> {
-        SmartDashboard.putData(n, c);
-        SmartDashboard.setPersistent(n);
-    };
-    private static String autoNetworkTableName = "Auto";
     private static String defaultAutoCommand = "Main";
 
-    public static void setAutoCommandInitializer(BiConsumer<String, Sendable> value)
-    {autoCommandInitializer = value;}
-    public static void setAutoNetworkTableName(String value)
-    {autoNetworkTableName = value;}
     public static void setDefaultAutoCommand(String value)
     {defaultAutoCommand = value;}
     
@@ -41,8 +32,14 @@ public final class AutoCommands
         return commands.get(name).get();
     }
 
+    private static SendableChooser<Command> chooserInternal;
     public static SendableChooser<Command> chooser()
     {
+        if(chooserInternal != null)
+        {
+            return chooserInternal;
+        }
+
         var s = new SendableChooser<Command>();
 
         if(!commands.containsKey(defaultAutoCommand))
@@ -62,7 +59,7 @@ public final class AutoCommands
             s.addOption(name, get(name));
         }
 
-        autoCommandInitializer.accept(autoNetworkTableName, s);
+        chooserInternal = s;
 
         return s;
     }

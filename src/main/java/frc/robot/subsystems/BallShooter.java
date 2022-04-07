@@ -5,7 +5,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.framework.ManagedSubsystemBase;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
 
 public class BallShooter extends ManagedSubsystemBase
 {
@@ -41,5 +41,10 @@ public class BallShooter extends ManagedSubsystemBase
         leftMotor.set(0);
         rightMotor.set(0);
     }
-
+    
+    @Override
+    public void whenInactive() 
+    {
+        stop();
+    }
 }

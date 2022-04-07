@@ -11,9 +11,12 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
@@ -21,10 +24,10 @@ import static frc.robot.Constants.*;
 import frc.robot.Constants;
 import frc.robot.Data;
 import frc.robot.RapidReact;
-import frc.robot.framework.CommandRobot;
-import frc.robot.framework.ManagedSubsystemBase;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.frc.commands.CommandRobot;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
+import frc.robot.framework.math.MathUtils;
 import frc.robot.framework.profiling.Profiler;
 import frc.robot.managers.NavxManager;
 import frc.robot.managers.VisionManager;
@@ -335,7 +338,7 @@ public final class Drivetrain extends ManagedSubsystemBase
 
     private double modifyAnglePIDOut(double value)
     {
-        return MathUtils.clamp(
+        return MathUtil.clamp(
             value * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
@@ -360,7 +363,7 @@ public final class Drivetrain extends ManagedSubsystemBase
     @Override
     public void always()
     {
-        if(CommandRobot.isCurrentlyDisabled())
+        if(DriverStation.isDisabled())
         {
             return;
         }
@@ -386,7 +389,7 @@ public final class Drivetrain extends ManagedSubsystemBase
             Data.setDriveMode("[simple]");
 
             // Square input
-            preEaseSpeed = MathUtils.powSignless(targetSpeed, 1.1);
+            preEaseSpeed = MathUtils.powsign(targetSpeed, 1.1);
 
             //System.out.println("Robot driving");
         }
@@ -395,7 +398,7 @@ public final class Drivetrain extends ManagedSubsystemBase
         speed = speedProfiler.current();
 
         // Clamp speed
-        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
+        speed = MathUtil.clamp(speed, -maxOutput, maxOutput);
 
         Data.setDriveSpeed(speed);
 
@@ -413,7 +416,7 @@ public final class Drivetrain extends ManagedSubsystemBase
             var ball = RapidReact.vision
                 .getBall((a, b) -> Math.abs(a.getAngle()) < Math.abs(b.getAngle()));
 
-            if (ball != null)
+            if (ball != null && Math.abs(ball.getAngle()) > Data.getBallTolerance())
             {
                 Data.setAngleToBall(ball.getAngle());
                 Data.setBallArea(ball.getArea());
@@ -442,7 +445,7 @@ public final class Drivetrain extends ManagedSubsystemBase
         {   
             Data.setTurnMode("[simple]");
 
-            var realTargetTurn = MathUtils.powSignless(targetTurn, 2);
+            var realTargetTurn = MathUtils.powsign(targetTurn, 4);
             turn = Constants.adjustTurn(speed, realTargetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
         }
 

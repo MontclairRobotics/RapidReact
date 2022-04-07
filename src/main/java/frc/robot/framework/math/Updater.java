@@ -1,4 +1,4 @@
-package frc.robot.framework.maths;
+package frc.robot.framework.math;
 
 public abstract class Updater<T>
 {

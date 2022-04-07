@@ -1,4 +1,4 @@
-package frc.robot.framework.functions;
+package frc.robot.framework.function;
 
 @FunctionalInterface
 public interface DoubleDualPredicate 

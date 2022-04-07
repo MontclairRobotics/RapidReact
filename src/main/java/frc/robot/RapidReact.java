@@ -10,21 +10,21 @@ package frc.robot;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.framework.CommandRobot;
-import frc.robot.framework.CommandWrapper;
-import frc.robot.framework.RobotContainer;
 import frc.robot.framework.RobotState;
-import frc.robot.framework.maths.MathUtils;
-import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
-import frc.robot.framework.wpilib.AutoCommands;
-import frc.robot.framework.wpilib.controllers.InputController;
-import frc.robot.framework.wpilib.controllers.InputController.DPad;
-import frc.robot.framework.wpilib.triggers.AnalogValue;
+import frc.robot.framework.frc.AutoCommands;
+import frc.robot.framework.frc.commands.CommandRobot;
+import frc.robot.framework.frc.commands.RobotContainer;
+import frc.robot.framework.frc.commands.triggers.AnalogTrigger;
+import frc.robot.framework.frc.controllers.GameController;
+import frc.robot.framework.frc.controllers.GameController.DPad;
+import frc.robot.framework.frc.vendors.rev.BlinkinLEDDriver;
+import frc.robot.framework.math.MathUtils;
 import frc.robot.managers.NavxManager;
 import frc.robot.managers.VisionManager;
 import frc.robot.subsystems.Climber.ClimberSide;
@@ -36,16 +36,16 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.RotationalClimber;
 
 import static frc.robot.Constants.*;
-import static frc.robot.framework.vendors.rev.BlinkinLEDMode.*;
-import static frc.robot.framework.wpilib.controllers.InputController.Axis.*;
-import static frc.robot.framework.wpilib.controllers.InputController.Button.*;
+import static frc.robot.framework.frc.commands.Commands.*;
+import static frc.robot.framework.frc.controllers.GameController.Axis.*;
+import static frc.robot.framework.frc.controllers.GameController.Button.*;
+import static frc.robot.framework.frc.vendors.rev.BlinkinLEDMode.*;
 
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.*;
 import static edu.wpi.first.wpilibj2.command.CommandBase.*;
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
-import static frc.robot.framework.Commands.*;
 
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.kauailabs.navx.frc.AHRS;
@@ -64,9 +64,9 @@ public final class RapidReact extends RobotContainer
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final InputController driverController = InputController.from(DRIVER_CONTROLLER_TYPE,
+    public static final GameController driverController = GameController.from(DRIVER_CONTROLLER_TYPE,
             DRIVER_CONTROLLER_PORT);
-    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
+    public static final GameController operatorController = GameController.from(OPERATOR_CONTROLLER_TYPE,
             OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
@@ -170,17 +170,21 @@ public final class RapidReact extends RobotContainer
         // Max speed command
         driverController.getButton(A_CROSS)
             .whenActive(drivetrain::nextDriveSpeed);
-
+                 
         // Ease control command
-        driverController.getButton(Y_TRIANGLE)
-            .whenActive(() -> drivetrain.setProfiler(NOTHING_PROFILER))
+        driverController.getAxis(RIGHT_TRIGGER)
+            .whenGreaterThan(0.5)
+            .whenActive(() -> {
+                drivetrain.setProfiler(NOTHING_PROFILER);
+                drivetrain.killMomentum();
+            })
             .whenInactive(() -> drivetrain.setProfiler(DRIVE_PROFILER));
 
         // Drive command
         drivetrain.setDefaultCommand(
             run(() -> 
             {
-                if(!CommandRobot.isOperated())
+                if(!DriverStation.isTeleop())
                 {
                     return;
                 }
@@ -194,9 +198,11 @@ public final class RapidReact extends RobotContainer
         );
 
         // Turn reverse
+        /*
         driverController.getAxis(RIGHT_TRIGGER).whenGreaterThan(0.5)
             .whenActive(drivetrain::startReverseTurning)
             .whenInactive(drivetrain::stopReverseTurning);
+        */
 
         // Turn commands
         driverController.getDPad(DPad.RIGHT)
@@ -209,12 +215,12 @@ public final class RapidReact extends RobotContainer
             .toggleWhenActive(RapidReactCommands.turn(180));
 
         // turn to ball
-        driverController.getButton(B_CIRCLE)
+        driverController.getAxis(LEFT_TRIGGER).whenGreaterThan(0.5)
             .whenActive(drivetrain::startTargetingABall)
             .whenInactive(drivetrain::stopTargetingABall); 
         
         // CLIMBER BACKUPS
-        ///*
+        //*/
         operatorController.getAxis(LEFT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
@@ -238,12 +244,12 @@ public final class RapidReact extends RobotContainer
         driverController.getAxis(RIGHT_X).abs()
             .whenLessThan(ANGLE_PID_DEADBAND)
             .and(
-                AnalogValue.from(navx::getAngularVelocity).abs()
+                AnalogTrigger.from(navx::getAngularVelocity).abs()
                     .whenLessThan(ANGLE_VELOCITY_DEADBAND)
             )
             .and(new Trigger(drivetrain::isTargetingAnAngle).negate())
             .and(new Trigger(drivetrain::isStraightPidding).negate())
-            .and(CommandRobot.whenTeleop())
+            .and(new Trigger(DriverStation::isTeleop))
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
                 waitUntil(() ->
@@ -256,8 +262,6 @@ public final class RapidReact extends RobotContainer
         /////////////////////////////////
         /// AUTO
         /////////////////////////////////
-        AutoCommands.setAutoCommandInitializer(Data::setupAuto);
-
         AutoCommands.add(
             "Drive (2.5 sec)", 
             () -> RapidReactCommands.driveForTime(2.5, 1)
@@ -285,13 +289,14 @@ public final class RapidReact extends RobotContainer
         );
 
         final double ballDistance = 92; //in
-        final double ballPidLeadIn = 35; //in
+        final double ballPidLeadIn = 50; //in
         final double ballStartSpeed = 0.5; 
         final double ballPidTime = 1.5; //sec
         final double ballPidOutput = 0.4; // (speed while ball pidding)
-        final double returnTime = 1.6;
+        final double returnTime = 2.0;
         final double ballTransportTime = 0.7; //sec
         final double taxiTime = 3; //sec
+        final double preShootTime = 0.7; //sec
 
         AutoCommands.add(
             "Taxi",
@@ -307,52 +312,52 @@ public final class RapidReact extends RobotContainer
             )
         );
 
-        // final double ballDistance = 92; //in
-        // final double ballPidLeadIn = 35; //in
-        // final double ballStartSpeed = 0.5; 
-        // final double ballPidTime = 1.5; //sec
-        // final double ballPidOutput = 0.4; // (speed while ball pidding)
-        // final double returnTime = 1.6;
-        // final double ballTransportTime = 0.7; //sec
-        // final double taxiTime = 3; //sec
         AutoCommands.add(
             "Get 3 Balls",
-            () -> sequence (
-                // Shoot ball
-                AutoCommands.get("Shoot"),
+            () -> parallel(
+                sequence(
+                    // Shoot ball
+                    AutoCommands.get("Shoot"),
 
-                // Go to where it needs to go
-                RapidReactCommands.driveDistance(40),
+                    // Go to where it needs to go
+                    RapidReactCommands.driveDistance(40),
 
-                // Angle pid
-                //RapidReactCommands.turn(() -> -navx.getAngle()), // undo the ball pidding that was done
-                RapidReactCommands.turn(145), // turn the degrees to ball
+                    // Angle pid
+                    //RapidReactCommands.turn(() -> -navx.getAngle()), // undo the ball pidding that was done
+                    RapidReactCommands.turn(145), // turn the degrees to ball
 
-                // Return go to balls 
-                instant(() -> ballSucker.startSucking()),
-                instant(() -> ballMover.startMoving()),
-                instant(() -> drivetrain.startTargetingABall()),
-                // waitFor(ballTransportTime),
-                // instant(ballMover::stop),
-                // instant(ballSucker::stop)
-                RapidReactCommands.driveDistance(250),
-                instant(() -> ballSucker.stop()),
-                instant(() -> ballMover.stop()),
-                instant(() -> drivetrain.stop())
+                    // Go to balls 
+                    instant(navx::zeroYaw),
+                    instant(ballSucker::startSucking),
+                    instant(ballMover::startMoving),
+                    instant(drivetrain::startTargetingABall),
+
+                    // undo the ball pidding
+                    RapidReactCommands.turn(() -> -navx.getAngle()),
+                    // waitFor(ballTransportTime),
+                    // instant(ballMover::stop),
+                    // instant(ballSucker::stop)
+                    RapidReactCommands.driveDistance(250),
+                    instant(ballSucker::stop),
+                    instant(ballMover::stop),
+                    instant(drivetrain::stopTargetingABall)
+                ),
+                block(ballSucker, ballMover, ballShooter)
             )
         );
 
         AutoCommands.add(
-            "Return and shoot 3 balls",
-            () -> sequence(
-                RapidReactCommands.driveDistance(-250),
+            "Return (Shoot 3)",
+            () -> parallel(
+                sequence(
+                    RapidReactCommands.driveDistance(-250),
 
-                RapidReactCommands.turn(() -> -145),
+                    RapidReactCommands.turn(-145),
 
-                RapidReactCommands.driveDistance(40),
+                    RapidReactCommands.driveDistance(40),
 
-                AutoCommands.get("Shoot")
-
+                    AutoCommands.get("Shoot")
+                ) //later
             )
         );
 
@@ -360,10 +365,48 @@ public final class RapidReact extends RobotContainer
             "Main 3 Ball",
             () -> sequence(
                 AutoCommands.get("Get 3 Balls"),
-                AutoCommands.get("Return and shoot 4 balls")
+                AutoCommands.get("Return (Shoot 3)")
             )
         );
-        
+
+        AutoCommands.add(
+            "Main (late angle pid)",
+            () -> sequence(
+                // Shoot ball
+                AutoCommands.get("Shoot"),
+
+                // Retreive next ball
+                instant(drivetrain::resetEncoders),
+                instant(() -> drivetrain.set(ballStartSpeed, 0)),
+                waitUntil(() -> drivetrain.getAverageDistance() >= ballDistance - ballPidLeadIn),
+
+                instant(drivetrain::startTargetingABall),
+                instant(ballSucker::startSucking),
+                RapidReactCommands.driveForTime(ballPidTime, ballPidOutput),
+                instant(drivetrain::stopTargetingABall),
+                instant(ballSucker::stop),
+
+                // Return 
+                race(
+                    parallel(
+                        sequence(
+                            instant(ballSucker::startSucking),
+                            instant(ballMover::startMoving),
+                            waitFor(ballTransportTime),
+                            instant(ballMover::stop),
+                            instant(ballSucker::stop)
+                        ),
+                        RapidReactCommands.driveForTime(returnTime, -0.75)
+                    ),
+                    RapidReactCommands.turn(() -> -navx.getAngle())
+                ),
+                waitFor(1),
+                RapidReactCommands.driveForTime(preShootTime, 0.5),
+
+                // Shoot ball (long this time)
+                RapidReactCommands.shootSequence()
+            )
+        );
 
         AutoCommands.add(
             "Main",
@@ -394,26 +437,15 @@ public final class RapidReact extends RobotContainer
                         instant(ballMover::stop),
                         instant(ballSucker::stop)
                     ),
-                    RapidReactCommands.driveForTime(returnTime, -1)
+                    RapidReactCommands.driveForTime(returnTime, -0.75)
                 ),
+                waitFor(1),
 
                 // Shoot ball (long this time)
                 RapidReactCommands.shootSequence()
             )
         );
-
-        AutoCommands.add(
-            "Delay Main",
-            () -> sequence(
-                waitFor(AUTO_WAIT_TIME), 
-                AutoCommands.get("Main")
-            )
-        );
         
-        AutoCommands.add(
-            "Nothing",
-            () -> instant(() -> {})
-        );
         AutoCommands.add(
             "Nothing",
             () -> instant(() -> {})

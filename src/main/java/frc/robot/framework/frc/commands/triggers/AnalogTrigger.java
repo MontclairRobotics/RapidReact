@@ -1,17 +1,16 @@
-package frc.robot.framework.wpilib.triggers;
+package frc.robot.framework.frc.commands.triggers;
 
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.framework.functions.DoubleDualPredicate;
-import frc.robot.framework.functions.DoublePredicate;
-import frc.robot.framework.functions.DoubleTriPredicate;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.function.DoubleDualPredicate;
+import frc.robot.framework.function.DoublePredicate;
+import frc.robot.framework.function.DoubleTriPredicate;
+import frc.robot.framework.math.MathUtils;
 
-// I AM A TWO
-public class AnalogValue
+public class AnalogTrigger
 {
     private final DoubleSupplier axis;
 
@@ -23,160 +22,160 @@ public class AnalogValue
     //////////////////////////////////
     // CONSTRUCTION
     //////////////////////////////////
-    public AnalogValue(DoubleSupplier axis)
+    public AnalogTrigger(DoubleSupplier axis)
     {
         this.axis = axis;
     }
 
-    public static AnalogValue from(DoubleSupplier axis)
+    public static AnalogTrigger from(DoubleSupplier axis)
     {
-        return new AnalogValue(axis);
+        return new AnalogTrigger(axis);
     }
 
     //////////////////////////////////
     // OPERATORS
     //////////////////////////////////
-    public AnalogValue plus(AnalogValue other)
+    public AnalogTrigger plus(AnalogTrigger other)
     {
         return against(other, (a, b) -> a + b);
     }
-    public AnalogValue plus(DoubleSupplier other)
+    public AnalogTrigger plus(DoubleSupplier other)
     {
         return against(other, (a, b) -> a + b);
     }
-    public AnalogValue plus(double other)
+    public AnalogTrigger plus(double other)
     {
         return against(other, (a, b) -> a + b);
     }
 
-    public AnalogValue minus(AnalogValue other)
+    public AnalogTrigger minus(AnalogTrigger other)
     {
         return against(other, (a, b) -> a - b);
     }
-    public AnalogValue minus(DoubleSupplier other)
+    public AnalogTrigger minus(DoubleSupplier other)
     {
         return against(other, (a, b) -> a - b);
     }
-    public AnalogValue minus(double other)
+    public AnalogTrigger minus(double other)
     {
         return against(other, (a, b) -> a - b);
     }
 
-    public AnalogValue times(AnalogValue other)
+    public AnalogTrigger times(AnalogTrigger other)
     {
         return against(other, (a, b) -> a * b);
     }
-    public AnalogValue times(DoubleSupplier other)
+    public AnalogTrigger times(DoubleSupplier other)
     {
         return against(other, (a, b) -> a * b);
     }
-    public AnalogValue times(double other)
+    public AnalogTrigger times(double other)
     {
         return against(other, (a, b) -> a * b);
     }
 
-    public AnalogValue over(AnalogValue other)
+    public AnalogTrigger over(AnalogTrigger other)
     {
         return against(other, (a, b) -> a / b);
     }
-    public AnalogValue over(DoubleSupplier other)
+    public AnalogTrigger over(DoubleSupplier other)
     {
         return against(other, (a, b) -> a / b);
     }
-    public AnalogValue over(double other)
+    public AnalogTrigger over(double other)
     {
         return against(other, (a, b) -> a / b);
     }
 
-    public AnalogValue raisedTo(AnalogValue other)
+    public AnalogTrigger raisedTo(AnalogTrigger other)
     {
-        return against(other, MathUtils::pow);
+        return against(other, Math::pow);
     }
-    public AnalogValue raisedTo(DoubleSupplier other)
+    public AnalogTrigger raisedTo(DoubleSupplier other)
     {
-        return against(other, MathUtils::pow);
+        return against(other, Math::pow);
     }
-    public AnalogValue raisedTo(double other)
+    public AnalogTrigger raisedTo(double other)
     {
-        return against(other, MathUtils::pow);
+        return against(other, Math::pow);
     }
 
-    public AnalogValue modulo(AnalogValue other)
+    public AnalogTrigger modulo(AnalogTrigger other)
     {
         return against(other, (a, b) -> a % b);
     }
-    public AnalogValue modulo(DoubleSupplier other)
+    public AnalogTrigger modulo(DoubleSupplier other)
     {
         return against(other, (a, b) -> a % b);
     }
-    public AnalogValue modulo(double other)
+    public AnalogTrigger modulo(double other)
     {
         return against(other, (a, b) -> a % b);
     }
 
-    public AnalogValue min(AnalogValue other)
+    public AnalogTrigger min(AnalogTrigger other)
     {
-        return against(other, MathUtils::min);
+        return against(other, Math::min);
     }
-    public AnalogValue min(DoubleSupplier other)
+    public AnalogTrigger min(DoubleSupplier other)
     {
-        return against(other, MathUtils::min);
+        return against(other, Math::min);
     }
-    public AnalogValue min(double other)
+    public AnalogTrigger min(double other)
     {
-        return against(other, MathUtils::min);
-    }
-
-    public AnalogValue max(AnalogValue other)
-    {
-        return against(other, MathUtils::max);
-    }
-    public AnalogValue max(DoubleSupplier other)
-    {
-        return against(other, MathUtils::max);
-    }
-    public AnalogValue max(double other)
-    {
-        return against(other, MathUtils::max);
+        return against(other, Math::min);
     }
 
-    public AnalogValue against(AnalogValue other, DoubleBinaryOperator operator)
+    public AnalogTrigger max(AnalogTrigger other)
     {
-        return new AnalogValue(() -> operator.applyAsDouble(this.axis.getAsDouble(), other.axis.getAsDouble()));
+        return against(other, Math::max);
     }
-    public AnalogValue against(DoubleSupplier other, DoubleBinaryOperator operator)
+    public AnalogTrigger max(DoubleSupplier other)
     {
-        return new AnalogValue(() -> operator.applyAsDouble(this.axis.getAsDouble(), other.getAsDouble()));
+        return against(other, Math::max);
     }
-    public AnalogValue against(double other, DoubleBinaryOperator operator)
+    public AnalogTrigger max(double other)
     {
-        return new AnalogValue(() -> operator.applyAsDouble(this.axis.getAsDouble(), other));
+        return against(other, Math::max);
     }
 
-    public AnalogValue squared()
+    public AnalogTrigger against(AnalogTrigger other, DoubleBinaryOperator operator)
     {
-        return applied(MathUtils::square);
+        return new AnalogTrigger(() -> operator.applyAsDouble(this.axis.getAsDouble(), other.axis.getAsDouble()));
     }
-    public AnalogValue sqrt()
+    public AnalogTrigger against(DoubleSupplier other, DoubleBinaryOperator operator)
     {
-        return applied(MathUtils::sqrt);
+        return new AnalogTrigger(() -> operator.applyAsDouble(this.axis.getAsDouble(), other.getAsDouble()));
     }
-    public AnalogValue inversed()
+    public AnalogTrigger against(double other, DoubleBinaryOperator operator)
+    {
+        return new AnalogTrigger(() -> operator.applyAsDouble(this.axis.getAsDouble(), other));
+    }
+
+    public AnalogTrigger squared()
+    {
+        return applied(x -> x * x);
+    }
+    public AnalogTrigger sqrt()
+    {
+        return applied(Math::sqrt);
+    }
+    public AnalogTrigger inversed()
     {
         return applied(a -> 1 / a);
     }
-    public AnalogValue negated()
+    public AnalogTrigger negated()
     {
         return applied(a -> -a);
     }
-    public AnalogValue abs()
+    public AnalogTrigger abs()
     {
-        return applied(MathUtils::abs);
+        return applied(Math::abs);
     }
 
-    public AnalogValue applied(DoubleUnaryOperator operator)
+    public AnalogTrigger applied(DoubleUnaryOperator operator)
     {
-        return new AnalogValue(() -> operator.applyAsDouble(this.axis.getAsDouble()));
+        return new AnalogTrigger(() -> operator.applyAsDouble(this.axis.getAsDouble()));
     }
     //////////////////////////////////
     // TRIGGER GETTERS
@@ -194,7 +193,7 @@ public class AnalogValue
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), other.getAsDouble()));
     }
-    public Trigger when(DoubleDualPredicate predicate, AnalogValue other)
+    public Trigger when(DoubleDualPredicate predicate, AnalogTrigger other)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), other.axis.getAsDouble()));
     }
@@ -207,7 +206,7 @@ public class AnalogValue
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA, otherB.getAsDouble()));
     }
-    public Trigger when(DoubleTriPredicate predicate, double otherA, AnalogValue otherB)
+    public Trigger when(DoubleTriPredicate predicate, double otherA, AnalogTrigger otherB)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA, otherB.axis.getAsDouble()));
     }
@@ -219,19 +218,19 @@ public class AnalogValue
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.getAsDouble(), otherB.getAsDouble()));
     }
-    public Trigger when(DoubleTriPredicate predicate, DoubleSupplier otherA, AnalogValue otherB)
+    public Trigger when(DoubleTriPredicate predicate, DoubleSupplier otherA, AnalogTrigger otherB)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.getAsDouble(), otherB.axis.getAsDouble()));
     }
-    public Trigger when(DoubleTriPredicate predicate, AnalogValue otherA, double otherB)
+    public Trigger when(DoubleTriPredicate predicate, AnalogTrigger otherA, double otherB)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.axis.getAsDouble(), otherB));
     }
-    public Trigger when(DoubleTriPredicate predicate, AnalogValue otherA, DoubleSupplier otherB)
+    public Trigger when(DoubleTriPredicate predicate, AnalogTrigger otherA, DoubleSupplier otherB)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.axis.getAsDouble(), otherB.getAsDouble()));
     }
-    public Trigger when(DoubleTriPredicate predicate, AnalogValue otherA, AnalogValue otherB)
+    public Trigger when(DoubleTriPredicate predicate, AnalogTrigger otherA, AnalogTrigger otherB)
     {
         return new Trigger(() -> predicate.evaluate(axis.getAsDouble(), otherA.axis.getAsDouble(), otherB.axis.getAsDouble()));
     }

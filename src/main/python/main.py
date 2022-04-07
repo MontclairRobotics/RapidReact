@@ -1,4 +1,5 @@
 #! /usr/bin/etc python3
+from datetime import datetime
 import sys
 import os
 import time
@@ -117,7 +118,7 @@ def main():
     ###################################
     # NetworkTables
     ###################################
-    NetworkTables.initialize(server='10.5.55.2')
+    NetworkTables.initialize(server="10.5.55.2") #change in future: "roborio-555-frc.local"
     network_table_inited = [False]
 
     network_cond = Condition()
@@ -134,6 +135,7 @@ def main():
             print("Waiting for network tables!")
             network_cond.wait()
     
+    time.sleep(1)
     print("Connected!")
 
     data_table = NetworkTables.getTable('Vision')
@@ -148,6 +150,8 @@ def main():
     circularities_entry = data_table.getEntry('Circularities')
     perimeters_entry = data_table.getEntry('Perimeters')
     is_writing_entry = data_table.getEntry('IsWriting')
+    counter_entry = data_table.getEntry('Counter')
+    counter = 0
 
     min_area_entry = sd_table.getEntry('MinArea')
     min_circularity_entry = sd_table.getEntry('MinCircularity')
@@ -230,8 +234,7 @@ def main():
             output, contours, CONTOUR_DRAW_COL, CONTOUR_DRAW_WIDTH, CONTOUR_DRAW_CROSS_SIZE
         )
         stripe_w = int(real_width * COLOR_STRIPE_WIDTH_FACTOR / 2)
-        output = cv2.copyMakeB
-        order(
+        output = cv2.copyMakeBorder(
             output, 
             0, 0, stripe_w, stripe_w, 
             cv2.BORDER_CONSTANT, 
@@ -251,7 +254,10 @@ def main():
         xs_entry.setDoubleArray([c.center[0] for c in contours])
         ys_entry.setDoubleArray([c.center[1] for c in contours])
         proto_ver_entry.setString(VERSION)
+        counter_entry.setDouble(counter)
         is_writing_entry.setBoolean(False)
+
+        counter += 1
 
 
 if __name__ == '__main__':

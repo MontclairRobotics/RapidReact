@@ -1,4 +1,4 @@
-package frc.robot.framework.maths;
+package frc.robot.framework.math;
 
 public enum Sign 
 {
@@ -8,14 +8,9 @@ public enum Sign
     UNDEFINED(Double.NaN)
     ;
 
-    private double sign;
+    public final double sign;
     private Sign(double sign)
     {
         this.sign = sign;
-    }
-
-    public double get()
-    {
-        return sign;
     }
 }

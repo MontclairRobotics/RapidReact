@@ -1,15 +1,20 @@
-package frc.robot.framework;
+package frc.robot.framework.frc.commands;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.framework.wpilib.AutoCommands;
+import frc.robot.framework.RobotState;
+import frc.robot.framework.frc.AutoCommands;
 
 public class CommandRobot extends TimedRobot
 {
@@ -19,11 +24,11 @@ public class CommandRobot extends TimedRobot
     }
 
     private static long lastTime;
+
     private static RobotContainer container;
     private static Command autoCommand;
-    private static SendableChooser<Command> autoChooser;
-    private static RobotState state = RobotState.DISABLED;
 
+    private static SendableChooser<Command> autoChooser;
     private static List<Manager> managers = new ArrayList<Manager>();
 
     public static void registerManager(Manager manager) 
@@ -34,33 +39,6 @@ public class CommandRobot extends TimedRobot
     public static void unregisterManager(Manager manager)
     {
         managers.remove(manager);
-    }
-
-    public static RobotState getState() 
-    {
-        return state;
-    }
-
-    public static boolean isCurrentlyDisabled()
-    {
-        return state == RobotState.DISABLED;
-    }
-    public static boolean isCurrentlyEnabled()
-    {
-        return state != RobotState.DISABLED;
-    }
-    public static boolean isOperated()
-    {
-        return isCurrentlyEnabled() && state != RobotState.AUTO;
-    }
-    
-    public static Trigger whenAuto()
-    {
-        return new Trigger(() -> state.equals(RobotState.AUTO));
-    }
-    public static Trigger whenTeleop()
-    {
-        return new Trigger(() -> state.equals(RobotState.TELEOP));
     }
 
     public static double deltaTime()
@@ -82,22 +60,41 @@ public class CommandRobot extends TimedRobot
 
     @Override
     public void robotPeriodic() 
-    {
+    {   
+        CommandScheduler.getInstance().run();
+        for(var m : managers)
+        {
+            ManagedSubsystemBase msb;
+
+            if(m instanceof ManagedSubsystemBase)
+            {
+                msb = (ManagedSubsystemBase)m;
+            }
+            else
+            {
+                continue;
+            }
+
+            if(ManagedSubsystemBase.subsystemHasCommand(msb))
+            {
+                msb.whenActive();
+            }
+            else
+            {
+                msb.whenInactive();
+            }
+        }
         for(var m : managers)
         {
             m.always();
         }
-        
-        CommandScheduler.getInstance().run();
+
         lastTime = System.currentTimeMillis();
     }
 
     @Override
     public void autonomousInit() 
     {
-        //System.out.println("Auto Init");
-
-        state = RobotState.AUTO;
         reset();
 
         autoCommand = autoChooser.getSelected();
@@ -123,13 +120,7 @@ public class CommandRobot extends TimedRobot
     @Override
     public void teleopInit() 
     {
-        state = RobotState.TELEOP;
         reset();
-
-        if(autoCommand != null)
-        {
-            CommandScheduler.getInstance().cancel(autoCommand);
-        }
 
         lastTime = System.currentTimeMillis() - (long)(TimedRobot.kDefaultPeriod * 1_000);
     }
@@ -143,11 +134,7 @@ public class CommandRobot extends TimedRobot
     @Override
     public void disabledInit() 
     {
-        state = RobotState.DISABLED;
-        if(autoCommand != null)
-        {
-            CommandScheduler.getInstance().cancel(autoCommand);
-        }
+        reset();
     }
 
     private void reset()

@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import frc.robot.Constants;
-import frc.robot.framework.ManagedSubsystemBase;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
 
 public class Climber extends ManagedSubsystemBase
 {
@@ -141,11 +141,16 @@ public class Climber extends ManagedSubsystemBase
         if (right < 0 && rightLimitSwitch.get())
         {
             right = 0;
-        } 
+        }
+        */
 
         talonLeft.set(ControlMode.PercentOutput, left);
         talonRight.set(ControlMode.PercentOutput, right);
-        */
     }
-    
+
+    @Override
+    public void whenInactive() 
+    {
+        stop(ClimberSide.BOTH);
+    }
 }

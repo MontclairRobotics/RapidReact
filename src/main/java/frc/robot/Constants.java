@@ -5,10 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.framework.frc.controllers.GameController;
 import frc.robot.framework.profiling.LinearProfiler;
 import frc.robot.framework.profiling.NothingProfiler;
 import frc.robot.framework.profiling.Profiler;
-import frc.robot.framework.wpilib.controllers.InputController;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -70,12 +70,11 @@ public final class Constants
     public static final double BALL_TRANSPORT_SPEED = 1; 
 
     //Shooter Speed
-    public static final double SHOOTER_SPEED = 0.8;
+    public static final double SHOOTER_SPEED = 0.75;
 
     //Climber Speed
     public static final double CLIMBER_MOTOR_SPEED =  1; 
     public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
-    public static final double CLIMBER_UPPER_LIMIT = Double.POSITIVE_INFINITY; //TODO: Figure out actual limit
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = false;
@@ -87,8 +86,8 @@ public final class Constants
     public static final boolean SHOOTER_RIGHT_INVERSION = false;
 
     // Climber inversion
-    public static final boolean LEFT_CLIMBER_INVERTED = true;
-    public static final boolean RIGHT_CLIMBER_INVERTED = true;
+    public static final boolean LEFT_CLIMBER_INVERTED = false;
+    public static final boolean RIGHT_CLIMBER_INVERTED = false;
 
     // Rotational Climber Inversion
     public static final boolean LEFT_ROTATIONAL_CLIMBER_INVERTED = false;
@@ -98,8 +97,8 @@ public final class Constants
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
-    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
-    public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
+    public static final GameController.Type DRIVER_CONTROLLER_TYPE = GameController.Type.PS4;
+    public static final GameController.Type OPERATOR_CONTROLLER_TYPE = GameController.Type.PS4;
 
     public static final double REVERSE_SHOOTER_SPEED = -0.7;
     
@@ -141,7 +140,7 @@ public final class Constants
     public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
 
     public static final double CONVERSION_RATE 
-    = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
+        = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
 
     public static final double ANGLE_PID_DEADBAND = 0.1;
     public static final double ANGLE_VELOCITY_DEADBAND = 20.0 / 1.0;

@@ -2,18 +2,17 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.framework.CommandWrapper;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.BallSucker;
 
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
-import static frc.robot.framework.Commands.*;
 
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.RapidReact.*;
+import static frc.robot.framework.frc.commands.Commands.*;
 
 public final class RapidReactCommands
 {
@@ -21,25 +20,28 @@ public final class RapidReactCommands
 
     public static Command shootSequenceBuilder(double shootTime)
     {
-        return sequence(
-            instant(() -> {
-                ballMover.startMovingBackwards();
-                ballShooter.reverseShooting();
-                ballSucker.startSucking();
-            }),
-            runForTime(0.05, block(ballMover, ballShooter)),
-            instant(() -> {
-                ballMover.stop();
-                ballSucker.stop();
-                ballShooter.startShooting();
-            }),
-            runForTime(0.2, block(ballShooter)),
-            instant(() -> ballMover.startMoving()),
-            runForTime(shootTime, block(ballMover, ballShooter)),
-            instant(() -> {
-                ballMover.stop();
-                ballShooter.stop();
-            })
+        return race(
+            sequence(
+                instant(() -> {
+                    ballMover.startMovingBackwards();
+                    ballShooter.reverseShooting();
+                    ballSucker.startSucking();
+                }),
+                waitFor(0.05),
+                instant(() -> {
+                    ballMover.stop();
+                    ballSucker.stop();
+                    ballShooter.startShooting();
+                }),
+                waitFor(0.2),
+                instant(() -> ballMover.startMoving()),
+                waitFor(shootTime),
+                instant(() -> {
+                    ballMover.stop();
+                    ballShooter.stop();
+                })
+            ),
+            block(ballMover, ballShooter, ballSucker)
         );
     }
 

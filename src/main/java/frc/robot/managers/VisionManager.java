@@ -1,5 +1,6 @@
 package frc.robot.managers;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
@@ -10,15 +11,18 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Data;
-import frc.robot.framework.ManagerBase;
-import frc.robot.framework.wpilib.senables.Sendables;
+import frc.robot.framework.frc.Sendables;
+import frc.robot.framework.frc.commands.ManagerBase;
 import frc.robot.structure.DetectedBall;
 
 public class VisionManager extends ManagerBase 
 {
+    private static final int MAX_OUTAGE_TIME = 30;
+
     ////////////////////////
     // NETWORK TABLE INFO
     ////////////////////////
@@ -34,6 +38,7 @@ public class VisionManager extends ManagerBase
     public static final String AREAS = "Areas";
     public static final String XS = "Xs";
     public static final String YS = "Ys";
+    public static final String COUNTER = "Counter";
 
     public static final String CURRENT_TEAM = "CurrentTeam";
 
@@ -46,6 +51,9 @@ public class VisionManager extends ManagerBase
     ////////////////////////
     // IMPLEMENTATION
     ////////////////////////
+    private double previousCounter = -1;
+    private boolean counterChanged = false;
+    private int framesDown = 0;
     public VisionManager()
     {
         var nt = NetworkTableInstance.getDefault().getTable(NT_NAME);
@@ -60,6 +68,7 @@ public class VisionManager extends ManagerBase
         areasEntry = nt.getEntry(AREAS);
         xsEntry = nt.getEntry(XS);
         ysEntry = nt.getEntry(YS);
+        counterEntry = nt.getEntry(COUNTER);
 
         currentTeamEntry = nt.getEntry(CURRENT_TEAM);
 
@@ -70,7 +79,7 @@ public class VisionManager extends ManagerBase
     private final NetworkTableEntry
         protoVerEntry, 
         isWritingEntry,
-        anglesEntry, areasEntry, xsEntry, ysEntry, circularitiesEntry, perimetersEntry,
+        anglesEntry, areasEntry, xsEntry, ysEntry, circularitiesEntry, perimetersEntry, counterEntry,
         currentTeamEntry
     ;
 
@@ -78,6 +87,16 @@ public class VisionManager extends ManagerBase
     public void reset()
     {
         balls = new ArrayList<>();
+        
+        protoVerEntry.setString("[]");
+        circularitiesEntry.setDoubleArray(new double[0]);
+        perimetersEntry.setDoubleArray(new double[0]);
+        anglesEntry.setDoubleArray(new double[0]);
+        areasEntry.setDoubleArray(new double[0]);
+        xsEntry.setDoubleArray(new double[0]);
+        ysEntry.setDoubleArray(new double[0]);
+
+        framesDown = 0;
     }
 
     private boolean isUpdating;
@@ -87,19 +106,31 @@ public class VisionManager extends ManagerBase
     
     public void always() 
     {
-        currentTeamEntry.setString(Data.getAlliance());
+        counterChanged = counterEntry.getDouble(-1) != previousCounter;
+        if(!counterChanged)
+        {
+            framesDown++;
+        }
+        else
+        {
+            framesDown = 0;
+        }
+
+        previousCounter = counterEntry.getDouble(-1);
+
+        currentTeamEntry.setString(DriverStation.getAlliance().name());
 
         if(!isUpdating)
         {
             return;
         }
         
-        var pVer = protoVerEntry.getString("[not present]");
+        var pVer = protoVerEntry.getString("[]");
         if(!pVer.equals(CURRENT_PROTO_VER))
         {
             if(System.currentTimeMillis() % 10 == 0)
             {
-                if(pVer.equals("[not present]"))
+                if(pVer.equals("[]"))
                 {
                     System.out.println(
                         "[WARNING]: vision data is not present! Skipping this update."
@@ -178,6 +209,14 @@ public class VisionManager extends ManagerBase
         System.out.println("---------------------------------");
         //*/
     
+    }
+
+    /**
+     * Is it working?
+     */
+    public boolean isWorking()
+    {
+        return framesDown <= MAX_OUTAGE_TIME;
     }
 
     /**

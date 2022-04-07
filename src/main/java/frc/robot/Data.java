@@ -18,7 +18,8 @@ import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.framework.wpilib.senables.Sendables;
+import frc.robot.framework.frc.AutoCommands;
+import frc.robot.framework.frc.Sendables;
 
 public final class Data 
 {
@@ -30,11 +31,6 @@ public final class Data
         mainTab = Shuffleboard.getTab("Main");
         debugTab = Shuffleboard.getTab("Debug");
 
-        allianceChooser = Sendables.chooser("Red", "Blue");
-        fmsAlliance = NetworkTableInstance.getDefault()
-            .getTable("FMSInfo")
-            .getEntry("IsRedAlliance");
-
         setupMainTab();
         setupDebugTab();
     }
@@ -44,15 +40,25 @@ public final class Data
         mainTab.add("Alliance", allianceChooser)
             .withWidget(BuiltInWidgets.kSplitButtonChooser)
             .withPosition(0, 3)
-            .withSize(1, 2);
+            .withSize(1, 1);
 
         var values = mainTab.getLayout("Values", BuiltInLayouts.kList)
-            .withPosition(1, 0)
+            .withPosition(0, 0)
             .withSize(1, 3);
 
         values.addNumber("Angular Velocity", RapidReact.navx::getAngularVelocity);
         values.addNumber("Current Max Speed", RapidReact.drivetrain::getMaxOutput);
         values.addString("Current Easing", () -> RapidReact.drivetrain.getProfiler().getName());
+
+        mainTab.addBoolean("PI?", RapidReact.vision::isWorking)
+            .withWidget(BuiltInWidgets.kBooleanBox)
+            .withPosition(1, 3)
+            .withSize(1, 1);
+
+        mainTab.add("Auto", AutoCommands.chooser())
+            .withWidget(BuiltInWidgets.kComboBoxChooser)
+            .withPosition(0+2, 3)
+            .withSize(2, 1);
 
         /*
         mainTab.add("Cam 1", CameraServer.getVideo("Shooter Vision").getSource())
@@ -97,21 +103,8 @@ public final class Data
         
         angleToBall = ball.add("Angle to Selected", 0).getEntry();
         ballArea = ball.add("Area of Selected", 0).getEntry();
-
-        useFmsAlliance = debugTab.add("Use FMS Alliance?", false)
-            .withWidget(BuiltInWidgets.kToggleSwitch)
-            .withPosition(0, 3)
-            .withSize(2, 1)
-            .getEntry();
-    }
-
-    public static void setupAuto(String name, Sendable sendable) 
-    {
-        mainTab.add(name, sendable)
-            .withWidget(BuiltInWidgets.kComboBoxChooser)
-            .withPosition(0+2, 3)
-            .withSize(2, 1);
-        debugTab.add(name, sendable)
+        
+        debugTab.add("Auto", AutoCommands.chooser())
             .withWidget(BuiltInWidgets.kComboBoxChooser)
             .withPosition(0+2, 3)
             .withSize(2, 1);
@@ -126,7 +119,6 @@ public final class Data
     private static NetworkTableEntry 
         distanceToTarget,
         angleToTarget,
-        useFmsAlliance,
         turnMode,
         driveMode,
         turnSpeed,
@@ -135,21 +127,7 @@ public final class Data
         ballArea
     ;
 
-    private static NetworkTableEntry fmsAlliance;
     private static SendableChooser<String> allianceChooser;
-
-    public static String getAllianceRaw() {return allianceChooser.getSelected();}
-    public static boolean getUseFMSAlliance() {return useFmsAlliance.getBoolean(false);}
-
-    public static String getAlliance()
-    {
-        if(getUseFMSAlliance())
-        {
-            return fmsAlliance.getBoolean(false) ? "Red" : "Blue";
-        }
-
-        return getAllianceRaw();
-    }
 
     public static double getDistanceKP() {return 0.035;}
     public static double getDistanceKI() {return 0.0;}
@@ -162,10 +140,10 @@ public final class Data
     public static double getAngleTolerance() {return 2.0;}
     public static double getAngleIntMax() {return 0.1;}
 
-    public static double getBallKP() {return 0.25;}
-    public static double getBallKI() {return 0.0;}
-    public static double getBallKD() {return 0.01;}
-    public static double getBallTolerance() {return 0.02;}
+    public static double getBallKP() {return 0.19;}
+    public static double getBallKI() {return 0.025;}
+    public static double getBallKD() {return 0.015;}
+    public static double getBallTolerance() {return 0.07;}
 
     public static void setDistanceToTarget(double value) 
     {

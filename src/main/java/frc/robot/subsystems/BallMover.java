@@ -3,9 +3,11 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.framework.ManagedSubsystemBase;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
 
 public class BallMover extends ManagedSubsystemBase
 {
@@ -30,5 +32,10 @@ public class BallMover extends ManagedSubsystemBase
     {
         motor.set(ControlMode.PercentOutput, 0);
     }
-    
+
+    @Override
+    public void whenInactive() 
+    {
+        stop();
+    }
 }

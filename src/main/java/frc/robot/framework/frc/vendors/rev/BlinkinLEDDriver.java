@@ -1,4 +1,4 @@
-package frc.robot.framework.vendors.rev;
+package frc.robot.framework.frc.vendors.rev;
 
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 

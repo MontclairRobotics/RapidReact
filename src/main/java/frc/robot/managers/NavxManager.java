@@ -4,9 +4,9 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Data;
-import frc.robot.framework.CommandRobot;
-import frc.robot.framework.ManagedSubsystemBase;
-import frc.robot.framework.ManagerBase;
+import frc.robot.framework.frc.commands.CommandRobot;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
+import frc.robot.framework.frc.commands.ManagerBase;
 
 public class NavxManager extends ManagerBase
 {

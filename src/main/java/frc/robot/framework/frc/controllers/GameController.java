@@ -1,13 +1,13 @@
-package frc.robot.framework.wpilib.controllers;
+package frc.robot.framework.frc.controllers;
 
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.framework.wpilib.triggers.AnalogValue;
+import frc.robot.framework.frc.commands.triggers.AnalogTrigger;
 
-public abstract class InputController 
+public abstract class GameController 
 {
     public static enum Axis
     {
@@ -187,18 +187,18 @@ public abstract class InputController
     {
         return new Trigger(() -> getDPadRaw(type));
     }
-    public final AnalogValue getAxis(Axis type)
+    public final AnalogTrigger getAxis(Axis type)
     {
-        return new AnalogValue(() -> getAxisValue(type));
+        return new AnalogTrigger(() -> getAxisValue(type));
     }
-    public final AnalogValue getPOV()
+    public final AnalogTrigger getPOV()
     {
-        return new AnalogValue(() -> getPOVValue());
+        return new AnalogTrigger(() -> getPOVValue());
     }
 
-    public static InputController xbox(int channel)
+    public static GameController xbox(int channel)
     {
-        return new InputController()
+        return new GameController()
         {
             private XboxController innerCont = new XboxController(channel);
 
@@ -239,9 +239,9 @@ public abstract class InputController
             }
         };
     }
-    public static InputController ps4(int channel)
+    public static GameController ps4(int channel)
     {
-        return new InputController()
+        return new GameController()
         {
             private PS4Controller innerCont = new PS4Controller(channel);
 
@@ -283,7 +283,7 @@ public abstract class InputController
         };
     }
 
-    public static InputController from(Type type, int channel)
+    public static GameController from(Type type, int channel)
     {
         return type.equals(Type.XBOX) ? xbox(channel) : ps4(channel);
     }
