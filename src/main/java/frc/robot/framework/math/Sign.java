@@ -8,9 +8,9 @@ public enum Sign
     UNDEFINED(Double.NaN)
     ;
 
-    public final double sign;
+    public final double value;
     private Sign(double sign)
     {
-        this.sign = sign;
+        this.value = sign;
     }
 }

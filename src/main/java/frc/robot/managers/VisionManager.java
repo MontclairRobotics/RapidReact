@@ -106,6 +106,7 @@ public class VisionManager extends ManagerBase
     
     public void always() 
     {
+
         counterChanged = counterEntry.getDouble(-1) != previousCounter;
         if(!counterChanged)
         {
@@ -128,24 +129,21 @@ public class VisionManager extends ManagerBase
         var pVer = protoVerEntry.getString("[]");
         if(!pVer.equals(CURRENT_PROTO_VER))
         {
-            if(System.currentTimeMillis() % 10 == 0)
+            if(pVer.equals("[]"))
             {
-                if(pVer.equals("[]"))
-                {
-                    System.out.println(
-                        "[WARNING]: vision data is not present! Skipping this update."
-                    );
-                }
-                else
-                {
-                    System.err.println(
-                        "[WARNING]: vision protocol version '" + pVer + 
-                        "' does not match expected version " + CURRENT_PROTO_VER +
-                        ". Stopping the vision pipeline now."
-                    );
+                System.out.println(
+                    "[WARNING]: vision data is not present! Skipping this update."
+                );
+            }
+            else
+            {
+                System.err.println(
+                    "[WARNING]: vision protocol version '" + pVer + 
+                    "' does not match expected version " + CURRENT_PROTO_VER +
+                    ". Stopping the vision pipeline now."
+                );
 
-                    isUpdating = false;
-                }
+                isUpdating = false;
             }
 
             reset();
@@ -155,6 +153,7 @@ public class VisionManager extends ManagerBase
         if(isWritingEntry.getBoolean(false))
         {
             System.out.println("[LOW]: vision data is lagging behind! Skipping this update.");
+            
             return;
         }
 
@@ -180,6 +179,7 @@ public class VisionManager extends ManagerBase
             );
 
             reset();
+
             return;
         }
 
@@ -208,7 +208,6 @@ public class VisionManager extends ManagerBase
         System.out.println();
         System.out.println("---------------------------------");
         //*/
-    
     }
 
     /**

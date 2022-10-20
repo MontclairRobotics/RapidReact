@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import javax.lang.model.type.NullType;
+
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,7 +34,7 @@ public final class AutoCommands
         return commands.get(name).get();
     }
 
-    private static SendableChooser<Command> chooserInternal;
+    private static SendableChooser<Command> chooserInternal = null;
     public static SendableChooser<Command> chooser()
     {
         if(chooserInternal != null)

@@ -54,7 +54,7 @@ public final class Data
             .withWidget(BuiltInWidgets.kBooleanBox)
             .withPosition(1, 3)
             .withSize(1, 1);
-
+        
         mainTab.add("Auto", AutoCommands.chooser())
             .withWidget(BuiltInWidgets.kComboBoxChooser)
             .withPosition(0+2, 3)
@@ -71,38 +71,37 @@ public final class Data
     }
     private static void setupDebugTab()
     {
-        distanceToTarget = debugTab.add("Distance to Target", 0)
+        debugTab.addNumber("Distance to Target", () -> distanceToTarget)
             .withWidget(BuiltInWidgets.kGraph)
             .withPosition(0, 0)
-            .withSize(3, 3)
-            .getEntry();
-        angleToTarget = debugTab.add("Angle to Target", 0)
+            .withSize(3, 3);
+        
+        debugTab.addNumber("Angle to Target", () -> angleToTarget)
             .withWidget(BuiltInWidgets.kGraph)
             .withPosition(0+3, 0)
-            .withSize(3, 3)
-            .getEntry();
+            .withSize(3, 3);
 
         var drive = debugTab.getLayout("Drive", BuiltInLayouts.kList)
             .withPosition(0+3+3, 0)
             .withSize(1, 2);
 
-        driveMode = drive.add("Drive Mode", "[normal]").getEntry();
-        driveSpeed = drive.add("Drive Speed", 0).getEntry();
+        drive.addString("Drive Mode", () -> driveMode);
+        drive.addNumber("Drive Speed", () -> driveSpeed);
         drive.addNumber("Distace Travelled", RapidReact.drivetrain::getAverageDistance);
 
         var turn = debugTab.getLayout("Turn", BuiltInLayouts.kList)
             .withPosition(0+3+3+1, 0)
             .withSize(1, 2);
 
-        turnSpeed = turn.add("Turn Speed", 0).getEntry();
-        turnMode = turn.add("Turn Mode", "[normal]").getEntry();
+        turn.addNumber("Turn Speed", () -> turnSpeed);
+        turn.addString("Turn Mode", () -> turnMode);
 
         var ball = debugTab.getLayout("Ball", BuiltInLayouts.kList)
             .withPosition(0+3+3+1+1, 0)
             .withSize(1, 2);
         
-        angleToBall = ball.add("Angle to Selected", 0).getEntry();
-        ballArea = ball.add("Area of Selected", 0).getEntry();
+        ball.addNumber("Angle to Selected", () -> angleToBall);
+        ball.addNumber("Area of Selected", () -> ballArea);
         
         debugTab.add("Auto", AutoCommands.chooser())
             .withWidget(BuiltInWidgets.kComboBoxChooser)
@@ -116,15 +115,18 @@ public final class Data
     private static ShuffleboardTab mainTab;
     private static ShuffleboardTab debugTab;
 
-    private static NetworkTableEntry 
-        distanceToTarget,
-        angleToTarget,
-        turnMode,
-        driveMode,
-        turnSpeed,
-        driveSpeed,
-        angleToBall,
-        ballArea
+    private static double 
+        distanceToTarget = 0,
+        angleToTarget = 0,
+        turnSpeed = 0,
+        driveSpeed = 0,
+        angleToBall = 0,
+        ballArea = 0
+    ;
+
+    private static String
+        turnMode = "[balls]",
+        driveMode = "[normal]"
     ;
 
     private static SendableChooser<String> allianceChooser;
@@ -147,37 +149,37 @@ public final class Data
 
     public static void setDistanceToTarget(double value) 
     {
-        distanceToTarget.setDouble(value);
+        distanceToTarget = value;
     }
     public static void setAngleToTarget(double value) 
     {
-        angleToTarget.setDouble(value);
+        angleToTarget = value;
     }
 
     public static void setTurnMode(String value)
     {
-        turnMode.setString(value);
+        turnMode = value;
     }
     public static void setDriveMode(String value)
     {
-        driveMode.setString(value);
+        driveMode = value;
     }
 
     public static void setTurnSpeed(double value)
     {
-        turnSpeed.setDouble(value);
+        turnSpeed = value;
     }
     public static void setDriveSpeed(double value)
     {
-        driveSpeed.setDouble(value);
+        driveSpeed = value;
     }
 
     public static void setAngleToBall(double value)
     {
-        angleToBall.setDouble(value);
+        angleToBall = value;
     }
     public static void setBallArea(double value)
     {
-        ballArea.setDouble(value);
+        ballArea = value;
     }
 }

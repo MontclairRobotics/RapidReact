@@ -412,7 +412,7 @@ public final class Drivetrain extends ManagedSubsystemBase
         else if (isUsingBallPID && isTargetingABall)
         {
             Data.setTurnMode("[ball pid]");
-
+            
             var ball = RapidReact.vision
                 .getBall((a, b) -> Math.abs(a.getAngle()) < Math.abs(b.getAngle()));
 

@@ -94,10 +94,8 @@ public final class RapidReact extends RobotContainer
     ////////////////////////////////
     @Override
     public void initialize()
-    {
-        // Smart dashboard
-        Data.setup();
-        
+    {   
+        //*
         // Intake
         operatorController.getButton(X_SQUARE)
             .whenActive(ballSucker::startSucking)
@@ -154,18 +152,17 @@ public final class RapidReact extends RobotContainer
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
-        /*
-        // Rotational climber forward command
-        operatorController.getDPad(DPad.LEFT)
-            .whenActive(rotationalClimber::rotateForward)
-            .whileActiveContinuous(block(rotationalClimber))
-            .whenInactive(rotationalClimber::stop);
-        // Rotational climber backward command
-        operatorController.getDPad(DPad.RIGHT)
-            .whenActive(rotationalClimber::rotateBackward)
-            .whileActiveContinuous(block(rotationalClimber))
-            .whenInactive(rotationalClimber::stop);
-        */
+        
+        // // Rotational climber forward command
+        // operatorController.getDPad(DPad.LEFT)
+        //     .whenActive(rotationalClimber::rotateForward)
+        //     .whileActiveContinuous(block(rotationalClimber))
+        //     .whenInactive(rotationalClimber::stop);
+        // // Rotational climber backward command
+        // operatorController.getDPad(DPad.RIGHT)
+        //     .whenActive(rotationalClimber::rotateBackward)
+        //     .whileActiveContinuous(block(rotationalClimber))
+        //     .whenInactive(rotationalClimber::stop);
 
         // Max speed command
         driverController.getButton(A_CROSS)
@@ -198,11 +195,9 @@ public final class RapidReact extends RobotContainer
         );
 
         // Turn reverse
-        /*
-        driverController.getAxis(RIGHT_TRIGGER).whenGreaterThan(0.5)
-            .whenActive(drivetrain::startReverseTurning)
-            .whenInactive(drivetrain::stopReverseTurning);
-        */
+        // driverController.getAxis(RIGHT_TRIGGER).whenGreaterThan(0.5)
+        //     .whenActive(drivetrain::startReverseTurning)
+        //     .whenInactive(drivetrain::stopReverseTurning);
 
         // Turn commands
         driverController.getDPad(DPad.RIGHT)
@@ -220,7 +215,6 @@ public final class RapidReact extends RobotContainer
             .whenInactive(drivetrain::stopTargetingABall); 
         
         // CLIMBER BACKUPS
-        //*/
         operatorController.getAxis(LEFT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
@@ -238,7 +232,6 @@ public final class RapidReact extends RobotContainer
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        //*/    
 
         // PID straight angle command: TELEOP ONLY
         driverController.getAxis(RIGHT_X).abs()
@@ -258,6 +251,7 @@ public final class RapidReact extends RobotContainer
                 ),
                 instant(drivetrain::stopStraightPidding)
             ));
+        //*/
         
         /////////////////////////////////
         /// AUTO
@@ -341,8 +335,7 @@ public final class RapidReact extends RobotContainer
                     instant(ballSucker::stop),
                     instant(ballMover::stop),
                     instant(drivetrain::stopTargetingABall)
-                ),
-                block(ballSucker, ballMover, ballShooter)
+                )
             )
         );
 
@@ -485,6 +478,9 @@ public final class RapidReact extends RobotContainer
         */
 
         AutoCommands.setDefaultAutoCommand("Main");
+        
+        // Smart dashboard
+        Data.setup();
     }
 }
 
