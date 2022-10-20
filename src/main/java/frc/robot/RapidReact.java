@@ -480,7 +480,7 @@ public final class RapidReact extends RobotContainer
         AutoCommands.setDefaultAutoCommand("Main");
         
         // Smart dashboard
-        Data.setup();
+        // Data.setup();
     }
 }
 
