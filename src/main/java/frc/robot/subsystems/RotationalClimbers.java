@@ -7,22 +7,22 @@ import frc.robot.Constants;
  
 public class RotationalClimbers extends SubsystemBase { 
      
-    private CANSparkMax leftMotor = new CANSparkMax(Constants.LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT, MotorType.kBrushless); 
-    private CANSparkMax rightMotor = new CANSparkMax(Constants.RIGHT_ROTATIONAL_CLIMBER_MOTOR_PORT, MotorType.kBrushless); 
+    private CANSparkMax leftMotor = new CANSparkMax(Constants.LEFT_CLIMBER_MOTOR_PORT, MotorType.kBrushless); 
+    private CANSparkMax rightMotor = new CANSparkMax(Constants.RIGHT_CLIMBER_MOTOR_PORT, MotorType.kBrushless); 
  
     public RotationalClimbers() { 
-        leftMotor.setInverted(Constants.LEFT_ROTATIONAL_CLIMBER_INVERTED); 
-        rightMotor.setInverted(Constants.RIGHT_ROTATIONAL_CLIMBER_INVERTED); 
+        leftMotor.setInverted(Constants.LEFT_CLIMBER_INVERTED); 
+        rightMotor.setInverted(Constants.RIGHT_CLIMBER_INVERTED); 
     } 
  
     public void rotateForward() { 
-        leftMotor.set(Constants.ROTATIONAL_CLIMBER_MOTOR_SPEED); 
-        rightMotor.set(Constants.ROTATIONAL_CLIMBER_MOTOR_SPEED); 
+        leftMotor.set(Constants.CLIMBER_MOTOR_SPEED); 
+        rightMotor.set(Constants.CLIMBER_MOTOR_SPEED); 
     } 
  
     public void rotateBackward() { 
-        leftMotor.set(Constants.REVERSE_ROTATIONAL_CLIMBER_MOTOR_SPEED); 
-        rightMotor.set(Constants.REVERSE_ROTATIONAL_CLIMBER_MOTOR_SPEED); 
+        leftMotor.set(Constants.REVERSE_CLIMBER_MOTOR_SPEED); 
+        rightMotor.set(Constants.REVERSE_CLIMBER_MOTOR_SPEED); 
     } 
  
     public void stop() { 
