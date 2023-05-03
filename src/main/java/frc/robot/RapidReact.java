@@ -305,113 +305,119 @@ public final class RapidReact extends RobotContainer
     private static final double AUTO_DRIVE_DISTANCE = 96.0;
     private static final double AUTO_WAIT_TIME = 5;
 
-    @Override
-    public AutoCommands getAutoCommands()
-    {
-        var commands = new AutoCommands();
+    // @Override
+    // public AutoCommands getAutoCommands()
+    // {
+    //     var commands = new AutoCommands();
         
-        commands.add(
-            "Drive", 
-            () -> sequence(
-                instant(() -> drivetrain.startStraightPidding()),
-                runForTime(2.5, () -> drivetrain.set(0.5, 0), drivetrain),
-                instant(() -> drivetrain.set(0, 0)),
-                instant(() -> drivetrain.stopStraightPidding())
-            )
-        );
-        commands.add(
-            "Shoot",
-            () -> sequence(
-                // stops driving and starts revving up shooter and intake
-                instant(
-                    () -> {
-                        ballShooter.startShooting();
-                        ballSucker.startSucking();
-                    },
-                    ballShooter,
-                    ballSucker
-                ),
-                // wait for shooter to rev
-                waitFor(1.0),
-                // start transport
-                instant(
-                    () -> {
-                        ballMover.startMoving(); // fucking shit hell bitcoins
-                        //blinkinLEDDriver.set(CONFETTI);
-                    },
-                    ballMover
-                ),
-                // wait for ball to shoot
-                waitFor(2.0),
-                // stop shooter, transport, and intake
-                instant(
-                    () -> {
-                        ballShooter.stop();
-                        ballMover.stop();
-                        ballSucker.stop();
-                        //blinkinLEDDriver.set(HOT_PINK);
-                    },
-                    ballShooter,
-                    ballSucker
-                )
-            )
-        );
-        commands.add(
-            "Main",
-            () -> sequence(commands.get("Shoot"), commands.get("Drive"))
-        );
-        commands.add(
-            "Delay Main",
-            () -> sequence(waitFor(AUTO_WAIT_TIME), commands.get("Main"))
-        );
-        commands.add(
-            "Nothing",
-            () -> instant(() -> {})
-        );
+    //     commands.add(
+    //         "Drive", 
+    //         () -> sequence(
+    //             instant(() -> drivetrain.startStraightPidding()),
+    //             runForTime(2.5, () -> drivetrain.set(0.5, 0), drivetrain),
+    //             instant(() -> drivetrain.set(0, 0)),
+    //             instant(() -> drivetrain.stopStraightPidding())
+    //         )
+    //     );
+    //     commands.add(
+    //         "Shoot",
+    //         () -> sequence(
+    //             // stops driving and starts revving up shooter and intake
+    //             instant(
+    //                 () -> {
+    //                     ballShooter.startShooting();
+    //                     ballSucker.startSucking();
+    //                 },
+    //                 ballShooter,
+    //                 ballSucker
+    //             ),
+    //             // wait for shooter to rev
+    //             waitFor(1.0),
+    //             // start transport
+    //             instant(
+    //                 () -> {
+    //                     ballMover.startMoving(); // fucking shit hell bitcoins
+    //                     //blinkinLEDDriver.set(CONFETTI);
+    //                 },
+    //                 ballMover
+    //             ),
+    //             // wait for ball to shoot
+    //             waitFor(2.0),
+    //             // stop shooter, transport, and intake
+    //             instant(
+    //                 () -> {
+    //                     ballShooter.stop();
+    //                     ballMover.stop();
+    //                     ballSucker.stop();
+    //                     //blinkinLEDDriver.set(HOT_PINK);
+    //                 },
+    //                 ballShooter,
+    //                 ballSucker
+    //             )
+    //         )
+    //     );
+    //     commands.add(
+    //         "Main",
+    //         () -> sequence(commands.get("Shoot"), commands.get("Drive"))
+    //     );
+    //     commands.add(
+    //         "Delay Main",
+    //         () -> sequence(waitFor(AUTO_WAIT_TIME), commands.get("Main"))
+    //     );
+    //     commands.add(
+    //         "Nothing",
+    //         () -> instant(() -> {})
+    //     );
 
-        // EXPIREMENTAL AUTOS
-        commands.add(
-            "Drive Intake",
-            () -> sequence(
-                instant(() -> ballSucker.startSucking()),
-                commands.get("Drive"),
-                instant(() -> ballSucker.stop())
-            )
-        );
-        commands.add(
-            "Drive Return",
-            () -> sequence(
-                instant(() -> drivetrain.startStraightPidding()),
-                runForTime(2.5, () -> drivetrain.set(-0.5, 0), drivetrain),
-                instant(() -> drivetrain.set(0, 0)),
-                instant(() -> drivetrain.stopStraightPidding())    
-            )
-        );
-        commands.add(
-            "Main Taxi Intake",
-            () -> sequence(
-                commands.get("Shoot"),
-                commands.get("Drive Intake")
-            )
-        );
-        commands.add(
-            "Main Two Ball",
-            () -> sequence(
-                commands.get("Shoot"),
-                commands.get("Drive Intake"),
-                commands.get("Drive Return"),
-                commands.get("Shoot"),
-                commands.get("Drive")
-            )
-        ); 
+    //     // EXPIREMENTAL AUTOS
+    //     commands.add(
+    //         "Drive Intake",
+    //         () -> sequence(
+    //             instant(() -> ballSucker.startSucking()),
+    //             commands.get("Drive"),
+    //             instant(() -> ballSucker.stop())
+    //         )
+    //     );
+    //     commands.add(
+    //         "Drive Return",
+    //         () -> sequence(
+    //             instant(() -> drivetrain.startStraightPidding()),
+    //             runForTime(2.5, () -> drivetrain.set(-0.5, 0), drivetrain),
+    //             instant(() -> drivetrain.set(0, 0)),
+    //             instant(() -> drivetrain.stopStraightPidding())    
+    //         )
+    //     );
+    //     commands.add(
+    //         "Main Taxi Intake",
+    //         () -> sequence(
+    //             commands.get("Shoot"),
+    //             commands.get("Drive Intake")
+    //         )
+    //     );
+    //     commands.add(
+    //         "Main Two Ball",
+    //         () -> sequence(
+    //             commands.get("Shoot"),
+    //             commands.get("Drive Intake"),
+    //             commands.get("Drive Return"),
+    //             commands.get("Shoot"),
+    //             commands.get("Drive")
+    //         )
+    //     ); 
 
-        return commands;
-    }
+    //     return commands;
+    // }
+
+    // @Override
+    // public String defaultAutoCommand() 
+    // {
+    //     return "Main Two Ball";
+    // }
 
     @Override
-    public String defaultAutoCommand() 
-    {
-        return "Main Two Ball";
+    public AutoCommands getAutoCommands() {
+        
+        return new AutoCommands();
     }
 }
 
