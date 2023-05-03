@@ -10,14 +10,14 @@ package frc.robot;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.PIDDistanceCommand;
-import frc.robot.framework.CommandRobot;
-import frc.robot.framework.RobotContainer;
-import frc.robot.framework.RobotState;
+import frc.robot.framework.commandrobot.CommandRobot;
+import frc.robot.framework.commandrobot.RobotContainer;
 import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
 import frc.robot.framework.wpilib.AutoCommands;
@@ -286,7 +286,7 @@ public final class RapidReact extends RobotContainer
             )
             .and(new Trigger(drivetrain::isTargetingAnAngle).negate())
             .and(new Trigger(drivetrain::isStraightPidding).negate())
-            .and(CommandRobot.whenTeleop())
+            .and(new Trigger(DriverStation::isTeleop)) //TODO check if this works
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
                 print("AAAAAAAAAAAAAAAAAAAAAA"),
@@ -305,6 +305,7 @@ public final class RapidReact extends RobotContainer
     private static final double AUTO_DRIVE_DISTANCE = 96.0;
     private static final double AUTO_WAIT_TIME = 5;
 
+    //TODO add new getAuto() method
     // @Override
     // public AutoCommands getAutoCommands()
     // {
@@ -414,11 +415,11 @@ public final class RapidReact extends RobotContainer
     //     return "Main Two Ball";
     // }
 
-    @Override
-    public AutoCommands getAutoCommands() {
+    // @Override
+    // public AutoCommands getAutoCommands() {
         
-        return new AutoCommands();
-    }
+    //     return new AutoCommands();
+    // }
 }
 
 // drive forward 5 feet :P

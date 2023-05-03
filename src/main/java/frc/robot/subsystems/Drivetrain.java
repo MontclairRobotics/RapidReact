@@ -14,14 +14,14 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
 import frc.robot.Data;
-import frc.robot.framework.CommandRobot;
-import frc.robot.framework.RobotState;
+import frc.robot.framework.commandrobot.CommandRobot;
 import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.profiling.Profiler;
 
@@ -300,7 +300,7 @@ public final class Drivetrain extends SubsystemBase
     @Override
     public void periodic()
     {
-        if(CommandRobot.getState().equals(RobotState.DISABLED))
+        if(DriverStation.isDisabled())
             return;
 
         // Locals for speed and turn

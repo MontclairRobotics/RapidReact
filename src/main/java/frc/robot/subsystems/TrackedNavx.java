@@ -5,7 +5,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Data;
-import frc.robot.framework.CommandRobot;
+import frc.robot.framework.commandrobot.CommandRobot;
 
 public class TrackedNavx extends SubsystemBase 
 {
