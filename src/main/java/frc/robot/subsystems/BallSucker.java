@@ -7,10 +7,17 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
 
-public class BallSucker extends SubsystemBase
+public class BallSucker extends ManagedSubsystemBase
 {
     private CANSparkMax motor = new CANSparkMax(Constants.INTAKE_MOTOR_PORT, MotorType.kBrushless);
+
+    @Override
+    public void reset() 
+    {
+        stop();
+    }
 
     public void startSucking()
     {
@@ -25,5 +32,11 @@ public class BallSucker extends SubsystemBase
     public void stop() 
     {
         motor.set(0);
+    }
+    
+    @Override
+    public void whenInactive() 
+    {
+        stop();
     }
 }

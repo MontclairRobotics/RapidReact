@@ -1,9 +1,10 @@
+package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import static frc.robot.framework.Commands.*;
 import edu.wpi.first.wpilibj2.command.*;
 import static edu.wpi.first.wpilibj2.command.CommandBase.*;
-import frc.robot.RapidReact;
+
 import frc.robot.framework.ScoreHeights;
 
 public class Commands555 {

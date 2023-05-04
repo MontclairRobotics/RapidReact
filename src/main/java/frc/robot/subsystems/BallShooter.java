@@ -3,14 +3,14 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.framework.ScoreHeights;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
+import frc.robot.framework.math.MathUtils;
 
-public class BallShooter extends SubsystemBase
+public class BallShooter extends ManagedSubsystemBase
 {
-    private double shooterSpeed = Constants.SHOOTER_SPEED;
     private CANSparkMax rightMotor = new CANSparkMax(Constants.RIGHT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
     private CANSparkMax leftMotor = new CANSparkMax(Constants.LEFT_SHOOTER_MOTOR_PORT, MotorType.kBrushless);
 
@@ -20,10 +20,22 @@ public class BallShooter extends SubsystemBase
         leftMotor.setInverted(Constants.SHOOTER_LEFT_INVERSION);
     }
 
+    @Override
+    public void reset() 
+    {
+        stop();
+    }
+
+    public void startShooting(double speed) 
+    {
+        speed = MathUtil.clamp(speed, 0.0, 1.0);
+        leftMotor.set(speed);
+        rightMotor.set(speed);
+    }
+
     public void startShooting() 
     {
-        leftMotor.set(shooterSpeed);
-        rightMotor.set(shooterSpeed);
+        startShooting(Constants.SHOOTER_SPEED);
     }
 
     public void reverseShooting()
@@ -37,9 +49,10 @@ public class BallShooter extends SubsystemBase
         leftMotor.set(0);
         rightMotor.set(0);
     }
-
-    public void setHeight(ScoreHeights height) {
-        shooterSpeed = MathUtils.clamp(height.getSpeed(), 0, 1);
+    
+    @Override
+    public void whenInactive() 
+    {
+        stop();
     }
-
 }

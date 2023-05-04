@@ -12,20 +12,22 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.PIDDistanceCommand;
+import frc.robot.framework.RobotState;
+import frc.robot.framework.frc.AutoCommands;
 import frc.robot.framework.commandrobot.CommandRobot;
 import frc.robot.framework.commandrobot.RobotContainer;
-import frc.robot.framework.maths.MathUtils;
-import frc.robot.framework.vendors.rev.BlinkinLEDDriver;
-import frc.robot.framework.wpilib.AutoCommands;
-import frc.robot.framework.wpilib.controllers.InputController;
-import frc.robot.framework.wpilib.controllers.InputController.DPad;
-import frc.robot.framework.wpilib.triggers.AnalogTrigger;
-import frc.robot.subsystems.TrackedNavx;
+import frc.robot.framework.frc.commands.triggers.AnalogTrigger;
+import frc.robot.framework.frc.controllers.GameController;
+import frc.robot.framework.frc.controllers.GameController.DPad;
+import frc.robot.framework.frc.vendors.rev.BlinkinLEDDriver;
+import frc.robot.framework.math.MathUtils;
+import frc.robot.managers.NavxManager;
+import frc.robot.managers.VisionManager;
 import frc.robot.subsystems.Climber.ClimberSide;
 import frc.robot.subsystems.Auto;
 import frc.robot.subsystems.BallMover;
@@ -33,18 +35,19 @@ import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.BallSucker;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.RotationalClimber;
 
 import static frc.robot.Constants.*;
-import static frc.robot.framework.vendors.rev.BlinkinLEDMode.*;
-import static frc.robot.framework.wpilib.controllers.InputController.Axis.*;
-import static frc.robot.framework.wpilib.controllers.InputController.Button.*;
+import static frc.robot.framework.frc.commands.Commands.*;
+import static frc.robot.framework.frc.controllers.GameController.Axis.*;
+import static frc.robot.framework.frc.controllers.GameController.Button.*;
+import static frc.robot.framework.frc.vendors.rev.BlinkinLEDMode.*;
 
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.*;
 import static edu.wpi.first.wpilibj2.command.CommandBase.*;
 import static edu.wpi.first.wpilibj2.command.CommandGroupBase.*;
-import static frc.robot.framework.Commands.*;
 
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.kauailabs.navx.frc.AHRS;
@@ -63,16 +66,15 @@ public final class RapidReact extends RobotContainer
     ////////////////////////////////
     // CONTROLLERS
     ////////////////////////////////
-    public static final InputController driverController = InputController.from(DRIVER_CONTROLLER_TYPE,
+    public static final GameController driverController = GameController.from(DRIVER_CONTROLLER_TYPE,
             DRIVER_CONTROLLER_PORT);
-    public static final InputController operatorController = InputController.from(OPERATOR_CONTROLLER_TYPE,
+    public static final GameController operatorController = GameController.from(OPERATOR_CONTROLLER_TYPE,
             OPERATOR_CONTROLLER_PORT);
 
     ////////////////////////////////
-    // MODELS
+    // SUBSYSTEMS / MANAGERS
     ////////////////////////////////
-    public static final TrackedNavx navx = new TrackedNavx(new AHRS());
-    public static final Drivetrain drivetrain = new Drivetrain(navx);
+    public static final Drivetrain drivetrain = new Drivetrain();
     public static final BallSucker ballSucker = new BallSucker();
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
@@ -80,9 +82,10 @@ public final class RapidReact extends RobotContainer
     public static final Field2d field = new Field2d();
     public static Field2d getField() {return field;}
     public static final Auto auto = new Auto();
+    //public static final RotationalClimber rotationalClimber = new RotationalClimber();
 
-    private static UsbCamera intakeCamera;
-    private static UsbCamera shooterCamera;
+    public static final VisionManager vision = new VisionManager();
+    public static final NavxManager navx = new NavxManager(new AHRS());
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
@@ -91,54 +94,26 @@ public final class RapidReact extends RobotContainer
     public final Ultrasonic ultrasonicRight = new Ultrasonic(RIGHT_ULTRASONIC_SENSOR_PING_PORT, RIGHT_ULTRASONIC_SENSOR_ECHO_PORT);
     //*/
 
-    public static int speedIndex = 0;
-
     ////////////////////////////////
     // INITIALIZATION
     ////////////////////////////////
     @Override
-    public void reset() 
-    {
-        // Calibrate the navx
-        navx.calibrate();
-        navx.zeroYaw();
-
-        // PID setup
-        drivetrain.setup();
-        drivetrain.enableAllPID();
-        drivetrain.killMomentum();
-
-        // TEMP
-        //drivetrain.disableAllPID();
-    }
-
-    @Override
     public void initialize()
-    {
-        // Smart dashboard
-        Data.setup();
-
-        // Camera servers
-        intakeCamera = CameraServer.startAutomaticCapture("Intake Camera", 0);
-        intakeCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
-
-        shooterCamera = CameraServer.startAutomaticCapture("Shooter Camera", 1);
-        shooterCamera.setConnectionStrategy(ConnectionStrategy.kKeepOpen);
-
+    {   
+        //*
         // Intake
-        operatorController.getButtonTrigger(X_SQUARE)
+        operatorController.getButton(X_SQUARE)
             .whenActive(ballSucker::startSucking)
             .whenInactive(ballSucker::stop)
             .whileActiveContinuous(block(ballSucker));
-
         // Reverse Intake
-        operatorController.getButtonTrigger(B_CIRCLE)
+        operatorController.getButton(B_CIRCLE)
             .whenActive(ballSucker::startSucking)
             .whenInactive(ballSucker::stop)
             .whileActiveContinuous(block(ballSucker));
 
         // Transport up
-        operatorController.getDPadTrigger(DPad.UP)
+        operatorController.getDPad(DPad.UP)
             .whenActive(() -> {
                 ballMover.startMoving();
                 ballShooter.reverseShooting();
@@ -150,285 +125,373 @@ public final class RapidReact extends RobotContainer
             .whileActiveContinuous(block(ballMover, ballShooter));
         
         // Transport down
-        operatorController.getDPadTrigger(DPad.DOWN)
+        operatorController.getDPad(DPad.DOWN)
             .whenActive(ballMover::startMovingBackwards)
             .whenInactive(ballMover::stop)
             .whileActiveContinuous(block(ballMover));
         
         // Shooter command
-        operatorController.getButtonTrigger(LEFT_BUMPER)
-            .toggleWhenActive(
-                sequence(
-                    instant(() -> {
-                        ballMover.startMovingBackwards();
-                        ballShooter.reverseShooting();
-                    }),
-                    runForTime(0.25, block(ballMover, ballShooter)),
-                    instant(() -> {
-                        ballMover.stop();
-                        ballShooter.startShooting();
-                    }),
-                    runForTime(0.5, block(ballShooter)),
-                    instant(() -> ballMover.startMoving()),
-                    runForTime(2.5, block(ballMover, ballShooter)),
-                    instant(() -> {
-                        ballMover.stop();
-                        ballShooter.stop();
-                    })
-                )
-            );
+        operatorController.getButton(LEFT_BUMPER)
+            .toggleWhenActive(RapidReactCommands.shootSequence());
 
-        //  Direct shooter
-        operatorController.getAxisTrigger(LEFT_TRIGGER)
-            .when(MathUtils::greaterThan, 0.5)
-            .whenActive(ballShooter::startShooting)
+        // Direct shooter
+        operatorController.getAxis(LEFT_TRIGGER)
+            .whenGreaterThan(0.5)
+            .whenActive(() -> ballShooter.startShooting())
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
 
         // Reverse shooter
-        operatorController.getButtonTrigger(RIGHT_BUMPER)
+        operatorController.getButton(RIGHT_BUMPER)
             .whenActive(ballShooter::reverseShooting)
             .whenInactive(ballShooter::stop)
             .whileActiveContinuous(block(ballShooter));
 
         // Climb up command
-        operatorController.getButtonTrigger(Y_TRIANGLE)
+        operatorController.getButton(Y_TRIANGLE)
             .whenActive(() -> climber.startClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
-
         // Climb down command
-        operatorController.getButtonTrigger(A_CROSS)
+        operatorController.getButton(A_CROSS)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.BOTH))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.BOTH));
+        
+        // // Rotational climber forward command
+        // operatorController.getDPad(DPad.LEFT)
+        //     .whenActive(rotationalClimber::rotateForward)
+        //     .whileActiveContinuous(block(rotationalClimber))
+        //     .whenInactive(rotationalClimber::stop);
+        // // Rotational climber backward command
+        // operatorController.getDPad(DPad.RIGHT)
+        //     .whenActive(rotationalClimber::rotateBackward)
+        //     .whileActiveContinuous(block(rotationalClimber))
+        //     .whenInactive(rotationalClimber::stop);
 
         // Max speed command
-        driverController.getButtonTrigger(A_CROSS)
-            .whenActive(() -> {
-                // Loop through speeds
-                speedIndex++;
-                speedIndex %= ROBOT_SPEEDS.length;
-
-                // Set speed
-                drivetrain.setMaxOutput(ROBOT_SPEEDS[speedIndex]);
-            });
-
+        driverController.getButton(A_CROSS)
+            .whenActive(drivetrain::nextDriveSpeed);
+                 
         // Ease control command
-        driverController.getButtonTrigger(Y_TRIANGLE)
-            .whenActive(() -> drivetrain.setProfiler(NOTHING_PROFILER))
+        driverController.getAxis(RIGHT_TRIGGER)
+            .whenGreaterThan(0.5)
+            .whenActive(() -> {
+                drivetrain.setProfiler(NOTHING_PROFILER);
+                drivetrain.killMomentum();
+            })
             .whenInactive(() -> drivetrain.setProfiler(DRIVE_PROFILER));
 
         // Drive command
         drivetrain.setDefaultCommand(
-            run(() -> {
+            run(() -> 
+            {
+                if(!DriverStation.isTeleop())
+                {
+                    return;
+                }
+
                 drivetrain.set(
-                    -driverController.getAxis(LEFT_Y), 
-                    driverController.getAxis(RIGHT_X)
+                    -driverController.getAxisValue(LEFT_Y), 
+                    driverController.getAxisValue(RIGHT_X)
                 );
                 //System.out.println(navxTracker.getAngularVelocity());
             }, drivetrain)
         );
 
-        // Turn the thing 90 degrees
-        driverController.getDPadTrigger(DPad.LEFT)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(-90)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
-        driverController.getDPadTrigger(DPad.RIGHT)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(90)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
-        driverController.getDPadTrigger(DPad.UP)
-            .whenActive(
-                sequence(
-                    instant(() -> drivetrain.setTargetAngle(180)),
-                    runUntil(drivetrain::reachedTargetAngle, block(drivetrain)),
-                    instant(drivetrain::releaseAngleTarget)
-                )
-            );
+        // Turn reverse
+        // driverController.getAxis(RIGHT_TRIGGER).whenGreaterThan(0.5)
+        //     .whenActive(drivetrain::startReverseTurning)
+        //     .whenInactive(drivetrain::stopReverseTurning);
 
+        // Turn commands
+        driverController.getDPad(DPad.RIGHT)
+            .toggleWhenActive(RapidReactCommands.turn(90));
+        driverController.getDPad(DPad.LEFT)
+            .toggleWhenActive(RapidReactCommands.turn(-90));
+        driverController.getDPad(DPad.UP)
+            .toggleWhenActive(RapidReactCommands.turn(-180));
+        driverController.getDPad(DPad.DOWN)
+            .toggleWhenActive(RapidReactCommands.turn(180));
+
+        // turn to ball
+        driverController.getAxis(LEFT_TRIGGER).whenGreaterThan(0.5)
+            .whenActive(drivetrain::startTargetingABall)
+            .whenInactive(drivetrain::stopTargetingABall); 
+        
         // CLIMBER BACKUPS
-        ///*
-        operatorController.getAxisTrigger(LEFT_Y)
-        .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxis(LEFT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
-        operatorController.getAxisTrigger(LEFT_Y)
-        .when(MathUtils::lessThan, -0.5)
+        operatorController.getAxis(LEFT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.LEFT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.LEFT));
         
-        operatorController.getAxisTrigger(RIGHT_Y)
-        .when(MathUtils::greaterThan, 0.5)
+        operatorController.getAxis(RIGHT_Y).whenGreaterThan(0.5)
             .whenActive(() -> climber.startClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        operatorController.getAxisTrigger(RIGHT_Y)
-        .when(MathUtils::lessThan, -0.5)
+        operatorController.getAxis(RIGHT_Y).whenLessThan(-0.5)
             .whenActive(() -> climber.startReverseClimbing(ClimberSide.RIGHT))
             .whileActiveContinuous(block(climber))
             .whenInactive(() -> climber.stop(ClimberSide.RIGHT));
-        //*/    
 
         // PID straight angle command: TELEOP ONLY
-        driverController.getAxisTrigger(RIGHT_X).abs()
-            .when(MathUtils::lessThan, ANGLE_PID_DEADBAND)
+        driverController.getAxis(RIGHT_X).abs()
+            .whenLessThan(ANGLE_PID_DEADBAND)
             .and(
-                AnalogTrigger.from(navx::getAngularVelocity)
-                    .abs()
-                    .when(MathUtils::lessThan, ANGLE_VELOCITY_DEADBAND)
+                AnalogTrigger.from(navx::getAngularVelocity).abs()
+                    .whenLessThan(ANGLE_VELOCITY_DEADBAND)
             )
             .and(new Trigger(drivetrain::isTargetingAnAngle).negate())
             .and(new Trigger(drivetrain::isStraightPidding).negate())
-            .and(new Trigger(DriverStation::isTeleop)) //TODO check if this works
+            .and(new Trigger(DriverStation::isTeleop))
             .whenActive(sequence(
                 instant(drivetrain::startStraightPidding),
-                print("AAAAAAAAAAAAAAAAAAAAAA"),
                 waitUntil(() ->
-                    Math.abs(driverController.getAxis(RIGHT_X)) >= ANGLE_PID_DEADBAND
+                    Math.abs(driverController.getAxisValue(RIGHT_X)) >= ANGLE_PID_DEADBAND
                     || drivetrain.isTargetingAnAngle()
                 ),
-                print("AAAAAAAAAAAAAAAAAAAAAA"),
                 instant(drivetrain::stopStraightPidding)
             ));
-    }
-
-    /////////////////////////////////
-    /// AUTO
-    /////////////////////////////////
-    private static final double AUTO_DRIVE_DISTANCE = 96.0;
-    private static final double AUTO_WAIT_TIME = 5;
-
-    @Override
-    public Command getAuto() {
-        return auto.get();
-    }
-
-    //TODO add new getAuto() method
-    // @Override
-    // public AutoCommands getAutoCommands()
-    // {
-    //     var commands = new AutoCommands();
+        }
+        //*/
         
-    //     commands.add(
-    //         "Drive", 
+        /////////////////////////////////
+        /// AUTO
+        /////////////////////////////////
+        @Override
+        public Command getAuto() {
+            return auto.get();
+        }
+
+    //     AutoCommands.add(
+    //         "Drive (2.5 sec)", 
+    //         () -> RapidReactCommands.driveForTime(2.5, 1)
+    //     );
+    //     AutoCommands.add(
+    //         "Drive (6 ft)",
+    //         () -> RapidReactCommands.driveDistance(6 * 12)
+    //     );
+    //     AutoCommands.add(
+    //         "Turn (left 90 degrees)",
+    //         () -> RapidReactCommands.turn(-90)
+    //     );
+    //     AutoCommands.add(
+    //         "Turn (180 degrees)",
+    //         () -> RapidReactCommands.turn(180)
+    //     );
+
+    //     AutoCommands.add(
+    //         "Shoot Test",
+    //         () -> RapidReactCommands.shootSequence()
+    //     );
+    //     AutoCommands.add(
+    //         "Shoot",
+    //         () -> RapidReactCommands.shootSequenceShort()
+    //     );
+
+    //     final double ballDistance = 92; //in
+    //     final double ballPidLeadIn = 50; //in
+    //     final double ballStartSpeed = 0.5; 
+    //     final double ballPidTime = 1.5; //sec
+    //     final double ballPidOutput = 0.4; // (speed while ball pidding)
+    //     final double returnTime = 2.0;
+    //     final double ballTransportTime = 0.7; //sec
+    //     final double taxiTime = 3; //sec
+    //     final double preShootTime = 0.7; //sec
+
+    //     AutoCommands.add(
+    //         "Taxi",
+    //         () -> RapidReactCommands.driveForTime(taxiTime, 1)
+    //     );
+
+    //     AutoCommands.add(
+    //         "Single Ball",
     //         () -> sequence(
-    //             instant(() -> drivetrain.startStraightPidding()),
-    //             runForTime(2.5, () -> drivetrain.set(0.5, 0), drivetrain),
-    //             instant(() -> drivetrain.set(0, 0)),
-    //             instant(() -> drivetrain.stopStraightPidding())
+    //             // Shoot ball
+    //             AutoCommands.get("Shoot"),
+    //             AutoCommands.get("Taxi")
     //         )
     //     );
-    //     commands.add(
-    //         "Shoot",
-    //         () -> sequence(
-    //             // stops driving and starts revving up shooter and intake
-    //             instant(
-    //                 () -> {
-    //                     ballShooter.startShooting();
-    //                     ballSucker.startSucking();
-    //                 },
-    //                 ballShooter,
-    //                 ballSucker
-    //             ),
-    //             // wait for shooter to rev
-    //             waitFor(1.0),
-    //             // start transport
-    //             instant(
-    //                 () -> {
-    //                     ballMover.startMoving(); // fucking shit hell bitcoins
-    //                     //blinkinLEDDriver.set(CONFETTI);
-    //                 },
-    //                 ballMover
-    //             ),
-    //             // wait for ball to shoot
-    //             waitFor(2.0),
-    //             // stop shooter, transport, and intake
-    //             instant(
-    //                 () -> {
-    //                     ballShooter.stop();
-    //                     ballMover.stop();
-    //                     ballSucker.stop();
-    //                     //blinkinLEDDriver.set(HOT_PINK);
-    //                 },
-    //                 ballShooter,
-    //                 ballSucker
+
+    //     AutoCommands.add(
+    //         "Get 3 Balls",
+    //         () -> parallel(
+    //             sequence(
+    //                 // Shoot ball
+    //                 AutoCommands.get("Shoot"),
+
+    //                 // Go to where it needs to go
+    //                 RapidReactCommands.driveDistance(40),
+
+    //                 // Angle pid
+    //                 //RapidReactCommands.turn(() -> -navx.getAngle()), // undo the ball pidding that was done
+    //                 RapidReactCommands.turn(145), // turn the degrees to ball
+
+    //                 // Go to balls 
+    //                 instant(navx::zeroYaw),
+    //                 instant(ballSucker::startSucking),
+    //                 instant(ballMover::startMoving),
+    //                 instant(drivetrain::startTargetingABall),
+
+    //                 // undo the ball pidding
+    //                 RapidReactCommands.turn(() -> -navx.getAngle()),
+    //                 // waitFor(ballTransportTime),
+    //                 // instant(ballMover::stop),
+    //                 // instant(ballSucker::stop)
+    //                 RapidReactCommands.driveDistance(250),
+    //                 instant(ballSucker::stop),
+    //                 instant(ballMover::stop),
+    //                 instant(drivetrain::stopTargetingABall)
     //             )
     //         )
     //     );
-    //     commands.add(
+
+    //     AutoCommands.add(
+    //         "Return (Shoot 3)",
+    //         () -> parallel(
+    //             sequence(
+    //                 RapidReactCommands.driveDistance(-250),
+
+    //                 RapidReactCommands.turn(-145),
+
+    //                 RapidReactCommands.driveDistance(40),
+
+    //                 AutoCommands.get("Shoot")
+    //             ) //later
+    //         )
+    //     );
+
+    //     AutoCommands.add(
+    //         "Main 3 Ball",
+    //         () -> sequence(
+    //             AutoCommands.get("Get 3 Balls"),
+    //             AutoCommands.get("Return (Shoot 3)")
+    //         )
+    //     );
+
+    //     AutoCommands.add(
+    //         "Main (late angle pid)",
+    //         () -> sequence(
+    //             // Shoot ball
+    //             AutoCommands.get("Shoot"),
+
+    //             // Retreive next ball
+    //             instant(drivetrain::resetEncoders),
+    //             instant(() -> drivetrain.set(ballStartSpeed, 0)),
+    //             waitUntil(() -> drivetrain.getAverageDistance() >= ballDistance - ballPidLeadIn),
+
+    //             instant(drivetrain::startTargetingABall),
+    //             instant(ballSucker::startSucking),
+    //             RapidReactCommands.driveForTime(ballPidTime, ballPidOutput),
+    //             instant(drivetrain::stopTargetingABall),
+    //             instant(ballSucker::stop),
+
+    //             // Return 
+    //             race(
+    //                 parallel(
+    //                     sequence(
+    //                         instant(ballSucker::startSucking),
+    //                         instant(ballMover::startMoving),
+    //                         waitFor(ballTransportTime),
+    //                         instant(ballMover::stop),
+    //                         instant(ballSucker::stop)
+    //                     ),
+    //                     RapidReactCommands.driveForTime(returnTime, -0.75)
+    //                 ),
+    //                 RapidReactCommands.turn(() -> -navx.getAngle())
+    //             ),
+    //             waitFor(1),
+    //             RapidReactCommands.driveForTime(preShootTime, 0.5),
+
+    //             // Shoot ball (long this time)
+    //             RapidReactCommands.shootSequence()
+    //         )
+    //     );
+
+    //     AutoCommands.add(
     //         "Main",
-    //         () -> sequence(commands.get("Shoot"), commands.get("Drive"))
+    //         () -> sequence(
+    //             // Shoot ball
+    //             AutoCommands.get("Shoot"),
+
+    //             // Retreive next ball
+    //             instant(drivetrain::resetEncoders),
+    //             instant(() -> drivetrain.set(ballStartSpeed, 0)),
+    //             waitUntil(() -> drivetrain.getAverageDistance() >= ballDistance - ballPidLeadIn),
+
+    //             instant(drivetrain::startTargetingABall),
+    //             instant(ballSucker::startSucking),
+    //             RapidReactCommands.driveForTime(ballPidTime, ballPidOutput),
+    //             instant(drivetrain::stopTargetingABall),
+    //             instant(ballSucker::stop),
+
+    //             // Angle pid
+    //             RapidReactCommands.turn(() -> -navx.getAngle()),
+
+    //             // Return 
+    //             parallel(
+    //                 sequence(
+    //                     instant(ballSucker::startSucking),
+    //                     instant(ballMover::startMoving),
+    //                     waitFor(ballTransportTime),
+    //                     instant(ballMover::stop),
+    //                     instant(ballSucker::stop)
+    //                 ),
+    //                 RapidReactCommands.driveForTime(returnTime, -0.75)
+    //             ),
+    //             waitFor(1),
+
+    //             // Shoot ball (long this time)
+    //             RapidReactCommands.shootSequence()
+    //         )
     //     );
-    //     commands.add(
-    //         "Delay Main",
-    //         () -> sequence(waitFor(AUTO_WAIT_TIME), commands.get("Main"))
-    //     );
-    //     commands.add(
+        
+    //     AutoCommands.add(
     //         "Nothing",
     //         () -> instant(() -> {})
     //     );
 
     //     // EXPIREMENTAL AUTOS
-    //     commands.add(
+    //     /*
+    //     AutoCommands.add(
     //         "Drive Intake",
     //         () -> sequence(
     //             instant(() -> ballSucker.startSucking()),
-    //             commands.get("Drive"),
+    //             AutoCommands.get("Drive"),
     //             instant(() -> ballSucker.stop())
     //         )
     //     );
-    //     commands.add(
+    //     AutoCommands.add(
     //         "Drive Return",
-    //         () -> sequence(
-    //             instant(() -> drivetrain.startStraightPidding()),
-    //             runForTime(2.5, () -> drivetrain.set(-0.5, 0), drivetrain),
-    //             instant(() -> drivetrain.set(0, 0)),
-    //             instant(() -> drivetrain.stopStraightPidding())    
-    //         )
+    //         () -> RapidReactCommands.driveForTime(2.5, -.5)
     //     );
-    //     commands.add(
+    //     AutoCommands.add(
     //         "Main Taxi Intake",
     //         () -> sequence(
-    //             commands.get("Shoot"),
-    //             commands.get("Drive Intake")
+    //             AutoCommands.get("Shoot"),
+    //             AutoCommands.get("Drive Intake")
     //         )
     //     );
-    //     commands.add(
+    //     AutoCommands.add(
     //         "Main Two Ball",
     //         () -> sequence(
-    //             commands.get("Shoot"),
-    //             commands.get("Drive Intake"),
-    //             commands.get("Drive Return"),
-    //             commands.get("Shoot"),
-    //             commands.get("Drive")
+    //             AutoCommands.get("Shoot"),
+    //             AutoCommands.get("Drive Intake"),
+    //             AutoCommands.get("Drive Return"),
+    //             AutoCommands.get("Shoot"),
+    //             AutoCommands.get("Drive")
     //         )
     //     ); 
+    //     */
 
-    //     return commands;
-    // }
-
-    // @Override
-    // public String defaultAutoCommand() 
-    // {
-    //     return "Main Two Ball";
-    // }
-
-    // @Override
-    // public AutoCommands getAutoCommands() {
+    //     AutoCommands.setDefaultAutoCommand("Main");
         
-    //     return new AutoCommands();
+    //     // Smart dashboard
+    //     // Data.setup();
     // }
 }
 

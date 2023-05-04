@@ -22,7 +22,7 @@ public final class Main
      */
     public static void main(String... args) 
     {
-        CommandRobot.start(RapidReact::new);
+        RobotBase.startRobot(CommandRobot.of(RapidReact::new));
     }
 }
 

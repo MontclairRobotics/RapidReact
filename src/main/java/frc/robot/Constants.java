@@ -4,16 +4,17 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathConstraints;
-
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.framework.Tunable;
+import frc.robot.framework.frc.controllers.GameController;
 import frc.robot.framework.profiling.LinearProfiler;
 import frc.robot.framework.profiling.NothingProfiler;
 import frc.robot.framework.profiling.Profiler;
-import frc.robot.framework.wpilib.controllers.InputController;
+import edu.wpi.first.math.geometry.Transform3d;
+
+import com.pathplanner.lib.PathConstraints;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -49,6 +50,14 @@ public final class Constants
     public static final int LEFT_CLIMBER_MOTOR_PORT = 41;
     public static final int RIGHT_CLIMBER_MOTOR_PORT = 42;
 
+    // Rotational Climber Motor Ports
+    public static final int LEFT_ROTATIONAL_CLIMBER_MOTOR_PORT = 43;
+    public static final int RIGHT_ROTATIONAL_CLIMBER_MOTOR_PORT = 44;
+
+    // Climber limit switch ports
+    public static final int LEFT_LOWER_CLIMBER_LIMIT_PORT = 0;
+    public static final int RIGHT_LOWER_CLIMBER_LIMIT_PORT = 1;
+    
     // BlinkinLEDDriver port
     public static final int BLINKIN_LED_DRIVER_PORT = 0;
 
@@ -67,47 +76,55 @@ public final class Constants
     public static final double BALL_TRANSPORT_SPEED = 1; 
 
     //Shooter Speed
-    public static final double SHOOTER_SPEED = 1.0;
+    public static final double SHOOTER_SPEED = 0.75;
 
     //Climber Speed
     public static final double CLIMBER_MOTOR_SPEED =  1; 
     public static final double REVERSE_CLIMBER_MOTOR_SPEED = -1;
-    public static final double CLIMBER_UPPER_LIMIT = 1; //TODO: Figure out actual limit
 
     // Drivetrain Inversion
     public static final boolean LEFT_DRIVE_INVERSION = false;
     public static final boolean RIGHT_DRIVE_INVERSION = true;
+    public static final double MIN_PID_TURN = 0.0002;
 
     // Shooter Inversion
     public static final boolean SHOOTER_LEFT_INVERSION = true;
     public static final boolean SHOOTER_RIGHT_INVERSION = false;
 
-    // Motors inversion
+    // Climber inversion
     public static final boolean LEFT_CLIMBER_INVERTED = false;
     public static final boolean RIGHT_CLIMBER_INVERTED = false;
+
+    // Rotational Climber Inversion
+    public static final boolean LEFT_ROTATIONAL_CLIMBER_INVERTED = false;
+    public static final boolean RIGHT_ROTATIONAL_CLIMBER_INVERTED = false;
 
     // Port for xbox controller
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
-    public static final InputController.Type DRIVER_CONTROLLER_TYPE = InputController.Type.PS4;
-    public static final InputController.Type OPERATOR_CONTROLLER_TYPE = InputController.Type.PS4;
+    public static final GameController.Type DRIVER_CONTROLLER_TYPE = GameController.Type.PS4;
+    public static final GameController.Type OPERATOR_CONTROLLER_TYPE = GameController.Type.PS4;
 
-    public static final double REVERSE_SHOOTER_SPEED = -0.4;
+    public static final double REVERSE_SHOOTER_SPEED = -0.7;
+    
 
     // Speeds for the robot
     public static final double AUTO_SPEED = 0.5;
-    public static final double[] ROBOT_SPEEDS = {
+    public static final double[] DRIVE_SPEEDS = {
         1,
         0.5
     };
 
     public static final Profiler DRIVE_PROFILER 
         = new LinearProfiler(0, -1, 1, 1.0 / 1.0, 1.0 / 1.25, "DRIVE-1");
-    public static final NothingProfiler NOTHING_PROFILER
+    public static final Profiler NOTHING_PROFILER
         = new NothingProfiler(0, -1, 1, "NOTHING-1");
 
-    public static int DRIVETRAIN_WIDTH = 10; 
+    public static final Profiler[] PROFILERS = {
+        DRIVE_PROFILER,
+        NOTHING_PROFILER
+    };
 
     public static final double TURN_FACTOR = 0.5;
     public static final double TURN_DRIVE_FACTOR = 0.2;
@@ -117,6 +134,10 @@ public final class Constants
         return (1 - Math.abs(TURN_DRIVE_FACTOR * speed)) * targetTurn * TURN_FACTOR;
     }
 
+    // Rotational Climber Speed
+    public static final double ROTATIONAL_CLIMBER_MOTOR_SPEED = 1;
+    public static final double REVERSE_ROTATIONAL_CLIMBER_MOTOR_SPEED = -1;
+
     // drive train coversion rate in ticks per feet
     // TODO: make easier to change
     public static final double TICKS_PER_ROTATION = 42.0;
@@ -125,12 +146,18 @@ public final class Constants
     public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
 
     public static final double CONVERSION_RATE 
-    = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
+        = (WHEEL_DIAMETER /*in*/ * Math.PI /*r o*/) / /*r m*/ GEAR_RATIO_IN_TO_OUT;
 
     public static final double ANGLE_PID_DEADBAND = 0.1;
-    public static final double ANGLE_VELOCITY_DEADBAND = 30.0 / 1.0;
+    public static final double ANGLE_VELOCITY_DEADBAND = 20.0 / 1.0;
 
 	public static final double ANGLE_PID_SCALE = 0.7;
+    
+    /////////////////////////////////
+    // AUTO
+    /////////////////////////////////
+    public static final double AUTO_DRIVE_DISTANCE = 96.0;
+    public static final double AUTO_WAIT_TIME = 5;
 
     public static final Tunable<Double> DRIVE_TIME_BEFORE_BALANCE = Tunable.of(3.1, "drive.auto_before_balance");
     public static final Tunable<Double> DRIVE_TIME_AFTER_BALANCE_CLIP = Tunable.of(1, "drive.auto_after_balance_clip");
@@ -155,4 +182,24 @@ public final class Constants
 
     public static final Tunable<Double> SHOOTER_MID_SPEED = Tunable.of(0.5, "shoot.shooter_mid_speed");
     public static final Tunable<Double> SHOOTER_HIGH_SPEED = Tunable.of(1, "shoot.shooter_high_speed");
+
+     // Constants such as camera and target height stored. Change per robot and goal!
+     public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24);
+     public static final double TARGET_HEIGHT_METERS = Units.feetToMeters(5);
+     
+     // Angle between horizontal and the camera.
+     public static final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(0);
+ 
+     // How far from the target we want to be
+     public static final double GOAL_RANGE_METERS = Units.feetToMeters(3);
+ 
+     public static final String CAMERA_NAME = "photonvision";
+ 
+     //Distance between center of robot and camera position
+     public static final Transform3d ROBOT_TO_CAM = new Transform3d(); 
+ 
+     //The URL that shuffleboard gets video from for PhotonVision
+     public static final String PHOTON_URL = "http://10.5.55.11:1182/stream.mjpg";
+
+     public static int DRIVETRAIN_WIDTH = 10; 
 }

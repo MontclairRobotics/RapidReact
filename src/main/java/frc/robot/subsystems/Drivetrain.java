@@ -11,12 +11,12 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -27,48 +27,49 @@ import static frc.robot.Constants.*;
 import frc.robot.Constants;
 import frc.robot.Data;
 import frc.robot.RapidReact;
-import frc.robot.framework.commandrobot.CommandRobot;
-import frc.robot.framework.maths.MathUtils;
+import frc.robot.framework.RobotState;
+import frc.robot.framework.frc.commands.CommandRobot;
+import frc.robot.framework.frc.commands.ManagedSubsystemBase;
+import frc.robot.framework.math.MathUtils;
 import frc.robot.framework.profiling.Profiler;
+import frc.robot.managers.NavxManager;
+import frc.robot.managers.VisionManager;
+import frc.robot.structure.DetectedBall;
 
-public final class Drivetrain extends SubsystemBase
+public final class Drivetrain extends ManagedSubsystemBase
 {
-
-
     ////////////////////////////////////////////////
     // Final fields
     ////////////////////////////////////////////////
     private final CANSparkMax 
         leftMotor1 = new CANSparkMax(LEFT_MOTOR_1_PORT, MotorType.kBrushless),
         leftMotor2 = new CANSparkMax(LEFT_MOTOR_2_PORT, MotorType.kBrushless),
-        //leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
+        leftMotor3 = new CANSparkMax(LEFT_MOTOR_3_PORT, MotorType.kBrushless),
         rightMotor1 = new CANSparkMax(RIGHT_MOTOR_1_PORT, MotorType.kBrushless),
-        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless)//,
-        //rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
+        rightMotor2 = new CANSparkMax(RIGHT_MOTOR_2_PORT, MotorType.kBrushless),
+        rightMotor3 = new CANSparkMax(RIGHT_MOTOR_3_PORT, MotorType.kBrushless)
     ;
     
     private final CANSparkMax[]
         leftMotors = {
             leftMotor1,
             leftMotor2,
-            //leftMotor3
+            leftMotor3
         },
         rightMotors = {
             rightMotor1, 
             rightMotor2,
-            //rightMotor3
+            rightMotor3
         }
     ;
-
-    
 
     private final RelativeEncoder 
         leftEncoder1 = leftMotor1.getEncoder(),
         leftEncoder2 = leftMotor2.getEncoder(),
-        //leftEncoder3 = leftMotor3.getEncoder(),
+        leftEncoder3 = leftMotor3.getEncoder(),
         rightEncoder1 = rightMotor1.getEncoder(),
-        rightEncoder2 = rightMotor2.getEncoder()//,
-        //rightEncoder3 = rightMotor3.getEncoder()
+        rightEncoder2 = rightMotor2.getEncoder(),
+        rightEncoder3 = rightMotor3.getEncoder()
     ;
 
 
@@ -76,12 +77,12 @@ public final class Drivetrain extends SubsystemBase
         leftEncoders = {
             leftEncoder1,
             leftEncoder2,
-            //leftEncoder3
+            leftEncoder3
         },
         rightEncoders = {
             rightEncoder1, 
             rightEncoder2,
-            //rightEncoder3
+            rightEncoder3
         }
     ;
 
@@ -93,7 +94,6 @@ public final class Drivetrain extends SubsystemBase
         = new DifferentialDrive(leftMotorGroup, rightMotorGroup);
 
     DifferentialDrivePoseEstimator poseEstimator;
-
     ////////////////////////////////////////////////
     // Other fields
     ////////////////////////////////////////////////
@@ -101,32 +101,37 @@ public final class Drivetrain extends SubsystemBase
     
     private PIDController distancePid; //pid
     private PIDController anglePid; //angle
+    private PIDController ballPid; //ball
+
+    private int currentSpeedIndex = 0;
 
     private boolean isUsingDistancePID = true;
     private boolean isUsingAnglePID = true;
+    private boolean isUsingBallPID = true;
 
     private double targetSpeed;
     private double targetTurn;
-
-    private TrackedNavx navx;
 
     private boolean isTargetingADistance = false;
     private double targetDistance = 0.0;
     private boolean isTargetingAnAngle = false;
     private double targetAngle = 0.0;
+    private boolean isTargetingABall = false;
+
+    private double averageDistance = 0.0;
 
     private double maxOutput = 0.0;
 
     private boolean isStraightPidding = false;
+
+    private boolean isTurnReversed = false;
     
     ////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////
-    public Drivetrain(TrackedNavx navx) 
+    public Drivetrain() 
     {
         this.speedProfiler = Constants.DRIVE_PROFILER;
-
-        this.navx = navx;
 
         for(var m : leftMotors)
         {
@@ -145,12 +150,21 @@ public final class Drivetrain extends SubsystemBase
         {
             e.setPositionConversionFactor(CONVERSION_RATE);
         }
+         //Setup Odometry
+         poseEstimator = new DifferentialDrivePoseEstimator( //TODO poseEstimator.update()
+         Constants.KINEMATICS,
+         getRobotRotation(),
+         getAverageDistanceLeftTraveled(),//TODO check correct unit
+         getAverageDistanceLeftTraveled(), //TODO check correct unit
+         new Pose2d()
+     );
     }
 
     ////////////////////////////////////////////////
     // Methods
     ////////////////////////////////////////////////
-    public void setup()
+    @Override
+    public void reset()
     {
         // Setup distance pid
         distancePid = new PIDController(
@@ -167,53 +181,71 @@ public final class Drivetrain extends SubsystemBase
             Data.getAngleKD()
         );
         anglePid.setTolerance(Data.getAngleTolerance());
+        anglePid.setIntegratorRange(
+            -Data.getAngleIntMax(), 
+            Data.getAngleIntMax()
+        );
+
+        // Setup ball pid
+        ballPid = new PIDController(
+            Data.getBallKP(),
+            Data.getBallKI(),
+            Data.getBallKD()
+        );
+        ballPid.setTolerance(Data.getBallTolerance());
 
         //System.out.println("akp " + anglePid.getP());
 
         // Setup max output
         setProfiler(Constants.DRIVE_PROFILER);
-        setMaxOutput(Constants.ROBOT_SPEEDS[0]);
+        currentSpeedIndex = 0;
+        updateDriveSpeedIndex();
 
         // Release all targets
         releaseAngleTarget();
         releaseDistanceTarget();
         stopStraightPidding();
+        stopTargetingABall();
 
-        //Setup Odometry
-        poseEstimator = new DifferentialDrivePoseEstimator( //TODO poseEstimator.update()
-            Constants.KINEMATICS,
-            getRobotRotation(),
-            getAverageDistanceLeftTraveled(),//TODO check correct unit
-            getAverageDistanceLeftTraveled(), //TODO check correct unit
-            new Pose2d()
-        );
+        // Stop driving
+        stop();
+
+        // Reset encoders
+        resetEncoders();
     }
 
-    public Rotation2d getRobotRotation() {
-        return Rotation2d.fromDegrees(RapidReact.navx.getAngle()); //TODO check if this is correct w/ whoever wrote TrackedNavx class
+    public double getAverageDistance()
+    {
+        return averageDistance;
     }
 
-    public Pose2d getRobotPose() {
-        return poseEstimator.getEstimatedPosition();
+    public void nextDriveSpeed()
+    {
+        // Loop through speeds
+        currentSpeedIndex++;
+        currentSpeedIndex %= DRIVE_SPEEDS.length;
+
+        // Set speed
+        updateDriveSpeedIndex();
     }
 
-    public void setRobotPose(Pose2d pose) {
-        poseEstimator.resetPosition(
-            getRobotRotation(),
-            getAverageDistanceLeftTraveled(),
-            getAverageDistanceRightTraveled(),
-            pose
-        );
+    private void updateDriveSpeedIndex() 
+    {
+        setMaxOutput(Constants.DRIVE_SPEEDS[currentSpeedIndex]);
     }
 
     public void startStraightPidding()
     {
         isStraightPidding = true;
-        navx.zeroYaw();
+        RapidReact.navx.zeroYaw();
     }
     public void stopStraightPidding()
     {
         isStraightPidding = false;
+    }
+    public void stopTargetingABall()
+    {
+        isTargetingABall = false;
     }
     public boolean isStraightPidding()
     {
@@ -224,17 +256,18 @@ public final class Drivetrain extends SubsystemBase
     {
         isUsingAnglePID = true;
         isUsingDistancePID = true;
+        isUsingBallPID = true;
     }
     public void disableAllPID()
     {
         isUsingAnglePID = false;
         isUsingDistancePID = false;
+        isUsingBallPID = false;
     }
     
     public void setProfiler(Profiler speedProfiler) 
     {
         this.speedProfiler = speedProfiler;
-        Data.setCurrentEasing(speedProfiler.getName());
     }
 
     /**
@@ -247,8 +280,6 @@ public final class Drivetrain extends SubsystemBase
         
         speedProfiler.setMinValue(-maxOutput);
         speedProfiler.setMaxValue(maxOutput);
-
-        Data.setCurrentMaxSpeed(maxOutput);
     }
 
     /**
@@ -272,39 +303,20 @@ public final class Drivetrain extends SubsystemBase
         }
     }
 
-    /**
-     * Get the average distance traveled by the encoders
-     */
-    public double getAverageDistanceTraveled()
+    private double calculateAverageDistanceTraveled()
     {
         // 42 ticks per revolutions
         // gear box ratio is 10.86 : 1
         double sum = 0.0;
         for (RelativeEncoder e : leftEncoders) 
         {
-            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+            sum += /*MathDouble.signFromBoolean(LEFT_DRIVE_INVERSION) */ e.getPosition();
         }
         for (RelativeEncoder e : rightEncoders) 
         {
-            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+            sum += /*MathDouble.signFromBoolean(RIGHT_DRIVE_INVERSION) */ e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
-    }
-
-    public double getAverageDistanceLeftTraveled() {
-        double sum = 0.0;
-        for (RelativeEncoder e : leftEncoders) {
-            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
-        }
-        return sum / leftEncoders.length;
-    }
-
-    public double getAverageDistanceRightTraveled() {
-        double sum = 0.0;
-        for (RelativeEncoder e : rightEncoders) {
-            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
-        }
-        return sum / rightEncoders.length;
     }
     
     /** 
@@ -318,25 +330,36 @@ public final class Drivetrain extends SubsystemBase
     }
     public void setTargetAngle(double ta)
     {
-        navx.zeroYaw();
+        RapidReact.navx.zeroYaw();
         targetAngle = ta;
         isTargetingAnAngle = true;
+    }
+    public void startTargetingABall()
+    {
+        isTargetingABall = true;
+        isStraightPidding = false;
     }
 
     public void set(double targetSpeed, double targetTurn)
     {
         this.targetSpeed = targetSpeed;
         this.targetTurn = targetTurn;
+        //System.out.println("Setting Speed to: " + targetSpeed + "speed");
+        //System.out.println("Setting Angle to: " + targetTurn + "percent turning");
     }
 
-    private double calculateAnglePID(double target)
+    private double modifyAnglePIDOut(double value)
     {
-        var angle = navx.getAngle();
-        var turn = MathUtils.clamp(
-            anglePid.calculate(angle, target) * Constants.ANGLE_PID_SCALE, 
+        return MathUtil.clamp(
+            value * Constants.ANGLE_PID_SCALE, 
             -Constants.ANGLE_PID_SCALE, 
             Constants.ANGLE_PID_SCALE
         );
+    }
+    private double calculateAnglePID(double target)
+    {
+        var angle = RapidReact.navx.getAngle();
+        var turn = modifyAnglePIDOut(anglePid.calculate(angle, target));
 
         //System.out.println("Current angle: " + angle + "*");
         //System.out.println("Current turn: " + turn);
@@ -350,64 +373,115 @@ public final class Drivetrain extends SubsystemBase
      * Update this subsystem
      */
     @Override
-    public void periodic()
+    public void always()
     {
         if(DriverStation.isDisabled())
+        {
             return;
+        }
+
+        averageDistance = calculateAverageDistanceTraveled();
 
         // Locals for speed and turn
         double speed, turn;
 
         // Pid the speed distance of the input if targetting a distacne
+        var preEaseSpeed = 0.0;
         if(isUsingDistancePID && isTargetingADistance)
         {
-            var averageDistance = getAverageDistanceTraveled();
+            Data.setDriveMode("[pid: " + targetDistance + "]");
+            Data.setDistanceToTarget(targetDistance - averageDistance);
 
             //System.out.println("Average distance: " + averageDistance);
 
-            speed = -distancePid.calculate(averageDistance, targetDistance) * maxOutput;
-
-            Data.setDistanceToTarget(targetDistance - averageDistance);
+            preEaseSpeed = distancePid.calculate(averageDistance, targetDistance);
         }
         else
         {
-            // Square input
-            targetSpeed = MathUtils.signum(targetSpeed).get() * targetSpeed * targetSpeed;
+            Data.setDriveMode("[simple]");
 
-            // Update the speed with the smoother
-            speedProfiler.update(CommandRobot.deltaTime(), targetSpeed * maxOutput);
-            speed = speedProfiler.current();
+            // Square input
+            preEaseSpeed = MathUtils.powsign(targetSpeed, 1.1);
 
             //System.out.println("Robot driving");
         }
 
+        speedProfiler.update(CommandRobot.deltaTime(), preEaseSpeed * maxOutput);
+        speed = speedProfiler.current();
+
+        // Clamp speed
+        speed = MathUtil.clamp(speed, -maxOutput, maxOutput);
+
+        Data.setDriveSpeed(speed);
+
         // Pid the angle if the input turn is within the deadband
         if(isUsingAnglePID && isTargetingAnAngle)
         {
+            Data.setTurnMode("[angle pid]");
+
             turn = calculateAnglePID(targetAngle);
+        }
+        else if (isUsingBallPID && isTargetingABall)
+        {
+            Data.setTurnMode("[ball pid]");
+            
+            var ball = RapidReact.vision
+                .getBall((a, b) -> Math.abs(a.getAngle()) < Math.abs(b.getAngle()));
+
+            if (ball != null && Math.abs(ball.getAngle()) > Data.getBallTolerance())
+            {
+                Data.setAngleToBall(ball.getAngle());
+                Data.setBallArea(ball.getArea());
+
+                turn = modifyAnglePIDOut(
+                    ballPid.calculate(-ball.getAngle(), 0.0)
+                );
+            }
+            else
+            {
+                //isTargetingABall = false;
+                turn = 0;
+            }
         }
         else if(isUsingAnglePID && isStraightPidding)
         {
+            Data.setTurnMode("[straight pid]");
+
             turn = calculateAnglePID(0);
+            if(Math.abs(turn) < Constants.MIN_PID_TURN)
+            {
+                turn = 0;
+            }
         }
         else
         {   
-            turn = Constants.adjustTurn(speed, targetTurn);
+            Data.setTurnMode("[simple]");
+
+            var realTargetTurn = MathUtils.powsign(targetTurn, 4);
+            turn = Constants.adjustTurn(speed, realTargetTurn) * MathUtils.signFromBoolean(!isTurnReversed);
         }
 
-        // Clamp speed
-        speed = MathUtils.clamp(speed, -maxOutput, maxOutput);
+        
+        Data.setTurnSpeed(turn);
 
+        //System.out.println("speed: " + speed);
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn, false);
+    }
 
-        poseEstimator.update(getRobotRotation(), getAverageDistanceLeftTraveled(), getAverageDistanceRightTraveled());
-        
+    public double getMaxOutput()
+    {
+        return maxOutput;
+    }
+    public Profiler getProfiler()
+    {
+        return speedProfiler;
     }
 
     public void releaseDistanceTarget() 
     {
         isTargetingADistance = false;
+        stop();
     }
 
     public void releaseAngleTarget() 
@@ -433,9 +507,45 @@ public final class Drivetrain extends SubsystemBase
         isUsingDistancePID = value;
     }
 
+    public Rotation2d getRobotRotation() {
+        return Rotation2d.fromDegrees(RapidReact.navx.getAngle()); //TODO check if this is correct w/ whoever wrote TrackedNavx class
+    }
+
+    public Pose2d getRobotPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
+
+    public void setRobotPose(Pose2d pose) {
+        poseEstimator.resetPosition(
+            getRobotRotation(),
+            getAverageDistanceLeftTraveled(),
+            getAverageDistanceRightTraveled(),
+            pose
+        );
+    }
+
+    public double getAverageDistanceLeftTraveled() {
+        double sum = 0.0;
+        for (RelativeEncoder e : leftEncoders) {
+            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+        }
+        return sum / leftEncoders.length;
+    }
+
+    public double getAverageDistanceRightTraveled() {
+        double sum = 0.0;
+        for (RelativeEncoder e : rightEncoders) {
+            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+        }
+        return sum / rightEncoders.length;
+    }
+
     public void killMomentum() 
     {
-        speedProfiler.setDirect(0.0);
+        for(var p : Constants.PROFILERS)
+        {
+            p.setDirect(0.0);
+        }
     }
 
     public boolean isTargetingAnAngle()
@@ -445,5 +555,14 @@ public final class Drivetrain extends SubsystemBase
     public boolean isTargetingADistance()
     {
         return isTargetingADistance;
+    }
+
+    public void startReverseTurning()
+    {
+        isTurnReversed = true;
+    }
+    public void stopReverseTurning()
+    {
+        isTurnReversed = false;
     }
 }
