@@ -460,7 +460,7 @@ public class Auto extends ManagerBase
 
             trajectories.add(nextTrajectory);
 
-            CommandBase cmd = trajectory(autoBuilder, nextTrajectory);
+            CommandBase cmd = RapidReact.auto.trajectory(autoBuilder, nextTrajectory);
 
             // Check for first path and add a reset if it is
             if(trajectories.size() == 1)
@@ -503,7 +503,7 @@ public class Auto extends ManagerBase
         );
 
         String debugAuto = "";
-        RamseteAutoBuilder builder = autoBuilder(markers);
+        RamseteAutoBuilder builder = RapidReact.auto.autoBuilder(markers);
 
         // Iterate all of the string segments
         for (int i = 0; i < list.length; i++)
@@ -566,7 +566,7 @@ public class Auto extends ManagerBase
     }
 
 
-    public static RamseteAutoBuilder autoBuilder(HashMap<String, Command> markers)
+    public RamseteAutoBuilder autoBuilder(HashMap<String, Command> markers)
     {
         return new RamseteAutoBuilder( //TODO do we want to use PID? how do we handle motor voltages?
             RapidReact.drivetrain::getRobotPose,
@@ -586,7 +586,7 @@ public class Auto extends ManagerBase
      * @param markers The autonomous markers
      * @return The command
      */
-    public static CommandBase trajectory(BaseAutoBuilder autoBuilder, PathPlannerTrajectory trajectory)
+    public CommandBase trajectory(BaseAutoBuilder autoBuilder, PathPlannerTrajectory trajectory)
     {
         return autoBuilder.followPathWithEvents(trajectory);
     }

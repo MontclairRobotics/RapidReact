@@ -27,6 +27,7 @@ import frc.robot.framework.wpilib.controllers.InputController.DPad;
 import frc.robot.framework.wpilib.triggers.AnalogTrigger;
 import frc.robot.subsystems.TrackedNavx;
 import frc.robot.subsystems.Climber.ClimberSide;
+import frc.robot.subsystems.Auto;
 import frc.robot.subsystems.BallMover;
 import frc.robot.subsystems.BallShooter;
 import frc.robot.subsystems.BallSucker;
@@ -78,6 +79,7 @@ public final class RapidReact extends RobotContainer
     public static final Climber climber = new Climber();
     public static final Field2d field = new Field2d();
     public static Field2d getField() {return field;}
+    public static final Auto auto = new Auto();
 
     private static UsbCamera intakeCamera;
     private static UsbCamera shooterCamera;
@@ -307,6 +309,11 @@ public final class RapidReact extends RobotContainer
     /////////////////////////////////
     private static final double AUTO_DRIVE_DISTANCE = 96.0;
     private static final double AUTO_WAIT_TIME = 5;
+
+    @Override
+    public Command getAuto() {
+        return auto.get();
+    }
 
     //TODO add new getAuto() method
     // @Override

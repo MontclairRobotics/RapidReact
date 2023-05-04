@@ -152,4 +152,7 @@ public final class Constants
         }
 
     public final static DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(Units.inchesToMeters(Constants.DRIVETRAIN_WIDTH));
+
+    public static final Tunable<Double> SHOOTER_MID_SPEED = Tunable.of(0.5, "shoot.shooter_mid_speed");
+    public static final Tunable<Double> SHOOTER_HIGH_SPEED = Tunable.of(1, "shoot.shooter_high_speed");
 }
