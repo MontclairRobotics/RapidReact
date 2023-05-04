@@ -64,6 +64,6 @@ public class TrackedNavx extends SubsystemBase
         angularVelocity = (angle - prevAngle) / CommandRobot.deltaTime();
         prevAngle = angle;
 
-        Data.setAngularVelocity(angularVelocity);
+        // Data.setAngularVelocity(angularVelocity);
     }
 }

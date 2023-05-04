@@ -74,6 +74,8 @@ public final class RapidReact extends RobotContainer
     ////////////////////////////////
     // SUBSYSTEMS / MANAGERS
     ////////////////////////////////
+    public static final VisionManager vision = new VisionManager();
+    public static final NavxManager navx = new NavxManager(new AHRS());
     public static final Drivetrain drivetrain = new Drivetrain();
     public static final BallSucker ballSucker = new BallSucker();
     public static final BallMover ballMover = new BallMover();
@@ -84,8 +86,7 @@ public final class RapidReact extends RobotContainer
     public static final Auto auto = new Auto();
     //public static final RotationalClimber rotationalClimber = new RotationalClimber();
 
-    public static final VisionManager vision = new VisionManager();
-    public static final NavxManager navx = new NavxManager(new AHRS());
+
     
     /*
     public final BlinkinLEDDriver blinkinLEDDriver = new BlinkinLEDDriver(BLINKIN_LED_DRIVER_PORT, C1_BREATH_SLOW, DISABLED);
