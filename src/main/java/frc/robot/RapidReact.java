@@ -12,6 +12,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -75,6 +76,8 @@ public final class RapidReact extends RobotContainer
     public static final BallMover ballMover = new BallMover();
     public static final BallShooter ballShooter = new BallShooter();
     public static final Climber climber = new Climber();
+    public static final Field2d field = new Field2d();
+    public static Field2d getField() {return field;}
 
     private static UsbCamera intakeCamera;
     private static UsbCamera shooterCamera;

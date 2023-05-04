@@ -4,7 +4,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.PathConstraints;
+
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.framework.Tunable;
 import frc.robot.framework.profiling.LinearProfiler;
 import frc.robot.framework.profiling.NothingProfiler;
 import frc.robot.framework.profiling.Profiler;
@@ -102,6 +107,8 @@ public final class Constants
     public static final NothingProfiler NOTHING_PROFILER
         = new NothingProfiler(0, -1, 1, "NOTHING-1");
 
+    public static int DRIVETRAIN_WIDTH = 10; 
+
     public static final double TURN_FACTOR = 0.5;
     public static final double TURN_DRIVE_FACTOR = 0.2;
 
@@ -124,4 +131,25 @@ public final class Constants
     public static final double ANGLE_VELOCITY_DEADBAND = 30.0 / 1.0;
 
 	public static final double ANGLE_PID_SCALE = 0.7;
+
+    public static final Tunable<Double> DRIVE_TIME_BEFORE_BALANCE = Tunable.of(3.1, "drive.auto_before_balance");
+    public static final Tunable<Double> DRIVE_TIME_AFTER_BALANCE_CLIP = Tunable.of(1, "drive.auto_after_balance_clip");
+
+    public static final boolean CHARGER_STATION_INCLINE_INVERT = true;
+    public static final Tunable<Double> CHARGER_STATION_MUL = Tunable.of(0.09, "drive.charge_mul");
+    public static final Tunable<Double> CHARGER_STATION_TILT_SPEED_THRESHOLD = Tunable.of(6.0, "drive.charge_tilt_speed_thresh");
+    public static final Tunable<Double> CHARGER_STATION_AT_REST_DEBOUNCE_TIME = Tunable.of(0.5, "drive.charge_rest_debounce_time");
+
+    public static final Tunable<Double> MAX_VEL = Tunable.of(4, "auto.max_vel");
+        public static final Tunable<Double> MAX_ACC = Tunable.of(1.8, "auto.max_acc");
+
+        public static PathConstraints constraints()
+        {
+            return new PathConstraints(
+                MAX_VEL.get(), 
+                MAX_ACC.get()
+            );
+        }
+
+    public final static DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(Units.inchesToMeters(Constants.DRIVETRAIN_WIDTH));
 }

@@ -12,6 +12,11 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,6 +26,7 @@ import static frc.robot.Constants.*;
 
 import frc.robot.Constants;
 import frc.robot.Data;
+import frc.robot.RapidReact;
 import frc.robot.framework.commandrobot.CommandRobot;
 import frc.robot.framework.maths.MathUtils;
 import frc.robot.framework.profiling.Profiler;
@@ -54,6 +60,8 @@ public final class Drivetrain extends SubsystemBase
         }
     ;
 
+    
+
     private final RelativeEncoder 
         leftEncoder1 = leftMotor1.getEncoder(),
         leftEncoder2 = leftMotor2.getEncoder(),
@@ -83,6 +91,8 @@ public final class Drivetrain extends SubsystemBase
 
     private final DifferentialDrive differentialDrive 
         = new DifferentialDrive(leftMotorGroup, rightMotorGroup);
+
+    DifferentialDrivePoseEstimator poseEstimator;
 
     ////////////////////////////////////////////////
     // Other fields
@@ -168,6 +178,32 @@ public final class Drivetrain extends SubsystemBase
         releaseAngleTarget();
         releaseDistanceTarget();
         stopStraightPidding();
+
+        //Setup Odometry
+        poseEstimator = new DifferentialDrivePoseEstimator( //TODO poseEstimator.update()
+            Constants.KINEMATICS,
+            getRobotRotation(),
+            getAverageDistanceLeftTraveled(),//TODO check correct unit
+            getAverageDistanceLeftTraveled(), //TODO check correct unit
+            new Pose2d()
+        );
+    }
+
+    public Rotation2d getRobotRotation() {
+        return Rotation2d.fromDegrees(RapidReact.navx.getAngle()); //TODO check if this is correct w/ whoever wrote TrackedNavx class
+    }
+
+    public Pose2d getRobotPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
+
+    public void setRobotPose(Pose2d pose) {
+        poseEstimator.resetPosition(
+            getRobotRotation(),
+            getAverageDistanceLeftTraveled(),
+            getAverageDistanceRightTraveled(),
+            pose
+        );
     }
 
     public void startStraightPidding()
@@ -253,6 +289,22 @@ public final class Drivetrain extends SubsystemBase
             sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
         }
         return sum / (leftEncoders.length + rightEncoders.length);
+    }
+
+    public double getAverageDistanceLeftTraveled() {
+        double sum = 0.0;
+        for (RelativeEncoder e : leftEncoders) {
+            sum += -MathUtils.signFromBoolean(LEFT_DRIVE_INVERSION) * e.getPosition();
+        }
+        return sum / leftEncoders.length;
+    }
+
+    public double getAverageDistanceRightTraveled() {
+        double sum = 0.0;
+        for (RelativeEncoder e : rightEncoders) {
+            sum += -MathUtils.signFromBoolean(RIGHT_DRIVE_INVERSION) * e.getPosition();
+        }
+        return sum / rightEncoders.length;
     }
     
     /** 
@@ -348,6 +400,9 @@ public final class Drivetrain extends SubsystemBase
 
         // Set the drive
         differentialDrive.arcadeDrive(speed, turn, false);
+
+        poseEstimator.update(getRobotRotation(), getAverageDistanceLeftTraveled(), getAverageDistanceRightTraveled());
+        
     }
 
     public void releaseDistanceTarget() 
