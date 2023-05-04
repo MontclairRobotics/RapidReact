@@ -1,0 +1,65 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 1.8892709968016221,
+        "y": 4.436957689892555
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.780081447024208,
+        "y": 4.522425162551055
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 5.9,
+        "y": 4.6
+      },
+      "prevControl": {
+        "x": 4.964276195888159,
+        "y": 4.5592583648670955
+      },
+      "nextControl": null,
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "maxVelocity": 4.0,
+  "maxAcceleration": 2.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.0,
+      "names": [
+        "Retract"
+      ]
+    },
+    {
+      "position": 0.44999999999999996,
+      "names": [
+        "Pickup Pipeline"
+      ]
+    }
+  ]
+}
